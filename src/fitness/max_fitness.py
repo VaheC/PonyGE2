@@ -5,7 +5,7 @@ import pandas as pd
 from fitness.indicators.indicators import *
 
 def generate_data():
-    df = pd.read_csv('/content/BTCUSD_ohlcv.csv')
+    df = pd.read_csv('/kaggle/input/btcusd-test/BTCUSD_ohlcv.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
     df = df.iloc[:10080]
     df.sort_values('datetime', ascending=True, inplace=True)
