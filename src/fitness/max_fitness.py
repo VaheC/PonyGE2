@@ -2,6 +2,7 @@ from fitness.base_ff_classes.base_ff import base_ff
 import random
 import time
 import pandas as pd
+from fitness.indicators.indicators import *
 
 def generate_data():
     df = pd.read_csv('/content/BTCUSD_ohlcv.csv')
