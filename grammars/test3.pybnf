@@ -1,0 +1,26 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{:from numba import njit{::}{::}@njit{::}def merge_pnl(arr1, arr2):{:out = np.zeros((len(arr1) + len(arr2))){::}idx = 1{::}for i in range(len(arr1) + len(arr2)):{::}{:if i % 2 == 0:{::}{:out[i] = arr1[int(i/2)]{::}:}:}{:else:{::}{:out[i] = arr2[i-idx]{::}idx += 1{::}:}:}return out:}{::}@njit{::}def get_drawdowns(arr):{:drawdowns = np.zeros((len(arr))){::}max = arr[0]{::}for i in range(1, len(drawdowns)-1):{::}{:if arr[i-1] > arr[i] and arr[i] < arr[i+1]:{::}{:min = arr[i]{::}drawdowns[i] = max - min:}:}{::}{:elif arr[i-1] < arr[i] and arr[i] > arr[i+1]:{::}{:max = arr[i]{::}:}:}return drawdowns:}{::}df = price_data.copy(){::}df['buy'] = (<signal>).astype(int){::}df['sell'] = (<signal>).astype(int){::}df['hold'] = (<signal>).astype(int){::}df['signal'] = df['buy'] + df['sell'] + df['hold']{::}df['signal'] = df['signal'].apply(lambda x: 1 if x==1 else 0){::}df['hold'] = df['hold'].apply(lambda x: 1 if x==0 else 0){::}df['signal'] = df['signal'] * df['hold']{::}df['sell'] = df['sell'] * (-1){::}df['signal'] = df['signal'] * df['sell']{::}df['signal'] = df['signal'] * df['buy']{::}df.drop(columns=['buy', 'sell', 'hold'], inplace=True){::}buy_idxs = []{::}sell_idxs = []{::}{::}is_buy = 0{::}is_sell = 0{::}{::}for i, row in enumerate(df.itertuples()):{::}{:if row.signal == 1 and is_buy == 0:{::}{:buy_idxs.append(i+1){::}is_buy = 1{::}is_sell = 0{::}:}:}{:elif row.signal == -1 and is_sell == 0:{::}{:sell_idxs.append(i+1){::}is_sell = 1{::}is_buy = 0:}:}{::}{::}buy_prices = df[df.index.isin(buy_idxs)]['open'].values{::}sell_prices = df[df.index.isin(sell_idxs)]['open'].values{::}{::}if buy_idxs[0] < sell_idxs[0]:{::}{:buy_pnl = np.sum(sell_prices - buy_prices){::}sell_pnl = np.sum(sell_prices[:-1] - buy_prices[1:]):}{::}else:{::}{:sell_pnl = np.sum(sell_prices - buy_prices){::}buy_pnl = np.sum(sell_prices[1:] - buy_prices[:-1]):}{::}total_pnl = buy_pnl + sell_pnl{::}{::}if buy_idxs[0] < sell_idxs[0]:{::}{:buy_arr = sell_prices - buy_prices{::}sell_arr = sell_prices[:-1] - buy_prices[1:]{::}all_arr = merge_pnl(buy_arr, sell_arr):}{::}else:{::}{:sell_arr = sell_prices - buy_prices{::}buy_arr = sell_prices[1:] - buy_prices[:-1]{::}all_arr = merge_pnl(sell_arr, buy_arr):}{::}{::}equity_curve_arr = np.cumsum(all_arr){::}{::}drawdowns = get_drawdowns(equity_curve_arr){::}{::}avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]){::}{::}fitness = total_pnl / avg_drawdown{::}return fitness:}
+
+<callf> ::= fitness = fun(data)
+
+<var> ::= <indicator> | df['close'] | df['open'] | df['high'] | df['low']
+
+<indicator> ::= MIN_CHANGE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlen=<int-const>)
+| MA_DIFFERENCE(df=data, ShortLength=<int-const>, LongLength=<int-const>, Lag=<int-const>) |
+| RSI(df=data, HistLength=<int-const>)
+
+<signal> ::= <value> <c-op> <var> | <signal>
+| <var> <c-op> <var>
+| <var> <mat-op> <var> <c-op> <value>
+
+<value> ::= <int-const> | <real-const>
+
+<int-const> ::= <int-const><int-const>
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<real-const> ::= 0.<int-const> | <int-const>.<int-const>
+
+<c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
+
+<mat-op> ::= + | - | * | / | // | % 
