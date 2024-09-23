@@ -5,6 +5,7 @@ import pandas as pd
 from fitness.indicators.indicators import *
 from pathlib import Path
 import numpy as np
+from numba import njit
 
 def generate_data():
     # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\BTCUSD_ohlcv.csv'))
