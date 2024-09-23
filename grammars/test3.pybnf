@@ -4,11 +4,11 @@
 
 <callf> ::= fitness = fun(data)
 
-<var> ::= <indicator> | df.close | df.open | df.high | df.low
+<var> ::= <indicator> | df.close.values | df.open.values | df.high.values | df.low.values
 
-<indicator> ::= MIN_CHANGE_VARIANCE_RATIO(df=df, HistLen=<int-const>, Mult=<real-const>, Mlen=<int-const>)
-| MA_DIFFERENCE(df=df, ShortLength=<int-const>, LongLength=<int-const>, Lag=<int-const>) |
-| RSI(df=df, HistLength=<int-const>)
+<indicator> ::= MIN_CHANGE_VARIANCE_RATIO(df=df, HistLen=<int-const>, Mult=<real-const>, Mlen=<int-const>).values
+| MA_DIFFERENCE(df=df, ShortLength=<int-const>, LongLength=<int-const>, Lag=<int-const>).values |
+| RSI(df=df, HistLength=<int-const>).values
 
 <signal> ::= <value> <c-op> <var> | <signal>
 | <var> <c-op> <var>
