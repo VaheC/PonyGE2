@@ -4,13 +4,17 @@
 
 <callf> ::= fitness = fun(data)
 
-<var> ::= <indicator> | df["'"close"'"].values | df["'"open"'"].values | df["'"high"'"].values | df["'"low"'"].values
+<var> ::= <indicator> | df["'"close"'"].values.reshape(-1, 1) 
+| df["'"open"'"].values.reshape(-1, 1) 
+| df["'"high"'"].values.reshape(-1, 1) 
+| df["'"low"'"].values.reshape(-1, 1)
+| df["'"volume"'"].values.reshape(-1, 1)
 
 <indicator> ::= MIN_CHANGE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlen=<int-const>).values
 | MA_DIFFERENCE(df=data, ShortLength=<int-const>, LongLength=<int-const>, Lag=<int-const>).values |
 | RSI(df=data, HistLength=<int-const>).values
 
-<signal> ::= <value> <c-op> <var> | (<signal> <c-op> <var>) & (<signal> <c-op> <var>)
+<signal> ::= <value> <c-op> <var> | (<signal>) <log-op> (<signal>)
 | <var> <c-op> <var>
 | <var> <mat-op> <var> <c-op> <value>
 
@@ -24,3 +28,5 @@
 <c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
 
 <mat-op> ::= + | - | * | / | // | % 
+
+<log-op> ::= "&" | "|" 
