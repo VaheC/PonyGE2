@@ -32,7 +32,9 @@ buy_idxs = []{::}sell_idxs = []{::}{::}
 is_buy = 0{::}is_sell = 0{::}{::}
 for i, row in enumerate(df.itertuples()):{::}
 {:if row.signal == 1 and is_buy == 0:{::}{:buy_idxs.append(i+1){::}is_buy = 1{::}is_sell = 0{::}:}:}
-{:elif row.signal == -1 and is_sell == 0:{::}{:sell_idxs.append(i+1){::}is_sell = 1{::}is_buy = 0:}:}{::}{::}
+{:elif row.signal == -1 and is_sell == 0:{::}{:sell_idxs.append(i+1){::}is_sell = 1{::}is_buy = 0:}:}{::}
+if len(buy_idxs) == 0 or len(sell_idxs) == 0:{::}
+{:return -999:}{::}
 buy_prices = df[df.index.isin(buy_idxs)]["'"btc_open"'"].values{::}
 sell_prices = df[df.index.isin(sell_idxs)]["'"btc_open"'"].values{::}{::}
 if buy_idxs[0] < sell_idxs[0]:{::}
@@ -52,6 +54,8 @@ equity_curve_arr = np.cumsum(all_arr){::}{::}
 drawdowns = get_drawdowns(equity_curve_arr){::}{::}
 avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]){::}{::}
 fitness = total_pnl / avg_drawdown{::}
+if np.isnan(fitness):{::}
+{:return -999:}{::}
 return fitness:}
 
 <callf> ::= fitness = fun(data)
