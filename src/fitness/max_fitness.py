@@ -9,8 +9,8 @@ from numba import njit
 
 def generate_data():
     # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\BTCUSD_ohlcv.csv'))
-    # df = pd.read_csv('/kaggle/input/btcusd-test/BTCUSD_ohlcv.csv')
-    df = pd.read_csv('/kaggle/input/btcusd-test/BTC-ETH-1m.csv')
+    df = pd.read_csv('/kaggle/input/btcusd-test/BTCUSD_ohlcv.csv')
+    # df = pd.read_csv('/kaggle/input/btcusd-test/BTC-ETH-1m.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
     df = df.iloc[-10080:]
     df.sort_values('datetime', ascending=True, inplace=True)
