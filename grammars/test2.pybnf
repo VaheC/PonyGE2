@@ -10,9 +10,16 @@
 | df["'"low"'"].values.reshape(-1, 1)
 | df["'"volume"'"].values.reshape(-1, 1)
 
-<indicator> ::= MIN_CHANGE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlen=<int-const>).values
-| MA_DIFFERENCE(df=data, ShortLength=<int-const>, LongLength=<int-const>, Lag=<int-const>).values |
-| RSI(df=data, HistLength=<int-const>).values
+<indicator> ::= MIN_CHANGE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlen=<int-const>).values 
+| MA_DIFFERENCE(df=data, ShortLength=<int-const>, LongLength=<int-const>, Lag=<int-const>).values 
+| RSI(df=data, HistLength=<int-const>).values 
+| LINEAR_PER_ATR(df=data, HistLength=<int-const>, ATRlength=<int-const>).values 
+| QUADRATIC_PER_ATR(df=data, HistLength=<int-const>, ATRlength=<int-const>).values 
+| CUBIC_PER_ATR(df=data, HistLength=<int-const>, ATRlength=<int-const>).values 
+| STOCHASTIC_K(df=data, fastk_period=<int-const>, slowk_period=<int-const>, slowd_period=<int-const>).values 
+| STOCHASTIC_D(df=data, fastk_period=<int-const>, slowk_period=<int-const>, slowd_period=<int-const>).values 
+| PRICE_MOMENTUM(df=data, HistLength=<int-const>, StdDevLength=<int-const>).values 
+| ADX(df=data, HistLength=<int-const>).values
 
 <signal> ::= <value> <c-op> <var> | (<signal>) <log-op> (<signal>)
 | <var> <c-op> <var>
