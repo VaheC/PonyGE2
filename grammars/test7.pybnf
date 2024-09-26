@@ -1,0 +1,74 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{::}
+{:from numba import njit:}{::}
+{:@njit:}{::}
+{:def merge_pnl(arr1, arr2):{:out = np.zeros((len(arr1) + len(arr2))){::}idx = 1{::}for i in range(len(arr1) + len(arr2)):{::}{:if i % 2 == 0:{::}{:out[i] = arr1[int(i/2)]{::}:}:}{:else:{::}{:out[i] = arr2[i-idx]{::}idx += 1{::}:}:}return out:}:}{::}
+{:@njit:}{::}
+{:def get_drawdowns(arr):{:drawdowns = np.zeros((len(arr))){::}max = arr[0]{::}for i in range(1, len(drawdowns)-1):{::}{:if arr[i-1] > arr[i] and arr[i] < arr[i+1]:{::}{:min = arr[i]{::}drawdowns[i] = max - min:}:}{::}{:elif arr[i-1] < arr[i] and arr[i] > arr[i+1]:{::}{:max = arr[i]{::}:}:}return drawdowns:}:}{::}
+{:df = price_data.copy():}{::}
+{:for i in range(1, 6):{::}{:df[f"'"close_{i}"'"] = df["'"close"'"].shift(i){::}df[f"'"open_{i}"'"] = df["'"open"'"].shift(i){::}df[f"'"high_{i}"'"] = df["'"high"'"].shift(i){::}df[f"'"low_{i}"'"] = df["'"low"'"].shift(i){::}df[f"'"volume_{i}"'"] = df["'"volume"'"].shift(i){::}:}:}{::}
+{:df.dropna(inplace=True){::}df.reset_index(drop=True, inplace=True):}{::}
+{:df["'"buy"'"] = (<signal>).astype(int){::}df["'"sell"'"] = (<signal>).astype(int){::}df["'"signal"'"] = df["'"buy"'"] + df["'"sell"'"]{::}df["'"signal"'"] = df["'"signal"'"].apply(lambda x: 1 if x==1 else 0){::}df["'"sell"'"] = df["'"sell"'"] * (-1){::}df["'"signal"'"] = df["'"signal"'"] * df["'"sell"'"]{::}df["'"signal"'"] = df["'"signal"'"] + df["'"buy"'"]{::}df.drop(columns=["'"buy"'", "'"sell"'"], inplace=True):}{::}
+{:buy_idxs = []{::}sell_idxs = []{::}{::}is_buy = 0{::}is_sell = 0{::}{::}for i, row in enumerate(df.itertuples()):{::}{:if row.signal == 1 and is_buy == 0:{::}{:buy_idxs.append(i+1){::}is_buy = 1{::}is_sell = 0{::}:}:}{:elif row.signal == -1 and is_sell == 0:{::}{:sell_idxs.append(i+1){::}is_sell = 1{::}is_buy = 0:}:}{::}if len(buy_idxs) == 0 or len(sell_idxs) == 0:{::}{:return -999:}:}{::}
+{:buy_prices = df[df.index.isin(buy_idxs)]["'"btc_open"'"].values{::}sell_prices = df[df.index.isin(sell_idxs)]["'"btc_open"'"].values{::}{::}if buy_idxs[0] < sell_idxs[0]:{::}{:buy_pnl = np.sum(sell_prices - buy_prices){::}sell_pnl = np.sum(sell_prices[:-1] - buy_prices[1:]):}{::}else:{::}{:sell_pnl = np.sum(sell_prices - buy_prices){::}buy_pnl = np.sum(sell_prices[1:] - buy_prices[:-1]):}{::}total_pnl = buy_pnl + sell_pnl{::}{::}if buy_idxs[0] < sell_idxs[0]:{::}{:buy_arr = sell_prices - buy_prices{::}sell_arr = sell_prices[:-1] - buy_prices[1:]{::}all_arr = merge_pnl(buy_arr, sell_arr):}{::}else:{::}{:sell_arr = sell_prices - buy_prices{::}buy_arr = sell_prices[1:] - buy_prices[:-1]{::}all_arr = merge_pnl(sell_arr, buy_arr):}:}{::}{::}equity_curve_arr = np.cumsum(all_arr){::}{::}drawdowns = get_drawdowns(equity_curve_arr){::}{::}avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]){::}{::}fitness = total_pnl / avg_drawdown{::}if np.isnan(fitness):{::}{:return -999:}{::}return fitness:}:}
+
+<callf> ::= fitness = fun(data)
+
+<var> ::= df["'"close"'"].values.reshape(-1, 1) 
+| df["'"open"'"].values.reshape(-1, 1) 
+| df["'"high"'"].values.reshape(-1, 1) 
+| df["'"low"'"].values.reshape(-1, 1)
+| df["'"volume"'"].values.reshape(-1, 1)
+| df["'"close_1"'"].values.reshape(-1, 1) 
+| df["'"open_1"'"].values.reshape(-1, 1) 
+| df["'"high_1"'"].values.reshape(-1, 1) 
+| df["'"low_1"'"].values.reshape(-1, 1)
+| df["'"volume_1"'"].values.reshape(-1, 1)
+| df["'"close_2"'"].values.reshape(-1, 1) 
+| df["'"open_2"'"].values.reshape(-1, 1) 
+| df["'"high_2"'"].values.reshape(-1, 1) 
+| df["'"low_2"'"].values.reshape(-1, 1)
+| df["'"volume_2"'"].values.reshape(-1, 1)
+| df["'"close_3"'"].values.reshape(-1, 1) 
+| df["'"open_3"'"].values.reshape(-1, 1) 
+| df["'"high_3"'"].values.reshape(-1, 1) 
+| df["'"low_3"'"].values.reshape(-1, 1)
+| df["'"volume_3"'"].values.reshape(-1, 1)
+| df["'"close_4"'"].values.reshape(-1, 1) 
+| df["'"open_4"'"].values.reshape(-1, 1) 
+| df["'"high_4"'"].values.reshape(-1, 1) 
+| df["'"low_4"'"].values.reshape(-1, 1)
+| df["'"volume_4"'"].values.reshape(-1, 1)
+| df["'"close_5"'"].values.reshape(-1, 1) 
+| df["'"open_5"'"].values.reshape(-1, 1) 
+| df["'"high_5"'"].values.reshape(-1, 1) 
+| df["'"low_5"'"].values.reshape(-1, 1)
+| df["'"volume_5"'"].values.reshape(-1, 1)
+
+<signal> ::= <var> <c-op> <value> | (<signal>) <log-op> (<signal>)
+| <var> <c-op> <var>
+| <var> <mat-op> <var> <c-op> <value>
+| <var> <mat-op> <value> <c-op> <value>
+| <mat-f> <c-op> <mat-f>
+| <mat-f> <c-op> <value>
+| <mat-f> <mat-op> <mat-f> <c-op> <value>
+| <mat-f> <mat-op> <value> <c-op> <value>
+
+<value> ::= <int-const> | <real-const>
+
+<int-const> ::= <digit><digit><digit><digit><digit> 
+| <digit><digit> | <digit><digit><digit> 
+| <digit>0 | <digit><digit>0 | <digit>00 | <digit>0<digit>
+
+<digit> ::= | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<real-const> ::= 0.<int-const> | <int-const>.<int-const>
+
+<c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
+
+<mat-op> ::= + | - | * | / | // | % | **
+
+<log-op> ::= "&" | "|" 
+
+<mat-f> ::= np.log(<var>) | np.sin(<var>) | np.cos(<var>)
