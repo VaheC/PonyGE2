@@ -23,7 +23,7 @@ class max_fitness(base_ff):
         super().__init__()
     def evaluate(self, ind, **kwargs):
         p = ind.phenotype
-        print("\n" + p)
+        # print("\n" + p)
         # fitness = 0
         # for trial in range(50):
         self.test_data = generate_data()
