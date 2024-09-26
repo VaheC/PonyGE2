@@ -102,7 +102,10 @@ return fitness:}
 
 <value> ::= <int-const> | <real-const>
 
-<int-const> ::= <digit><digit><digit><digit><digit> | <digit><digit> | <digit><digit><digit> | <digit>0 | <digit><digit>0 | <digit>00 | <digit>0<digit>
+<int-const> ::= <digit><digit><digit><digit><digit> 
+| <digit><digit> | <digit><digit><digit> 
+| <digit>0 | <digit><digit>0 | <digit>00 | <digit>0<digit>
+
 <digit> ::= | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
 <real-const> ::= 0.<int-const> | <int-const>.<int-const>
