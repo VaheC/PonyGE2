@@ -4,7 +4,7 @@
 
 <callf> ::= fitness = fun(data)
 
-<signal> ::= RSI(df=data, HistLength=<int-const>).values <c-op> <int-const>0
+<signal> ::= RSI(df=data, HistLength=10).values <c-op> <int-const>0
 
 <int-const> ::= 2 | 3 | 7 | 8 
 
