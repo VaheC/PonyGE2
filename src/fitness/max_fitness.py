@@ -46,6 +46,7 @@ class max_fitness(base_ff):
             # else:
             #     fitness += (t1 - t0) * 1000
         except:
-            fitness = self.default_fitness
+            fitness = -404
+            # fitness = self.default_fitness
             # break
         return fitness
