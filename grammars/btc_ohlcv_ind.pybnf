@@ -99,6 +99,13 @@
 | indicators.STOCHASTIC_D(df=data, fastk_period=<int-const>, slowk_period=<int-const>, slowd_period=<int-const>).values 
 | indicators.PRICE_MOMENTUM(df=data, HistLength=<int-const>, StdDevLength=<int-const>).values 
 | indicators.ADX(df=data, HistLength=<int-const>).values
+| indicators.MIN_ADX(df=data, HistLength=<int-const>, MinLength=<int-const>).values
+| indicators.RESIDUAL_MIN_ADX(df=data, HistLength=<int-const>, MinLength=<int-const>).values
+| indicators.MAX_ADX(df=data, HistLength=<int-const>, MaxLength=<int-const>).values
+| indicators.RESIDUAL_MAX_ADX(df=data, HistLength=<int-const>, MaxLength=<int-const>).values
+| indicators.DELTA_ADX(df=data, HistLength=<int-const>,  DeltaLength=<int-const>).values
+| indicators.ACCEL_ADX(df=data, HistLength=<int-const>, DeltaLength=<int-const>).values
+| indicators.INTRADAY_INTENSITY(df=data, HistLength=<int-const>).values
 
 <signal> ::= <value> <c-op> <var> | (<signal>) <log-op> (<signal>)
 | <var> <c-op> <var>
