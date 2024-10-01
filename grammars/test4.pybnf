@@ -4,7 +4,7 @@
 {:import pandas as pd:}{::}
 {:import numpy as np:}{::}
 {:from fitness.indicators import indicators:}{::}
-{:from numba import njit:}{::}
+{:from numba import njit:}{::}{::}
 {:@njit:}{::}
 {:def merge_pnl(arr1, arr2)::}{::}
 {:{:out = np.zeros((len(arr1) + len(arr2))):}:}{::}
@@ -68,8 +68,8 @@
 {:{:sell_idxs = sell_idxs[:-(len(sell_idxs) - len(buy_idxs))]:}:}{::}
 {:if len(buy_idxs) == 0 or len(sell_idxs) == 0::}{::}
 {:{:return 999:}:}{::}{::}
-{:buy_prices = df[df.index.isin(buy_idxs)]["'"open"'"].values:}{::}
-{:sell_prices = df[df.index.isin(sell_idxs)]["'"open"'"].values:}{::}{::}
+{:buy_prices = df[df.index.isin(buy_idxs)]["'"btc_open"'"].values:}{::}
+{:sell_prices = df[df.index.isin(sell_idxs)]["'"btc_open"'"].values:}{::}{::}
 {:if buy_idxs[0] < sell_idxs[0]::}{::}
 {:{:buy_pnl = np.sum(sell_prices - buy_prices):}:}{::}
 {:{:sell_pnl = np.sum(sell_prices[:-1] - buy_prices[1:]):}:}{::}
