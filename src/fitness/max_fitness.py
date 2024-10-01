@@ -11,8 +11,10 @@ import os
 
 def generate_data():
     # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\BTCUSD_ohlcv.csv'))
+    # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\BTC-ETH-1m.csv'))
     df = pd.read_csv('/kaggle/input/btcusd-test/BTCUSD_ohlcv.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/BTC-ETH-1m.csv')
+    # df = pd.read_csv('/kaggle/input/btcusd-test/all_data_1min.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
     df = df.iloc[-10080:]
     df.sort_values('datetime', ascending=True, inplace=True)
@@ -35,23 +37,6 @@ class max_fitness(base_ff):
             exec(p, d)
             t1 = time.time()
             fitness = d['fitness']
-            if os.path.exists('ge_results.csv'):
-                temp_df = pd.read_csv('ge_results.csv')
-                temp_df.loc[-1] = [
-                    re.findall(r"df\[\'buy\'\] = \((.*)\)\.astype\(int\)", p)[0],
-                    re.findall(r"df\[\'sell\'\] = \((.*)\)\.astype\(int\)", p)[0],
-                    fitness
-                ]
-                temp_df.index = temp_df.index + 1
-                temp_df = temp_df.sort_index()
-                temp_df.to_csv('ge_results.csv', index=False)
-            else:
-                temp_dict = {}
-                temp_dict['buy'] = [re.findall(r"df\[\'buy\'\] = \((.*)\)\.astype\(int\)", p)[0]]
-                temp_dict['sell'] = [re.findall(r"df\[\'sell\'\] = \((.*)\)\.astype\(int\)", p)[0]]
-                temp_dict['fitness'] = fitness
-                temp_df = pd.DataFrame(temp_dict)
-                temp_df.to_csv('ge_results.csv', index=False)
             # fitness += len(p)
             # v = abs(m - guess)
             # if v <= 10**6:
@@ -65,7 +50,24 @@ class max_fitness(base_ff):
             # else:
             #     fitness += (t1 - t0) * 1000
         except:
-            fitness = -404
+            fitness = 404
             # fitness = self.default_fitness
             # break
+        if os.path.exists('ge_results.csv'):
+            temp_df = pd.read_csv('ge_results.csv')
+            temp_df.loc[-1] = [
+                re.findall(r"df\[\'buy\'\] = \((.*)\)\.astype\(int\)", p)[0],
+                re.findall(r"df\[\'sell\'\] = \((.*)\)\.astype\(int\)", p)[0],
+                fitness
+            ]
+            temp_df.index = temp_df.index + 1
+            temp_df = temp_df.sort_index()
+            temp_df.to_csv('ge_results.csv', index=False)
+        else:
+            temp_dict = {}
+            temp_dict['buy'] = [re.findall(r"df\[\'buy\'\] = \((.*)\)\.astype\(int\)", p)[0]]
+            temp_dict['sell'] = [re.findall(r"df\[\'sell\'\] = \((.*)\)\.astype\(int\)", p)[0]]
+            temp_dict['fitness'] = fitness
+            temp_df = pd.DataFrame(temp_dict)
+            temp_df.to_csv('ge_results.csv', index=False)
         return fitness
