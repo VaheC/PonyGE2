@@ -103,6 +103,63 @@
 | indicators.DELTA_ADX(df=data, HistLength=<int-const>,  DeltaLength=<int-const>).values
 | indicators.ACCEL_ADX(df=data, HistLength=<int-const>, DeltaLength=<int-const>).values
 | indicators.INTRADAY_INTENSITY(df=data, HistLength=<int-const>).values
+| indicators.DELTA_INTRADAY_INTENSITY(df=data, HistLength=<int-const>, DeltaLength=<int-const>).values
+| indicators.REACTIVITY(df=data, HistLength=<int-const>).values
+| indicators.DELTA_REACTIVITY(df=data, HistLength=<int-const>, DeltaDist=<int-const>).values
+| indicators.MIN_REACTIVITY(df=data, HistLength=<int-const>, Dist=<int-const>).values
+| indicators.MAX_REACTIVITY(df=data, HistLength=<int-const>, Dist=<int-const>).values
+| indicators.CLOSE_TO_CLOSE(df=data).values
+| indicators.N_DAY_HIGH(df=data, HistLength=<int-const>).values
+| indicators.N_DAY_LOW(df=data, HistLength=<int-const>).values
+| indicators.CLOSE_MINUS_MOVING_AVERAGE(df=data, HistLen=<int-const>, ATRlen=<int-const>).values
+| indicators.LINEAR_DEVIATION(df=data, HistLength=<int-const>).values
+| indicators.QUADRATIC_DEVIATION(df=data, HistLength=<int-const>).values
+| indicators.CUBIC_DEVIATION(df=data, HistLength=<int-const>).values
+| indicators.DETRENDED_RSI(df=data, DetrendedLength=<int-const>, DetrenderLength=<int-const>, Lookback=<int-const>).values
+| indicators.ABS_PRICE_CHANGE_OSCILLATOR(df=data, ShortLen=<int-const>, Multiplier=<real-const>).values
+| indicators.PRICE_VARIANCE_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.MIN_PRICE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlength=<int-const>).values
+| indicators.MAX_PRICE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlength=<int-const>).values
+| indicators.CHANGE_VARIANCE_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.MIN_CHANGE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlen=<int-const>).values
+| indicators.MAX_CHANGE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlength=<int-const>).values
+| indicators.ATR_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.DELTA_PRICE_VARIANCE_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.DELTA_CHANGE_VARIANCE_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.DELTA_ATR_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.BOLLINGER_WIDTH(df=data, HistLength=<int-const>).values
+| indicators.DELTA_BOLLINGER_WIDTH(df=data, HistLength=<int-const>, DeltaLength=<int-const>).values
+| indicators.N_DAY_NARROWER(df=data, HistLength=<int-const>).values
+| indicators.N_DAY_WIDER(df=data, HistLength=<int-const>).values
+| indicators.PRICE_SKEWNESS(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.CHANGE_SKEWNESS(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.PRICE_KURTOSIS(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.CHANGE_KURTOSIS(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.DELTA_PRICE_SKEWNESS(df=data, HistLen=<int-const>, Multiplier=<real-const>, DeltaLen=<int-const>).values
+| indicators.DELTA_CHANGE_SKEWNESS(df=data, HistLen=<int-const>, Multiplier=<real-const>, DeltaLen=<int-const>).values
+| indicators.DELTA_PRICE_KURTOSIS(df=data, HistLen=<int-const>, Multiplier=<real-const>, DeltaLen=<int-const>).values
+| indicators.DELTA_CHANGE_KURTOSIS(df=data, HistLen=<int-const>, Multiplier=<real-const>, DeltaLen=<int-const>).values
+| indicators.VOLUME_MOMENTUM(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.DELTA_VOLUME_MOMENTUM(df=data, HistLen=<int-const>, Multiplier=<real-const>, DeltaLen=<int-const>).values
+| indicators.VOLUME_WEIGHTED_MA_OVER_MA(df=data, HistLength=<int-const>).values
+| indicators.DIFF_VOLUME_WEIGHTED_MA_OVER_MA(df=data, ShortDist=<int-const>, LongDist=<int-const>).values
+| indicators.PRICE_VOLUME_FIT(df=data, HistLength=<int-const>).values
+| indicators.DIFF_PRICE_VOLUME_FIT(df=data, ShortDist=<int-const>, LongDist=<int-const>).values
+| indicators.DELTA_PRICE_VOLUME_FIT(df=data, HistLength=<int-const>, DeltaDist=<int-const>).values
+| indicators.ON_BALANCE_VOLUME(df=data, HistLength=<int-const>).values
+| indicators.DELTA_ON_BALANCE_VOLUME(df=data, HistLength=<int-const>, DeltaDist=<int-const>).values
+| indicators.POSITIVE_VOLUME_INDICATOR(df=data, HistLength=<int-const>).values
+| indicators.DELTA_POSITIVE_VOLUME_INDICATOR(df=data, HistLength=<int-const>, DeltaDist=<int-const>).values
+| indicators.NEGATIVE_VOLUME_INDICATOR(df=data, HistLength=<int-const>).values
+| indicators.DELTA_NEGATIVE_VOLUME_INDICATOR(df=data, HistLength=<int-const>, DeltaDist=<int-const>).values
+| indicators.PRODUCT_PRICE_VOLUME(df=data, HistLength=<int-const>).values
+| indicators.SUM_PRICE_VOLUME(df=data, HistLength=<int-const>).values
+| indicators.DELTA_PRODUCT_PRICE_VOLUME(df=data, HistLen=<int-const>, DeltaDist=<int-const>).values
+| indicators.DELTA_SUM_PRICE_VOLUME(df=data, HistLen=<int-const>, DeltaDist=<int-const>).values
+| indicators.PRICE_ENTROPY(df=data, WordLength=<int-const>).values
+| indicators.VOLUME_ENTROPY(df=data, WordLength=<int-const>).values
+| indicators.PRICE_MUTUAL_INFORMATION(df=data, WordLength=<int-const>).values
+| indicators.VOLUME_MUTUAL_INFORMATION(df=data, WordLength=<int-const>).values
 
 <signal> ::= <value> <c-op> <var> | (<signal>) <log-op> (<signal>)
 | <var> <c-op> <var>
