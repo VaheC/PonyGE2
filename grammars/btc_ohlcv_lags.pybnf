@@ -5,9 +5,10 @@
 {:import numpy as np:}{::}
 {:from fitness.indicators import indicators:}{::}
 {:from numba import njit:}{::}{::}
-{:COMMISSION = 0.003:}{::}
+{:COMMISSION = 0.015:}{::}
+{:SLIPPAGE = 0.00005:}{::}
 {:AVAILABLE_CAPITAL = 700000:}{::}
-{:INVESTMENT = AVAILABLE_CAPITAL * 0.5:}{::}{::}
+{:TRADE_SIZE = 0.5:}{::}{::}
 {:@njit:}{::}
 {:def merge_pnl(arr1, arr2)::}{::}
 {:{:out = np.zeros((len(arr1) + len(arr2))):}:}{::}
@@ -30,6 +31,19 @@
 {:{:{:elif arr[i-1] < arr[i] and arr[i] > arr[i+1]::}:}:}{::}
 {:{:{:{:max = arr[i]:}:}:}:}{::}
 {:{:return drawdowns:}:}{::}{::}
+{:@njit:}{::}
+{:def get_pnl(trade_close_prices, trade_open_prices, commission, slippage, init_inv, trade_size, is_buy)::}{::}
+{:{:pnl_list = np.zeros(len(trade_close_prices)):}:}{::}
+{:{:for i in range(len(trade_close_prices))::}:}{::}
+{:{:{:temp_n_assets = int(init_inv * trade_size / trade_open_prices[i]):}:}:}{::}
+{:{:{:if is_buy == 1::}:}:}{::}
+{:{:{:{:temp_pnl = temp_n_assets * (trade_close_prices[i] - trade_open_prices[i] * (1 + slippage)):}:}:}:}{::}
+{:{:{:else::}:}:}{::}
+{:{:{:{:temp_pnl = -temp_n_assets * (trade_close_prices[i] - trade_open_prices[i] * (1 - slippage)):}:}:}:}{::}
+{:{:{:temp_pnl = temp_pnl * (1 - commission):}:}:}{::}
+{:{:{:init_inv += temp_pnl:}:}:}{::}
+{:{:{:pnl_list[i] = temp_pnl:}:}:}{::}
+{:{:return pnl_list:}:}{::}{::}
 {:df = price_data.copy():}{::}
 {:for i in range(1, 6)::}{::}
 {:{:df[f"'"close_{i}"'"] = df["'"close"'"].shift(i):}:}{::}
@@ -69,16 +83,16 @@
 {:buy_prices = df[df.index.isin(buy_idxs)]["'"open"'"].values:}{::}
 {:sell_prices = df[df.index.isin(sell_idxs)]["'"open"'"].values:}{::}{::}
 {:if buy_idxs[0] < sell_idxs[0]::}{::}
-{:{:buy_pnl = np.sum((sell_prices - buy_prices) * (1 - COMMISSION)):}:}{::}
-{:{:sell_pnl = np.sum((sell_prices[:-1] - buy_prices[1:]) * (1 - COMMISSION)):}:}{::}
-{:{:buy_arr = (sell_prices - buy_prices) * (1 - COMMISSION):}:}{::}
-{:{:sell_arr = (sell_prices[:-1] - buy_prices[1:]) * (1 - COMMISSION):}:}{::}
+{:{:buy_arr = get_pnl(sell_prices, buy_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1):}:}
+{:{:buy_pnl = np.sum(buy_arr):}:}{::}
+{:{:sell_arr = get_pnl(buy_prices[1:], sell_prices[:-1], COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0):}:}{::}
+{:{:sell_pnl = np.sum(sell_arr):}:}{::}
 {:{:all_arr = merge_pnl(buy_arr, sell_arr):}:}{::}
 {:else::}{::}
-{:{:sell_pnl = np.sum((sell_prices - buy_prices) * (1 - COMMISSION)):}:}{::}
-{:{:buy_pnl = np.sum((sell_prices[1:] - buy_prices[:-1]) * (1 - COMMISSION)):}:}{::}
-{:{:sell_arr = (sell_prices - buy_prices) * (1 - COMMISSION):}:}{::}
-{:{:buy_arr = (sell_prices[1:] - buy_prices[:-1]) * (1 - COMMISSION):}:}{::}
+{:{:sell_arr = get_pnl(buy_prices, sell_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0):}:}{::}
+{:{:sell_pnl = np.sum(sell_arr):}:}{::}
+{:{:buy_arr = get_pnl(sell_prices[1:], buy_prices[:-1], COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1):}:}
+{:{:buy_pnl = np.sum(buy_arr):}:}{::}
 {:{:all_arr = merge_pnl(sell_arr, buy_arr):}:}{::}{::}
 {:total_pnl = buy_pnl + sell_pnl:}{::}
 {:equity_curve_arr = np.cumsum(all_arr):}{::}
