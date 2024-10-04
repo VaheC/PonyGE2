@@ -1,6 +1,6 @@
 <fc> ::= <deff>{::}<callf>
 
-<deff> ::= def fun(price_data):
+<deff> ::= def fun(data):
 {:import pandas as pd:}{::}
 {:import numpy as np:}{::}
 {:from fitness.indicators import indicators:}{::}
@@ -44,7 +44,7 @@
 {:{:{:init_inv += temp_pnl:}:}:}{::}
 {:{:{:pnl_list[i] = temp_pnl:}:}:}{::}
 {:{:return pnl_list:}:}{::}{::}
-{:df = price_data.copy():}{::}
+{:df = data.copy():}{::}
 {:df["'"buy"'"] = (<signal>).astype(int):}{::}
 {:df["'"sell"'"] = (<signal>).astype(int):}{::}
 {:df["'"signal"'"] = df["'"buy"'"] + df["'"sell"'"]:}{::}
