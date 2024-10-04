@@ -1,0 +1,145 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):
+{:import pandas as pd:}{::}
+{:import numpy as np:}{::}
+{:from fitness.indicators import indicators:}{::}
+{:from numba import njit:}{::}
+{:COMMISSION = 0.003:}{::}
+{:AVAILABLE_CAPITAL = 700000:}{::}
+{:INVESTMENT = AVAILABLE_CAPITAL * 0.5:}{::}{::}
+{:@njit:}{::}
+{:def merge_pnl(arr1, arr2)::}{::}
+{:{:out = np.zeros((len(arr1) + len(arr2))):}:}{::}
+{:{:idx = 1:}:}{::}
+{:{:for i in range(len(arr1) + len(arr2))::}:}{::}
+{:{:{:if i % 2 == 0::}:}:}{::}
+{:{:{:{:out[i] = arr1[int(i/2)]:}:}:}:}{::}
+{:{:{:else::}:}:}{::}
+{:{:{:{:out[i] = arr2[i-idx]:}:}:}:}{::}
+{:{:{:idx += 1:}:}:}{::}
+{:{:return out:}:}{::}{::}
+{:@njit:}{::}
+{:def get_drawdowns(arr)::}{::}
+{:{:drawdowns = np.zeros((len(arr))):}:}{::}
+{:{:max = arr[0]:}:}{::}
+{:{:for i in range(1, len(drawdowns)-1)::}:}{::}
+{:{:{:if arr[i-1] > arr[i] and arr[i] < arr[i+1]::}:}:}{::}
+{:{:{:{:min = arr[i]:}:}:}:}{::}
+{:{:{:{:drawdowns[i] = max - min:}:}:}:}{::}
+{:{:{:elif arr[i-1] < arr[i] and arr[i] > arr[i+1]::}:}:}{::}
+{:{:{:{:max = arr[i]:}:}:}:}{::}
+{:{:return drawdowns:}:}{::}{::}
+{:df = price_data.copy():}{::}
+{:df["'"buy"'"] = (<signal>).astype(int):}{::}
+{:df["'"sell"'"] = (<signal>).astype(int):}{::}
+{:df["'"signal"'"] = df["'"buy"'"] + df["'"sell"'"]:}{::}
+{:df["'"signal"'"] = df["'"signal"'"].apply(lambda x: 1 if x==1 else 0):}{::}
+{:df["'"sell"'"] = df["'"sell"'"] * (-1):}{::}
+{:df["'"signal"'"] = df["'"signal"'"] * df["'"sell"'"]:}{::}
+{:df["'"signal"'"] = df["'"signal"'"] + df["'"buy"'"]:}{::}
+{:df.drop(columns=["'"buy"'", "'"sell"'"], inplace=True):}{::}{::}
+{:buy_idxs = []:}{::}
+{:sell_idxs = []:}{::}
+{:is_buy = 0:}{::}
+{:is_sell = 0:}{::}
+{:for i, row in enumerate(df.itertuples())::}{::}
+{:{:if row.signal == 1 and is_buy == 0::}:}{::}
+{:{:{:buy_idxs.append(i+1):}:}:}{::}
+{:{:{:is_buy = 1:}:}:}{::}
+{:{:{:is_sell = 0:}:}:}{::}
+{:{:elif row.signal == -1 and is_sell == 0::}:}{::}
+{:{:{:sell_idxs.append(i+1):}:}:}{::}
+{:{:{:is_sell = 1:}:}:}{::}
+{:{:{:is_buy = 0:}:}:}{::}
+{:if len(buy_idxs) > len(sell_idxs)::}{::}
+{:{:buy_idxs = buy_idxs[:-(len(buy_idxs) - len(sell_idxs))]:}:}{::}
+{:elif len(buy_idxs) < len(sell_idxs)::}{::}
+{:{:sell_idxs = sell_idxs[:-(len(sell_idxs) - len(buy_idxs))]:}:}{::}
+{:if len(buy_idxs) == 0 or len(sell_idxs) == 0::}{::}
+{:{:return 999:}:}{::}{::}
+{:buy_prices = df[df.index.isin(buy_idxs)]["'"open"'"].values:}{::}
+{:sell_prices = df[df.index.isin(sell_idxs)]["'"open"'"].values:}{::}{::}
+{:if buy_idxs[0] < sell_idxs[0]::}{::}
+{:{:buy_pnl = np.sum((sell_prices - buy_prices) * (1 - COMMISSION)):}:}{::}
+{:{:sell_pnl = np.sum((sell_prices[:-1] - buy_prices[1:]) * (1 - COMMISSION)):}:}{::}
+{:{:buy_arr = (sell_prices - buy_prices) * (1 - COMMISSION):}:}{::}
+{:{:sell_arr = (sell_prices[:-1] - buy_prices[1:]) * (1 - COMMISSION):}:}{::}
+{:{:all_arr = merge_pnl(buy_arr, sell_arr):}:}{::}
+{:else::}{::}
+{:{:sell_pnl = np.sum((sell_prices - buy_prices) * (1 - COMMISSION)):}:}{::}
+{:{:buy_pnl = np.sum((sell_prices[1:] - buy_prices[:-1]) * (1 - COMMISSION)):}:}{::}
+{:{:sell_arr = (sell_prices - buy_prices) * (1 - COMMISSION):}:}{::}
+{:{:buy_arr = (sell_prices[1:] - buy_prices[:-1]) * (1 - COMMISSION):}:}{::}
+{:{:all_arr = merge_pnl(sell_arr, buy_arr):}:}{::}{::}
+{:total_pnl = buy_pnl + sell_pnl:}{::}
+{:equity_curve_arr = np.cumsum(all_arr):}{::}
+{:drawdowns = get_drawdowns(equity_curve_arr):}{::}
+{:avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]):}{::}
+{:fitness = total_pnl / avg_drawdown:}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:return -fitness:}
+
+<callf> ::= fitness = fun(data)
+
+<var> ::= <indicator>
+
+<indicator> ::= indicators.MIN_CHANGE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlen=<int-const>).values 
+| indicators.MA_DIFFERENCE(df=data, ShortLength=<int-const>, LongLength=<int-const>, Lag=<int-const>).values 
+| indicators.RSI(df=data, HistLength=<int-const>).values 
+| indicators.LINEAR_PER_ATR(df=data, HistLength=<int-const>, ATRlength=<int-const>).values 
+| indicators.QUADRATIC_PER_ATR(df=data, HistLength=<int-const>, ATRlength=<int-const>).values 
+| indicators.CUBIC_PER_ATR(df=data, HistLength=<int-const>, ATRlength=<int-const>).values 
+| indicators.STOCHASTIC_K(df=data, fastk_period=<int-const>, slowk_period=<int-const>, slowd_period=<int-const>).values 
+| indicators.STOCHASTIC_D(df=data, fastk_period=<int-const>, slowk_period=<int-const>, slowd_period=<int-const>).values 
+| indicators.PRICE_MOMENTUM(df=data, HistLength=<int-const>, StdDevLength=<int-const>).values 
+| indicators.ADX(df=data, HistLength=<int-const>).values
+| indicators.INTRADAY_INTENSITY(df=data, HistLength=<int-const>).values
+| indicators.DELTA_INTRADAY_INTENSITY(df=data, HistLength=<int-const>, DeltaLength=<int-const>).values
+| indicators.REACTIVITY(df=data, HistLength=<int-const>).values
+| indicators.DELTA_REACTIVITY(df=data, HistLength=<int-const>, DeltaDist=<int-const>).values
+| indicators.MIN_REACTIVITY(df=data, HistLength=<int-const>, Dist=<int-const>).values
+| indicators.MAX_REACTIVITY(df=data, HistLength=<int-const>, Dist=<int-const>).values
+| indicators.CLOSE_TO_CLOSE(df=data).values
+| indicators.N_DAY_HIGH(df=data, HistLength=<int-const>).values
+| indicators.N_DAY_LOW(df=data, HistLength=<int-const>).values
+| indicators.CLOSE_MINUS_MOVING_AVERAGE(df=data, HistLen=<int-const>, ATRlen=<int-const>).values
+| indicators.DETRENDED_RSI(df=data, DetrendedLength=<int-const>, DetrenderLength=<int-const>, Lookback=<int-const>).values
+| indicators.ABS_PRICE_CHANGE_OSCILLATOR(df=data, ShortLen=<int-const>, Multiplier=<real-const>).values
+| indicators.PRICE_VARIANCE_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.MIN_PRICE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlength=<int-const>).values
+| indicators.MAX_PRICE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlength=<int-const>).values
+| indicators.CHANGE_VARIANCE_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.MIN_CHANGE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlen=<int-const>).values
+| indicators.MAX_CHANGE_VARIANCE_RATIO(df=data, HistLen=<int-const>, Mult=<real-const>, Mlength=<int-const>).values
+| indicators.ATR_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.DELTA_ATR_RATIO(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.BOLLINGER_WIDTH(df=data, HistLength=<int-const>).values
+| indicators.DELTA_BOLLINGER_WIDTH(df=data, HistLength=<int-const>, DeltaLength=<int-const>).values
+| indicators.N_DAY_NARROWER(df=data, HistLength=<int-const>).values
+| indicators.N_DAY_WIDER(df=data, HistLength=<int-const>).values
+| indicators.PRICE_SKEWNESS(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.CHANGE_SKEWNESS(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.PRICE_KURTOSIS(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.VOLUME_MOMENTUM(df=data, HistLength=<int-const>, Multiplier=<real-const>).values
+| indicators.DELTA_VOLUME_MOMENTUM(df=data, HistLen=<int-const>, Multiplier=<real-const>, DeltaLen=<int-const>).values
+| indicators.POSITIVE_VOLUME_INDICATOR(df=data, HistLength=<int-const>).values
+| indicators.NEGATIVE_VOLUME_INDICATOR(df=data, HistLength=<int-const>).values
+
+<signal> ::= <value> <c-op> <var> | (<signal>) <log-op> (<signal>)
+| <var> <c-op> <var>
+| <var> <mat-op> <var> <c-op> <value>
+
+<value> ::= <int-const> | <real-const>
+
+<int-const> ::= <int-const><int-const>
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<real-const> ::= 0.<int-const> | <int-const>.<int-const>
+
+<c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
+
+<mat-op> ::= + | - | * | / | // | % 
+
+<log-op> ::= "&" | "|" 
