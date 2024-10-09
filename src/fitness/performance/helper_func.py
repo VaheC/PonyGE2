@@ -77,3 +77,13 @@ def trading_signals(buy_signal, sell_signal):
     elif len(buy_idxs) < len(sell_idxs):
         sell_idxs = sell_idxs[:-(len(sell_idxs) - len(buy_idxs))]
     return buy_idxs, sell_idxs
+
+@njit(cache=True)
+def get_lag(prices, lag=1):
+    n = len(prices)
+    result = np.full(n, -999, dtype=np.float64)  # Initialize with -999
+
+    for i in range(lag, n):
+        result[i] = prices[i - lag]
+
+    return result
