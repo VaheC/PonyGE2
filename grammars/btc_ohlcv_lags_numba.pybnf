@@ -1,11 +1,6 @@
 <fc> ::= <deff>{::}<callf>
 
-<deff> ::= open_prices = price_data["'"open"'"]{::}
-close_prices = price_data["'"close"'"]{::}
-high_prices = price_data["'"high"'"]{::}
-low_prices = price_data["'"low"'"]{::}
-volume = price_data["'"volume"'"]{::}
-def fun(open_prices, close_prices, high_prices, low_prices, volume):{::}
+<deff> ::= def fun(price_data):{::}
 {:import pandas as pd:}{::}
 {:import numpy as np:}{::}
 {:from fitness.indicators import numba_indicators:}{::}
@@ -21,6 +16,7 @@ def fun(open_prices, close_prices, high_prices, low_prices, volume):{::}
 {:{:return 999:}:}{::}{::}
 {:buy_idxs = np.array(buy_idxs):}{::}
 {:sell_idxs = np.array(sell_idxs):}{::}
+{:open_prices = price_data["'"open"'"]:}{::}
 {:buy_prices = open_prices[np.isin(np.arange(len(open_prices)), buy_idxs)]:}{::}
 {:sell_prices = open_prices[np.isin(np.arange(len(open_prices)), sell_idxs)]:}{::}
 {:if buy_idxs[0] < sell_idxs[0]::}{::}
@@ -48,38 +44,38 @@ def fun(open_prices, close_prices, high_prices, low_prices, volume):{::}
 {:{:return 999:}:}{::}
 {:return -fitness:}
 
-<callf> ::= fitness = fun(open_prices, close_prices, high_prices, low_prices, volume)
+<callf> ::= fitness = fun(price_data)
 
-<var> ::= close_prices[MAX_LAG:]
-| open_prices[MAX_LAG:]
-| high_prices[MAX_LAG:]
-| low_prices[MAX_LAG:]
-| volume[MAX_LAG:]
-| get_lag(close_prices, lag=1)[MAX_LAG:]
-| get_lag(open_prices, lag=1)[MAX_LAG:]
-| get_lag(high_prices, lag=1)[MAX_LAG:]
-| get_lag(low_prices, lag=1)[MAX_LAG:]
-| get_lag(volume, lag=1)[MAX_LAG:]
-| get_lag(close_prices, lag=2)[MAX_LAG:]
-| get_lag(open_prices, lag=2)[MAX_LAG:]
-| get_lag(high_prices, lag=2)[MAX_LAG:]
-| get_lag(low_prices, lag=2)[MAX_LAG:]
-| get_lag(volume, lag=2)[MAX_LAG:]
-| get_lag(close_prices, lag=3)[MAX_LAG:]
-| get_lag(open_prices, lag=3)[MAX_LAG:]
-| get_lag(high_prices, lag=3)[MAX_LAG:]
-| get_lag(low_prices, lag=3)[MAX_LAG:]
-| get_lag(volume, lag=3)[MAX_LAG:]
-| get_lag(close_prices, lag=4)[MAX_LAG:]
-| get_lag(open_prices, lag=4)[MAX_LAG:]
-| get_lag(high_prices, lag=4)[MAX_LAG:]
-| get_lag(low_prices, lag=4)[MAX_LAG:]
-| get_lag(volume, lag=4)[MAX_LAG:]
-| get_lag(close_prices, lag=5)[MAX_LAG:]
-| get_lag(open_prices, lag=5)[MAX_LAG:]
-| get_lag(high_prices, lag=5)[MAX_LAG:]
-| get_lag(low_prices, lag=5)[MAX_LAG:]
-| get_lag(volume, lag=5)[MAX_LAG:]
+<var> ::= price_data["'"close"'"][MAX_LAG:]
+| price_data["'"open"'"][MAX_LAG:]
+| price_data["'"high"'"][MAX_LAG:]
+| price_data["'"low"'"][MAX_LAG:]
+| price_data["'"volume"'"][MAX_LAG:]
+| get_lag(price_data["'"close"'"], lag=1)[MAX_LAG:]
+| get_lag(price_data["'"open"'"], lag=1)[MAX_LAG:]
+| get_lag(price_data["'"high"'"], lag=1)[MAX_LAG:]
+| get_lag(price_data["'"low"'"], lag=1)[MAX_LAG:]
+| get_lag(price_data["'"volume"'"], lag=1)[MAX_LAG:]
+| get_lag(price_data["'"close"'"], lag=2)[MAX_LAG:]
+| get_lag(price_data["'"open"'"], lag=2)[MAX_LAG:]
+| get_lag(price_data["'"high"'"], lag=2)[MAX_LAG:]
+| get_lag(price_data["'"low"'"], lag=2)[MAX_LAG:]
+| get_lag(price_data["'"volume"'"], lag=2)[MAX_LAG:]
+| get_lag(price_data["'"close"'"], lag=3)[MAX_LAG:]
+| get_lag(price_data["'"open"'"], lag=3)[MAX_LAG:]
+| get_lag(price_data["'"high"'"], lag=3)[MAX_LAG:]
+| get_lag(price_data["'"low"'"], lag=3)[MAX_LAG:]
+| get_lag(price_data["'"volume"'"], lag=3)[MAX_LAG:]
+| get_lag(price_data["'"close"'"], lag=4)[MAX_LAG:]
+| get_lag(price_data["'"open"'"], lag=4)[MAX_LAG:]
+| get_lag(price_data["'"high"'"], lag=4)[MAX_LAG:]
+| get_lag(price_data["'"low"'"], lag=4)[MAX_LAG:]
+| get_lag(price_data["'"volume"'"], lag=4)[MAX_LAG:]
+| get_lag(price_data["'"close"'"], lag=5)[MAX_LAG:]
+| get_lag(price_data["'"open"'"], lag=5)[MAX_LAG:]
+| get_lag(price_data["'"high"'"], lag=5)[MAX_LAG:]
+| get_lag(price_data["'"low"'"], lag=5)[MAX_LAG:]
+| get_lag(price_data["'"volume"'"], lag=5)[MAX_LAG:]
 
 <signal> ::= <var> <c-op> <value> | (<signal>) <log-op> (<signal>)
 | <var> <c-op> <var>

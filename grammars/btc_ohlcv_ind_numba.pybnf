@@ -1,11 +1,6 @@
 <fc> ::= <deff>{::}<callf>
 
-<deff> ::= open_prices = price_data["'"open"'"]{::}
-close_prices = price_data["'"close"'"]{::}
-high_prices = price_data["'"high"'"]{::}
-low_prices = price_data["'"low"'"]{::}
-volume = price_data["'"volume"'"]{::}
-def fun(open_prices, close_prices, high_prices, low_prices, volume):{::}
+<deff> ::= def fun(price_data):{::}
 {:import pandas as pd:}{::}
 {:import numpy as np:}{::}
 {:from fitness.indicators import numba_indicators:}{::}
@@ -20,6 +15,7 @@ def fun(open_prices, close_prices, high_prices, low_prices, volume):{::}
 {:{:return 999:}:}{::}{::}
 {:buy_idxs = np.array(buy_idxs):}{::}
 {:sell_idxs = np.array(sell_idxs):}{::}
+{:open_prices = price_data["'"open"'"]:}{::}
 {:buy_prices = open_prices[np.isin(np.arange(len(open_prices)), buy_idxs)]:}{::}
 {:sell_prices = open_prices[np.isin(np.arange(len(open_prices)), sell_idxs)]:}{::}
 {:if buy_idxs[0] < sell_idxs[0]::}{::}
@@ -47,99 +43,99 @@ def fun(open_prices, close_prices, high_prices, low_prices, volume):{::}
 {:{:return 999:}:}{::}
 {:return -fitness:}
 
-<callf> ::= fitness = fun(open_prices, close_prices, high_prices, low_prices, volume)
+<callf> ::= fitness = fun(price_data)
 
-<var> ::= <indicator> | close_prices 
-| open_prices 
-| high_prices 
-| low_prices
-| volume
+<var> ::= <indicator> | price_data["'"close"'"] 
+| price_data["'"open"'"] 
+| price_data["'"high"'"] 
+| price_data["'"low"'"]
+| price_data["'"volume"'"]
 
-<indicator> ::= numba_indicators.moving_average(prices=close_prices, window=<int-const>)
-| numba_indicators.exponential_moving_average(prices=close_prices, window=<int-const>) 
-| numba_indicators.relative_strength_index(prices=close_prices, window=<int-const>)
-| numba_indicators.macd(prices=close_prices, short_window=<int-const>, long_window=<int-const>, signal_window=<int-const>)[0]
-| numba_indicators.macd(prices=close_prices, short_window=<int-const>, long_window=<int-const>, signal_window=<int-const>)[1]
-| numba_indicators.macd(prices=close_prices, short_window=<int-const>, long_window=<int-const>, signal_window=<int-const>)[2]
-| numba_indicators.bollinger_bands(prices=close_prices, window=<int-const>, num_std_dev=<int-const>)[0]
-| numba_indicators.bollinger_bands(prices=close_prices, window=<int-const>, num_std_dev=<int-const>)[1]
-| numba_indicators.bollinger_bands(prices=close_prices, window=<int-const>, num_std_dev=<int-const>)[2]
-| numba_indicators.momentum(prices=close_prices, window=<int-const>)
-| numba_indicators.stochastic_oscillator(prices=close_prices, window=<int-const>)
-| numba_indicators.average_true_range(high=high_prices, low=low_prices, close=close_prices, window=<int-const>) 
-| numba_indicators.moving_average_difference(prices=close_prices, short_window=<int-const>, long_window=<int-const>)
-| numba_indicators.linear_perc_atr(high=high_prices, low=low_prices, close=close_prices, window=<int-const>)
-| numba_indicators.quadratic_perc_atr(high=high_prices, low=low_prices, close=close_prices, window=<int-const>)
-| numba_indicators.cubic_perc_atr(high=high_prices, low=low_prices, close=close_prices, window=<int-const>)
-| numba_indicators.adx(high=high_prices, low=low_prices, close=close_prices, window=<int-const>)
-| numba_indicators.min_max_adx(numba_indicators.adx(high=high_prices, low=low_prices, close=close_prices, window=<int-const>), window=<int-const>)[0]
-| numba_indicators.min_max_adx(numba_indicators.adx(high=high_prices, low=low_prices, close=close_prices, window=<int-const>), window=<int-const>)[1]
-| numba_indicators.residual_min_max_adx(numba_indicators.adx(high=high_prices, low=low_prices, close=close_prices, window=<int-const>), window=<int-const>)[0]
-| numba_indicators.residual_min_max_adx(numba_indicators.adx(high=high_prices, low=low_prices, close=close_prices, window=<int-const>), window=<int-const>)[1]
-| numba_indicators.delta_accel_adx(numba_indicators.adx(high=high_prices, low=low_prices, close=close_prices, window=<int-const>), window=<int-const>)[0]
-| numba_indicators.delta_accel_adx(numba_indicators.adx(high=high_prices, low=low_prices, close=close_prices, window=<int-const>), window=<int-const>)[1]
-| numba_indicators.intraday_intensity(high=high_prices, low=low_prices, close=close_prices, volume=volume)
-| numba_indicators.delta_intraday_intensity(high=high_prices, low=low_prices, close=close_prices, volume=volume)
-| numba_indicators.reactivity(prices=close_prices, window=<int-const>)
-| numba_indicators.delta_reactivity(numba_indicators.reactivity(prices=close_prices, window=<int-const>))
-| numba_indicators.min_reactivity(numba_indicators.reactivity(prices=close_prices, window=<int-const>), window=<int-const>)
-| numba_indicators.max_reactivity(numba_indicators.reactivity(prices=close_prices, window=<int-const>), window=<int-const>)
-| numba_indicators.close_to_close(close=close_prices)
-| numba_indicators.n_day_high(prices=close_prices, n=<int-const>)
-| numba_indicators.n_day_low(prices=close_prices, n=<int-const>)
-| numba_indicators.close_minus_moving_average(close=close_prices, window=<int-const>)
-| numba_indicators.linear_deviation(prices=close_prices, window=<int-const>)
-| numba_indicators.quadratic_deviation(prices=close_prices, window=<int-const>)
-| numba_indicators.cubic_deviation(prices=close_prices, window=<int-const>)
-| numba_indicators.detrended_rsi(close=close_prices, window=<int-const>)
-| numba_indicators.abs_price_change_oscillator(close=close_prices, window=<int-const>)
-| numba_indicators.atr_ratio(high=high_prices, low=low_prices, close=close_prices, window=<int-const>)
-| numba_indicators.n_day_narrower_wider(high=high_prices, low=low_prices, n=<int-const>)[0]
-| numba_indicators.n_day_narrower_wider(high=high_prices, low=low_prices, n=<int-const>)[1]
-| numba_indicators.price_skewness(prices=close_prices, window=<int-const>)
-| numba_indicators.change_skewness(prices=close_prices, window=<int-const>)
-| numba_indicators.price_kurtosis(prices=close_prices, window=<int-const>)
-| numba_indicators.change_kurtosis(prices=close_prices, window=<int-const>)
-| numba_indicators.delta_price_skewness(numba_indicators.price_skewness(prices=close_prices, window=<int-const>))
-| numba_indicators.delta_change_skewness(numba_indicators.change_skewness(prices=close_prices, window=<int-const>))
-| numba_indicators.delta_price_kurtosis(numba_indicators.price_kurtosis(prices=close_prices, window=<int-const>))
-| numba_indicators.delta_change_kurtosis(numba_indicators.change_kurtosis(prices=close_prices, window=<int-const>))
-| numba_indicators.volume_momentum(volume=volume, window=<int-const>)
-| numba_indicators.delta_volume_momentum(numba_indicators.volume_momentum(volume=volume, window=<int-const>))
-| numba_indicators.volume_weighted_ma_over_ma(price=close_prices, volume=volume, window=<int-const>)[0]
-| numba_indicators.volume_weighted_ma_over_ma(price=close_prices, volume=volume, window=<int-const>)[1]
-| numba_indicators.diff_volume_weighted_ma_over_ma(price=close_prices, volume=volume, window=<int-const>)
-| numba_indicators.on_balance_volume(price=close_prices, volume=volume)
-| numba_indicators.delta_on_balance_volume(numba_indicators.on_balance_volume(price=close_prices, volume=volume))
-| numba_indicators.positive_volume_indicator(volume=volume)
-| numba_indicators.negative_volume_indicator(volume=volume)
-| numba_indicators.product_price_volume(price=close_prices, volume=volume)
-| numba_indicators.sum_price_volume(price=close_prices, volume=volume, window=<int-const>)
-| numba_indicators.price_entropy(prices=close_prices, window=<int-const>, bins=<int-const>)
-| numba_indicators.volume_entropy(volume=volume, window=<int-const>, bins=<int-const>)
-| numba_indicators.chaikin_ad_line(close=close_prices, low=low_prices, high=high_prices, volume=volume)
-| numba_indicators.chaikin_ad_oscillator(numba_indicators.chaikin_ad_line(close=close_prices, low=low_prices, high=high_prices, volume=volume), short_window=<int-const>, long_window=<int-const>)
-| numba_indicators.absolute_price_oscillator(close=close_prices, short_window=<int-const>, long_window=<int-const>)
-| numba_indicators.aroon(prices=close_prices, period=<int-const>)[0]
-| numba_indicators.aroon(prices=close_prices, period=<int-const>)[1]
-| numba_indicators.balance_of_power(close=close_prices, low=low_prices, high=high_prices)
-| numba_indicators.double_exponential_moving_average(close=close_prices, period=<int-const>)
-| numba_indicators.directional_movement_index(high=high_prices, low=low_prices, close=close_prices, period=<int-const>)[0]
-| numba_indicators.directional_movement_index(high=high_prices, low=low_prices, close=close_prices, period=<int-const>)[1]
-| numba_indicators.directional_movement_index(high=high_prices, low=low_prices, close=close_prices, period=<int-const>)[2]
-| numba_indicators.hilbert_dominant_cycle_period(close=close_prices, period=<int-const>)
-| numba_indicators.hilbert_dominant_cycle_phase(close=close_prices, period=<int-const>)
-| numba_indicators.hilbert_phasor_components(close=close_prices)[:, 0]
-| numba_indicators.hilbert_phasor_components(close=close_prices)[:, 1]
-| numba_indicators.hilbert_sinewave(close=close_prices)
-| numba_indicators.hilbert_instantaneous_trendline(close=close_prices)
-| numba_indicators.hilbert_trend_vs_cycle_mode(close=close_prices)
-| numba_indicators.mesa_adaptive_moving_average(close=close_prices, period=<int-const>)
-| numba_indicators.median_price(high=high_prices, low=low_prices)
-| numba_indicators.midpoint_over_period(close=close_prices, period=<int-const>)
-| numba_indicators.parabolic_sar(high=high_prices, low=low_prices)
-| numba_indicators.triple_exponential_moving_average(close=close_prices, period=<int-const>)
-| numba_indicators.williams_r(close=close_prices, low=low_prices, high=high_prices, period=<int-const>)
+<indicator> ::= numba_indicators.moving_average(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.exponential_moving_average(prices=price_data["'"close"'"], window=<int-const>) 
+| numba_indicators.relative_strength_index(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.macd(prices=price_data["'"close"'"], short_window=<int-const>, long_window=<int-const>, signal_window=<int-const>)[0]
+| numba_indicators.macd(prices=price_data["'"close"'"], short_window=<int-const>, long_window=<int-const>, signal_window=<int-const>)[1]
+| numba_indicators.macd(prices=price_data["'"close"'"], short_window=<int-const>, long_window=<int-const>, signal_window=<int-const>)[2]
+| numba_indicators.bollinger_bands(prices=price_data["'"close"'"], window=<int-const>, num_std_dev=<int-const>)[0]
+| numba_indicators.bollinger_bands(prices=price_data["'"close"'"], window=<int-const>, num_std_dev=<int-const>)[1]
+| numba_indicators.bollinger_bands(prices=price_data["'"close"'"], window=<int-const>, num_std_dev=<int-const>)[2]
+| numba_indicators.momentum(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.stochastic_oscillator(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.average_true_range(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>) 
+| numba_indicators.moving_average_difference(prices=price_data["'"close"'"], short_window=<int-const>, long_window=<int-const>)
+| numba_indicators.linear_perc_atr(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.quadratic_perc_atr(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.cubic_perc_atr(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.adx(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.min_max_adx(numba_indicators.adx(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>), window=<int-const>)[0]
+| numba_indicators.min_max_adx(numba_indicators.adx(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>), window=<int-const>)[1]
+| numba_indicators.residual_min_max_adx(numba_indicators.adx(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>), window=<int-const>)[0]
+| numba_indicators.residual_min_max_adx(numba_indicators.adx(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>), window=<int-const>)[1]
+| numba_indicators.delta_accel_adx(numba_indicators.adx(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>), window=<int-const>)[0]
+| numba_indicators.delta_accel_adx(numba_indicators.adx(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>), window=<int-const>)[1]
+| numba_indicators.intraday_intensity(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], volume=price_data["'"volume"'"])
+| numba_indicators.delta_intraday_intensity(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], volume=price_data["'"volume"'"])
+| numba_indicators.reactivity(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.delta_reactivity(numba_indicators.reactivity(prices=price_data["'"close"'"], window=<int-const>))
+| numba_indicators.min_reactivity(numba_indicators.reactivity(prices=price_data["'"close"'"], window=<int-const>), window=<int-const>)
+| numba_indicators.max_reactivity(numba_indicators.reactivity(prices=price_data["'"close"'"], window=<int-const>), window=<int-const>)
+| numba_indicators.close_to_close(close=price_data["'"close"'"])
+| numba_indicators.n_day_high(prices=price_data["'"close"'"], n=<int-const>)
+| numba_indicators.n_day_low(prices=price_data["'"close"'"], n=<int-const>)
+| numba_indicators.close_minus_moving_average(close=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.linear_deviation(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.quadratic_deviation(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.cubic_deviation(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.detrended_rsi(close=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.abs_price_change_oscillator(close=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.atr_ratio(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.n_day_narrower_wider(high=price_data["'"high"'"], low=price_data["'"low"'"], n=<int-const>)[0]
+| numba_indicators.n_day_narrower_wider(high=price_data["'"high"'"], low=price_data["'"low"'"], n=<int-const>)[1]
+| numba_indicators.price_skewness(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.change_skewness(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.price_kurtosis(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.change_kurtosis(prices=price_data["'"close"'"], window=<int-const>)
+| numba_indicators.delta_price_skewness(numba_indicators.price_skewness(prices=price_data["'"close"'"], window=<int-const>))
+| numba_indicators.delta_change_skewness(numba_indicators.change_skewness(prices=price_data["'"close"'"], window=<int-const>))
+| numba_indicators.delta_price_kurtosis(numba_indicators.price_kurtosis(prices=price_data["'"close"'"], window=<int-const>))
+| numba_indicators.delta_change_kurtosis(numba_indicators.change_kurtosis(prices=price_data["'"close"'"], window=<int-const>))
+| numba_indicators.volume_momentum(volume=price_data["'"volume"'"], window=<int-const>)
+| numba_indicators.delta_volume_momentum(numba_indicators.volume_momentum(volume=price_data["'"volume"'"], window=<int-const>))
+| numba_indicators.volume_weighted_ma_over_ma(price=price_data["'"close"'"], volume=price_data["'"volume"'"], window=<int-const>)[0]
+| numba_indicators.volume_weighted_ma_over_ma(price=price_data["'"close"'"], volume=price_data["'"volume"'"], window=<int-const>)[1]
+| numba_indicators.diff_volume_weighted_ma_over_ma(price=price_data["'"close"'"], volume=price_data["'"volume"'"], window=<int-const>)
+| numba_indicators.on_balance_volume(price=price_data["'"close"'"], volume=price_data["'"volume"'"])
+| numba_indicators.delta_on_balance_volume(numba_indicators.on_balance_volume(price=price_data["'"close"'"], volume=price_data["'"volume"'"]))
+| numba_indicators.positive_volume_indicator(volume=price_data["'"volume"'"])
+| numba_indicators.negative_volume_indicator(volume=price_data["'"volume"'"])
+| numba_indicators.product_price_volume(price=price_data["'"close"'"], volume=price_data["'"volume"'"])
+| numba_indicators.sum_price_volume(price=price_data["'"close"'"], volume=price_data["'"volume"'"], window=<int-const>)
+| numba_indicators.price_entropy(prices=price_data["'"close"'"], window=<int-const>, bins=<int-const>)
+| numba_indicators.volume_entropy(volume=price_data["'"volume"'"], window=<int-const>, bins=<int-const>)
+| numba_indicators.chaikin_ad_line(close=price_data["'"close"'"], low=price_data["'"low"'"], high=price_data["'"high"'"], volume=price_data["'"volume"'"])
+| numba_indicators.chaikin_ad_oscillator(numba_indicators.chaikin_ad_line(close=price_data["'"close"'"], low=price_data["'"low"'"], high=price_data["'"high"'"], volume=price_data["'"volume"'"]), short_window=<int-const>, long_window=<int-const>)
+| numba_indicators.absolute_price_oscillator(close=price_data["'"close"'"], short_window=<int-const>, long_window=<int-const>)
+| numba_indicators.aroon(prices=price_data["'"close"'"], period=<int-const>)[0]
+| numba_indicators.aroon(prices=price_data["'"close"'"], period=<int-const>)[1]
+| numba_indicators.balance_of_power(close=price_data["'"close"'"], low=price_data["'"low"'"], high=price_data["'"high"'"])
+| numba_indicators.double_exponential_moving_average(close=price_data["'"close"'"], period=<int-const>)
+| numba_indicators.directional_movement_index(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], period=<int-const>)[0]
+| numba_indicators.directional_movement_index(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], period=<int-const>)[1]
+| numba_indicators.directional_movement_index(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], period=<int-const>)[2]
+| numba_indicators.hilbert_dominant_cycle_period(close=price_data["'"close"'"], period=<int-const>)
+| numba_indicators.hilbert_dominant_cycle_phase(close=price_data["'"close"'"], period=<int-const>)
+| numba_indicators.hilbert_phasor_components(close=price_data["'"close"'"])[:, 0]
+| numba_indicators.hilbert_phasor_components(close=price_data["'"close"'"])[:, 1]
+| numba_indicators.hilbert_sinewave(close=price_data["'"close"'"])
+| numba_indicators.hilbert_instantaneous_trendline(close=price_data["'"close"'"])
+| numba_indicators.hilbert_trend_vs_cycle_mode(close=price_data["'"close"'"])
+| numba_indicators.mesa_adaptive_moving_average(close=price_data["'"close"'"], period=<int-const>)
+| numba_indicators.median_price(high=price_data["'"high"'"], low=price_data["'"low"'"])
+| numba_indicators.midpoint_over_period(close=price_data["'"close"'"], period=<int-const>)
+| numba_indicators.parabolic_sar(high=price_data["'"high"'"], low=price_data["'"low"'"])
+| numba_indicators.triple_exponential_moving_average(close=price_data["'"close"'"], period=<int-const>)
+| numba_indicators.williams_r(close=price_data["'"close"'"], low=price_data["'"low"'"], high=price_data["'"high"'"], period=<int-const>)
 
 <signal> ::= <var> <c-op> <value> | (<signal>) <log-op> (<signal>)
 | <var> <c-op> <var>
