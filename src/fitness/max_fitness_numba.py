@@ -16,7 +16,7 @@ def generate_data():
     # df = pd.read_csv('/kaggle/input/btcusd-test/BTCUSD_ohlcv.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/BTC-ETH-1m.csv')
     df = pd.read_csv('/kaggle/input/btcusd-test/all_data_1min.csv')
-    # df['datetime'] = pd.to_datetime(df['datetime'])
+    df['datetime'] = pd.to_datetime(df['datetime'])
     # df = df.iloc[-10080:]
     # df = df.iloc[-525600:]
     df.sort_values('datetime', ascending=True, inplace=True)
