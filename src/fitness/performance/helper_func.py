@@ -87,3 +87,17 @@ def get_lag(prices, lag=1):
         result[i] = prices[i - lag]
 
     return result
+
+@njit(cache=True)
+def get_max_drawdown(pnl_list):
+    max_dd = 0.0
+    peak = pnl_list[0]
+
+    for i in range(1, len(pnl_list)):
+        if pnl_list[i] > peak:
+            peak = pnl_list[i]
+        drawdown = 100 * (peak - pnl_list[i]) / peak
+        if drawdown > max_dd:
+            max_dd = drawdown
+
+    return max_dd
