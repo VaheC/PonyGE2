@@ -215,4 +215,4 @@
 
 <log-op> ::= "&" | "|" 
 
-<mat-f> ::= np.log(<var>) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>)
+<mat-f> ::= np.log(<var>) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) | (<var> - <var>) <mat-op> <var>
