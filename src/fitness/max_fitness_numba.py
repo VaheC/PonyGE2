@@ -32,6 +32,9 @@ def generate_data():
             continue
         else:
             price_data[col] = df[col].values
+    # price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
+    # price_data['month'] = df['datetime'].dt.month.values
+    # price_data['day_of_year'] = df['datetime'].dt.dayofyear.values
     return price_data
 
 class max_fitness_numba(base_ff):
