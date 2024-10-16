@@ -34,7 +34,7 @@ def generate_data():
     # price_data['day_of_year'] = df['datetime'].dt.dayofyear.values
     return price_data
 
-class max_fitness_numba(base_ff):
+class max_fitness_numba_cache(base_ff):
 
     def __init__(self):
 
