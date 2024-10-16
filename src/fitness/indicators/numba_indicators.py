@@ -1,5 +1,6 @@
 import numpy as np
 from numba import njit
+import math
 
 # Moving Average (MA)
 @njit(cache=True)
@@ -1012,3 +1013,141 @@ def williams_r(high, low, close, period):
         wr[i] = (highest_high - close[i]) / (highest_high - lowest_low) * -100 if (highest_high - lowest_low) != 0 else -999
 
     return wr
+
+@njit(cache=True)
+def z_score(array):
+    mean = np.mean(array)
+    std_dev = np.std(array)
+    return (array - mean) / std_dev
+
+@njit(cache=True)
+def rolling_drawdown(data, window_size):
+    n = len(data)
+    drawdowns = np.full(n, -999.0)
+    
+    for i in range(n - window_size + 1):
+        window = data[i:i + window_size]
+        peak = np.max(window)
+        current_value = window[-1]
+        drawdowns[i + window_size - 1] = (peak - current_value) / peak if peak != 0 else 0.0
+
+    return drawdowns
+
+@njit(cache=True)
+def rolling_volatility(data, window_size):
+    n = len(data)
+    volatilities = np.full(n, -999.0)
+    
+    for i in range(n - window_size + 1):
+        window = data[i:i + window_size]
+        volatilities[i + window_size - 1] = np.std(window)
+    
+    return volatilities
+
+@njit(cache=True)
+def rolling_parkinson_estimator(high, low, window_size):
+    n = len(high)
+    rolling_volatility = np.full(n, -999.0)
+    
+    for i in range(window_size - 1, n):
+        window_high = high[i - window_size + 1:i + 1]
+        window_low = low[i - window_size + 1:i + 1]
+        
+        N = len(window_high)
+        sum_squared = np.sum(np.log(window_high / window_low) ** 2)
+        
+        if N > 0:
+            volatility = math.sqrt((1 / (4 * N * math.log(2))) * sum_squared)
+            rolling_volatility[i] = volatility
+
+    return rolling_volatility
+
+@njit(cache=True)
+def rolling_rogers_satchell_estimator(open, high, low, close, window_size):
+    n = len(open)
+    rolling_volatility = np.full(n, -999.0)
+    
+    for i in range(window_size - 1, n):
+        window_open = open[i - window_size + 1:i + 1]
+        window_high = high[i - window_size + 1:i + 1]
+        window_low = low[i - window_size + 1:i + 1]
+        window_close = close[i - window_size + 1:i + 1]
+        
+        if (np.any(window_open == -999.0) or np.any(window_high == -999.0) or 
+            np.any(window_low == -999.0) or np.any(window_close == -999.0)):
+            continue
+
+        N = len(window_high)
+        sum_squared = np.sum(np.log(window_high / window_open) * np.log(window_high / window_close) +
+                             np.log(window_low / window_open) * np.log(window_low / window_close))
+        
+        if N > 0:
+            volatility = math.sqrt(sum_squared / N)
+            rolling_volatility[i] = volatility
+
+    return rolling_volatility
+
+@njit(cache=True)
+def rolling_yang_zhang_estimator(open, high, low, close, window_size):
+    n = len(open)
+    rolling_volatility = np.full(n, -999.0)
+    
+    k = 0.34 / (1.34 + (window_size + 1) / (window_size - 1))
+    
+    for i in range(window_size, n):
+        window_open = open[i - window_size + 1:i + 1]
+        window_high = high[i - window_size + 1:i + 1]
+        window_low = low[i - window_size + 1:i + 1]
+        window_close = close[i - window_size + 1:i + 1]
+        window_open_prev = open[i - window_size:i]
+        window_close_prev = close[i - window_size:i]
+        
+        if (np.any(window_open == -999.0) or np.any(window_high == -999.0) or 
+            np.any(window_low == -999.0) or np.any(window_close == -999.0) or
+            np.any(window_open_prev == -999.0) or np.any(window_close_prev == -999.0)):
+            continue
+
+        N = len(window_high)
+        
+        # Open-to-close volatility
+        oc_var = np.sum((np.log(window_close / window_open) ** 2)) / (N - 1)
+        
+        # Close-to-open overnight volatility
+        co_var = np.sum((np.log(window_open / window_close_prev) ** 2)) / (N - 1)
+        
+        # Rogers-Satchell part
+        rs_var = np.sum(np.log(window_high / window_open) * np.log(window_high / window_close) +
+                        np.log(window_low / window_open) * np.log(window_low / window_close)) / (N - 1)
+        
+        volatility = math.sqrt(co_var + k * oc_var + (1 - k) * rs_var)
+        rolling_volatility[i] = volatility
+
+    return rolling_volatility
+
+@njit(cache=True)
+def rolling_garman_klass_estimator(open, high, low, close, window_size):
+    n = len(open)
+    rolling_volatility = np.full(n, -999.0)
+    
+    for i in range(window_size - 1, n):
+        window_open = open[i - window_size + 1:i + 1]
+        window_high = high[i - window_size + 1:i + 1]
+        window_low = low[i - window_size + 1:i + 1]
+        window_close = close[i - window_size + 1:i + 1]
+        
+        if (np.any(window_open == -999.0) or np.any(window_high == -999.0) or 
+            np.any(window_low == -999.0) or np.any(window_close == -999.0)):
+            continue
+
+        N = len(window_high)
+        sum_squared = np.sum(0.5 * (np.log(window_high / window_low) ** 2) - 
+                             (2 * np.log(2) - 1) * (np.log(window_close / window_open) ** 2))
+        
+        if N > 0:
+            volatility = math.sqrt(sum_squared / N)
+            if np.isnan(volatility):
+                rolling_volatility[i] = -999
+            else:
+                rolling_volatility[i] = volatility
+
+    return rolling_volatility
