@@ -1,6 +1,7 @@
 from copy import copy
 from os import getcwd, makedirs, path
 from shutil import rmtree
+import re
 
 from algorithm.parameters import params
 from utilities.stats import trackers
@@ -168,5 +169,30 @@ def save_params_to_file():
         spaces = [" " for _ in range(col_width - len(param))]
         savefile.write(str(param) + ": " + "".join(spaces) +
                        str(params[param]) + "\n")
+
+    savefile.close()
+
+def save_all_ind_to_file(inds, end=False, name="ge_results"):
+    """
+    Saves the all individuals to a file.
+
+    :param inds: The individuals to be saved to file.
+    :param end: A boolean flag indicating whether or not the evolutionary
+    process has finished.
+    :param name: The name of the file to be saved
+    :return: Nothing.
+    """
+
+    filename = path.join(params['FILE_PATH'], (str(name) + ".csv"))
+    savefile = open(filename, 'w')
+
+    savefile.write(f"buy;sell;fitness\n\n")
+
+    for k, v in inds.items():
+
+        buy_signal = re.findall(r"trading_signals\(buy_signal\=(.*)\, sell_signal", k)[0]
+        sell_signal = re.findall(r"\, sell_signal\=(.*)\)", k)[0]
+
+        savefile.write(f"{buy_signal};{sell_signal};{v}\n\n")
 
     savefile.close()
