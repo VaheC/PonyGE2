@@ -8,7 +8,7 @@ from utilities.algorithm.NSGA2 import compute_pareto_metrics
 from utilities.algorithm.state import create_state
 from utilities.stats import trackers
 from utilities.stats.file_io import save_best_ind_to_file, \
-    save_first_front_to_file, save_stats_headers, save_stats_to_file
+    save_first_front_to_file, save_stats_headers, save_stats_to_file, save_all_ind_to_file
 from utilities.stats.save_plots import save_pareto_fitness_plot, \
     save_plot_from_data
 
@@ -139,7 +139,8 @@ def get_soo_stats(individuals, end):
         save_stats_to_file(stats, end)
 
         if params['SAVE_ALL']:
-            save_best_ind_to_file(stats, trackers.best_ever, end, stats['gen'])
+            # save_best_ind_to_file(stats, trackers.best_ever, end, stats['gen'])
+            save_all_ind_to_file(inds=trackers.cache)
 
         elif params['VERBOSE'] or end:
             save_best_ind_to_file(stats, trackers.best_ever, end)
