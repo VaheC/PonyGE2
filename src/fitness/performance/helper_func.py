@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 @njit(cache=True)
 def merge_pnl(arr1, arr2):
@@ -101,3 +101,71 @@ def get_max_drawdown(pnl_list):
             max_dd = drawdown
 
     return max_dd
+
+@njit(cache=True)
+def get_random_idxs(arr, num_elements, exclude_arr=np.array([])):
+    # Get the length of the input array
+    n = len(arr)
+
+    if num_elements > n:
+        raise ValueError("num_elements must be less than or equal to the length of the array.")
+
+    # Set up the set of excluded indices for quick look-up
+    exclude_set = set(exclude_arr)
+
+    # Create an array to hold unique indices
+    indices = np.zeros(num_elements, dtype=np.int32)
+    chosen_set = set()
+
+    for i in range(num_elements):
+        idx = np.random.randint(0, n)
+
+        # Ensure the index is unique and not in the exclude_arr
+        while idx in chosen_set or idx in exclude_set:
+            idx = np.random.randint(0, n)
+
+        indices[i] = idx
+        chosen_set.add(idx)
+
+    # Return the randomly selected elements, sorted
+    return np.sort(indices)
+
+@njit(cache=True)
+def get_monkey_test_results(open_prices, buy_idxs, sell_idxs, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, n_runs=8000):
+    
+    pnl_arr = np.zeros(n_runs)
+    max_dd_arr = np.zeros(n_runs)
+    
+    for i in prange(n_runs):
+        # Generate new buy indexes
+        new_buy_idxs = get_random_idxs(np.arange(len(open_prices)), num_elements=len(buy_idxs))
+
+        # Generate new sell indexes
+        new_sell_idxs = get_random_idxs(np.arange(len(open_prices)), num_elements=len(sell_idxs), exclude_arr=new_buy_idxs)
+
+        # Filter sell indexes to avoid overlaps
+        buy_idxs = new_buy_idxs
+        sell_idxs = new_sell_idxs
+
+        # Fetch buy and sell prices
+        buy_prices = open_prices[buy_idxs]
+        sell_prices = open_prices[sell_idxs]
+
+        # Calculate P&L and merge results based on buy/sell sequence
+        if buy_idxs[0] < sell_idxs[0]:
+            buy_arr = get_pnl(sell_prices, buy_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1)
+            buy_pnl = np.sum(buy_arr)
+            sell_arr = get_pnl(buy_prices[1:], sell_prices[:-1], COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0)
+            sell_pnl = np.sum(sell_arr)
+            all_arr = merge_pnl(buy_arr, sell_arr)
+        else:
+            sell_arr = get_pnl(buy_prices, sell_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0)
+            sell_pnl = np.sum(sell_arr)
+            buy_arr = get_pnl(sell_prices[1:], buy_prices[:-1], COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1)
+            buy_pnl = np.sum(buy_arr)
+            all_arr = merge_pnl(sell_arr, buy_arr)
+
+        pnl_arr[i] = buy_pnl + sell_pnl
+        max_dd_arr[i] = get_max_drawdown(all_arr)
+    
+    return pnl_arr, max_dd_arr
