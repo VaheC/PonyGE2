@@ -1151,3 +1151,44 @@ def rolling_garman_klass_estimator(open, high, low, close, window_size):
                 rolling_volatility[i] = volatility
 
     return rolling_volatility
+
+@njit(cache=True)
+def ultimate_oscillator(high, low, close, period1, period2, period3):
+    n = len(close)
+    uo = np.full(n, -999.0)
+    
+    if n < period3:
+        return uo
+    
+    bp = np.zeros(n)
+    tr = np.zeros(n)
+
+    for i in range(1, n):
+        bp[i] = close[i] - min(low[i], close[i-1])
+        tr[i] = max(high[i], close[i-1]) - min(low[i], close[i-1])
+    
+    def sma(arr, period):
+        result = np.zeros(n)
+        cumsum = 0.0
+        for i in range(period):
+            cumsum += arr[i]
+        result[period - 1] = cumsum / period
+        for i in range(period, n):
+            cumsum = cumsum - arr[i - period] + arr[i]
+            result[i] = cumsum / period
+        return result
+    
+    avgBP1 = sma(bp, period1)
+    avgTR1 = sma(tr, period1)
+    avgBP2 = sma(bp, period2)
+    avgTR2 = sma(tr, period2)
+    avgBP3 = sma(bp, period3)
+    avgTR3 = sma(tr, period3)
+    
+    for i in range(period3 - 1, n):
+        weighted_bp = 4 * avgBP1[i] + 2 * avgBP2[i] + avgBP3[i]
+        weighted_tr = 4 * avgTR1[i] + 2 * avgTR2[i] + avgTR3[i]
+        if weighted_tr != 0:
+            uo[i] = 100 * (weighted_bp / weighted_tr)
+    
+    return uo
