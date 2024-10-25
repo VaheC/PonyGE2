@@ -182,6 +182,13 @@
 | numba_indicators.parabolic_sar(high=price_data["'"<high-prices>"'"][MAX_LAG:], low=price_data["'"<low-prices>"'"][MAX_LAG:])
 | numba_indicators.triple_exponential_moving_average(close=price_data["'"<close-prices>"'"][MAX_LAG:], period=<window-const>)
 | numba_indicators.williams_r(close=price_data["'"<close-prices>"'"][MAX_LAG:], low=price_data["'"<low-prices>"'"][MAX_LAG:], high=price_data["'"<high-prices>"'"][MAX_LAG:], period=<window-const>)
+| numba_indicators.z_score(<var>)
+| numba_indicators.rolling_drawdown(<var>, window_size=<window-const>)
+| numba_indicators.rolling_volatility(<var>, window_size=<window-const>)
+| numba_indicators.rolling_parkinson_estimator(high=price_data["'"<high-prices>"'"][MAX_LAG:], low=price_data["'"<low-prices>"'"][MAX_LAG:], window_size=<window-const>)
+| numba_indicators.rolling_rogers_satchell_estimator(open=price_data["'"<open-prices>"'"][MAX_LAG:], high=price_data["'"<high-prices>"'"][MAX_LAG:], low=price_data["'"<low-prices>"'"][MAX_LAG:], close=price_data["'"<close-prices>"'"][MAX_LAG:], window_size=<window-const>)
+| numba_indicators.rolling_yang_zhang_estimator(open=price_data["'"<open-prices>"'"][MAX_LAG:], high=price_data["'"<high-prices>"'"][MAX_LAG:], low=price_data["'"<low-prices>"'"][MAX_LAG:], close=price_data["'"<close-prices>"'"][MAX_LAG:], window_size=<window-const>)
+| numba_indicators.rolling_garman_klass_estimator(open=price_data["'"<open-prices>"'"][MAX_LAG:], high=price_data["'"<high-prices>"'"][MAX_LAG:], low=price_data["'"<low-prices>"'"][MAX_LAG:], close=price_data["'"<close-prices>"'"][MAX_LAG:], window_size=<window-const>)
 
 <signal> ::= <var> <c-op> <value> | (<signal>) <log-op> (<signal>)
 | <var> <c-op> <var>
