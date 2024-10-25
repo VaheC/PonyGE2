@@ -19,6 +19,35 @@ def merge_pnl(arr1, arr2):
     return out
 
 @njit(cache=True)
+def merge_buy_sell_pnl(buy_idxs, sell_idxs, buy_arr, sell_arr):
+
+    total_size = len(buy_idxs) + len(sell_idxs)
+    merged_arr = np.empty(total_size, dtype=buy_arr.dtype)
+
+    i, j, k = 0, 0, 0
+
+    while i < len(buy_idxs) and j < len(sell_idxs):
+        if buy_idxs[i] < sell_idxs[j]:
+            merged_arr[k] = buy_arr[i]
+            i += 1
+        else:
+            merged_arr[k] = sell_arr[j]
+            j += 1
+        k += 1
+
+    while i < len(buy_idxs):
+        merged_arr[k] = buy_arr[i]
+        i += 1
+        k += 1
+
+    while j < len(sell_idxs):
+        merged_arr[k] = sell_arr[j]
+        j += 1
+        k += 1
+
+    return merged_arr
+
+@njit(cache=True)
 def get_drawdowns(arr):
 
     drawdowns = np.zeros((len(arr)))
@@ -77,6 +106,107 @@ def trading_signals(buy_signal, sell_signal):
     elif len(buy_idxs) < len(sell_idxs):
         sell_idxs = sell_idxs[:-(len(sell_idxs) - len(buy_idxs))]
     return buy_idxs, sell_idxs
+
+@njit(cache=True)
+def trading_signals_buy(buy_signal, exit_signal):
+
+    buy = np.where(buy_signal, 1, 0)
+    sell = np.where(exit_signal, -1, 0)
+    signal = buy + sell
+    buy_idxs = []
+    sell_idxs = []
+    is_buy = 0
+    is_sell = 0
+
+    for i in range(len(signal)):
+        if signal[i] == 1 and is_buy == 0:
+            buy_idxs.append(i + 1)
+            is_buy = 1
+            is_sell = 0
+        elif signal[i] == -1 and is_sell == 0:
+            sell_idxs.append(i + 1)
+            is_sell = 1
+            is_buy = 0
+
+    sell_start_idx = -1
+    for i in range(len(sell_idxs)):
+        if sell_idxs[i] < buy_idxs[0]:
+            sell_start_idx = i
+        else:
+            break
+    
+    if sell_start_idx != -1:
+        sell_idxs = sell_idxs[sell_start_idx+1:]
+
+    if len(buy_idxs) > len(sell_idxs):
+        buy_idxs = buy_idxs[:-(len(buy_idxs) - len(sell_idxs))]
+    elif len(buy_idxs) < len(sell_idxs):
+        sell_idxs = sell_idxs[:-(len(sell_idxs) - len(buy_idxs))]
+    return buy_idxs, sell_idxs
+
+@njit(cache=True)
+def trading_signals_sell(sell_signal, exit_signal):
+
+    buy = np.where(exit_signal, 1, 0)
+    sell = np.where(sell_signal, -1, 0)
+    signal = buy + sell
+    buy_idxs = []
+    sell_idxs = []
+    is_buy = 0
+    is_sell = 0
+
+    for i in range(len(signal)):
+        if signal[i] == 1 and is_buy == 0:
+            buy_idxs.append(i + 1)
+            is_buy = 1
+            is_sell = 0
+        elif signal[i] == -1 and is_sell == 0:
+            sell_idxs.append(i + 1)
+            is_sell = 1
+            is_buy = 0
+
+    buy_start_idx = -1
+    for i in range(len(buy_idxs)):
+        if buy_idxs[i] < sell_idxs[0]:
+            buy_start_idx = i
+        else:
+            break
+    
+    if buy_start_idx != -1:
+        buy_idxs = buy_idxs[buy_start_idx+1:]
+
+    if len(buy_idxs) > len(sell_idxs):
+        buy_idxs = buy_idxs[:-(len(buy_idxs) - len(sell_idxs))]
+    elif len(buy_idxs) < len(sell_idxs):
+        sell_idxs = sell_idxs[:-(len(sell_idxs) - len(buy_idxs))]
+    return sell_idxs, buy_idxs
+
+@njit(cache=True)
+def change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs):
+
+    remove_buy_idxs = []
+    remove_sell_idxs = []
+
+    for i in range(len(buy_idxs)):
+        for j in range(len(sell_idxs)):
+            if buy_idxs[i] > sell_idxs[j] and buy_idxs[i] < sell_exit_idxs[j]:
+                sell_exit_idxs[j] = buy_idxs[i]
+            elif sell_idxs[j] > buy_idxs[i] and sell_idxs[j] < buy_exit_idxs[i]:
+                buy_exit_idxs[i] = sell_idxs[j]
+            elif buy_idxs[i] == sell_idxs[j]:
+                remove_buy_idxs.append(i)
+                remove_sell_idxs.append(j)
+
+    remove_buy_idxs = set(remove_buy_idxs)
+    remove_sell_idxs = set(remove_sell_idxs)
+
+    buy_idxs = np.array([buy_idxs[k] for k in range(len(buy_idxs)) if k not in remove_buy_idxs])
+    buy_exit_idxs = np.array([buy_exit_idxs[k] for k in range(len(buy_exit_idxs)) if k not in remove_buy_idxs])
+
+    sell_idxs = np.array([sell_idxs[k] for k in range(len(sell_idxs)) if k not in remove_sell_idxs])
+    sell_exit_idxs = np.array([sell_exit_idxs[k] for k in range(len(sell_exit_idxs)) if k not in remove_sell_idxs])
+
+    return buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs
 
 @njit(cache=True)
 def get_lag(prices, lag=1):
@@ -166,6 +296,8 @@ def get_monkey_test_results(open_prices, buy_idxs, sell_idxs, COMMISSION, SLIPPA
             all_arr = merge_pnl(sell_arr, buy_arr)
 
         pnl_arr[i] = buy_pnl + sell_pnl
-        max_dd_arr[i] = get_max_drawdown(all_arr)
+
+        equity_curve_arr = np.cumsum(all_arr)
+        max_dd_arr[i] = get_max_drawdown(equity_curve_arr)
     
     return pnl_arr, max_dd_arr
