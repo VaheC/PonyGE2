@@ -69,117 +69,117 @@ final_df.reset_index(drop=True, inplace=True)
 
 final_df.to_csv("all_data_1min.csv", index=False)
 
-df = pd.read_csv('all_data_1min.csv')
-df['datetime'] = pd.to_datetime(df['datetime'])
-df.sort_values('datetime', ascending=True, inplace=True)
-df.reset_index(inplace=True, drop=True)
+# df = pd.read_csv('all_data_1min.csv')
+# df['datetime'] = pd.to_datetime(df['datetime'])
+# df.sort_values('datetime', ascending=True, inplace=True)
+# df.reset_index(inplace=True, drop=True)
 
-instrument_list = [col.split('_')[0] for col in df.columns if col.endswith('_open')]
+# instrument_list = [col.split('_')[0] for col in df.columns if col.endswith('_open')]
 
-print(df.shape)
-df.set_index('datetime', inplace=True)
+# print(df.shape)
+# df.set_index('datetime', inplace=True)
 
-# Grouping by date
-df['date'] = df.index.date
-grouped = df.groupby('date')
+# # Grouping by date
+# df['date'] = df.index.date
+# grouped = df.groupby('date')
 
-df['weekend_date'] = df.index
-df['weekend_date'] = df['weekend_date'].apply(lambda x: (x + timedelta(days=6 - x.weekday())).date())
+# df['weekend_date'] = df.index
+# df['weekend_date'] = df['weekend_date'].apply(lambda x: (x + timedelta(days=6 - x.weekday())).date())
 
-df['month_date'] = df.index
-df['month_date'] = df['month_date'].apply(
-    lambda x: (
-        datetime(x.year + int(x.month % 12 == 0), x.month % 12 + 1, 1) - timedelta(days=1)
-    ).date()
-)
+# df['month_date'] = df.index
+# df['month_date'] = df['month_date'].apply(
+#     lambda x: (
+#         datetime(x.year + int(x.month % 12 == 0), x.month % 12 + 1, 1) - timedelta(days=1)
+#     ).date()
+# )
 
-for instrument in instrument_list:
+# for instrument in instrument_list:
 
-    daily_data = df.resample('1D').agg({
-        f'{instrument}_open': 'first',
-        f'{instrument}_high': 'max',
-        f'{instrument}_low': 'min',
-        f'{instrument}_close': 'last',
-        f'{instrument}_volume': 'sum'
-    })
+#     daily_data = df.resample('1D').agg({
+#         f'{instrument}_open': 'first',
+#         f'{instrument}_high': 'max',
+#         f'{instrument}_low': 'min',
+#         f'{instrument}_close': 'last',
+#         f'{instrument}_volume': 'sum'
+#     })
 
-    weekly_data = df.resample('W').agg({
-        f'{instrument}_open': 'first',
-        f'{instrument}_high': 'max',
-        f'{instrument}_low': 'min',
-        f'{instrument}_close': 'last',
-        f'{instrument}_volume': 'sum'
-    })
+#     weekly_data = df.resample('W').agg({
+#         f'{instrument}_open': 'first',
+#         f'{instrument}_high': 'max',
+#         f'{instrument}_low': 'min',
+#         f'{instrument}_close': 'last',
+#         f'{instrument}_volume': 'sum'
+#     })
 
-    monthly_data = df.resample('ME').agg({
-        f'{instrument}_open': 'first',
-        f'{instrument}_high': 'max',
-        f'{instrument}_low': 'min',
-        f'{instrument}_close': 'last',
-        f'{instrument}_volume': 'sum'
-    })
+#     monthly_data = df.resample('ME').agg({
+#         f'{instrument}_open': 'first',
+#         f'{instrument}_high': 'max',
+#         f'{instrument}_low': 'min',
+#         f'{instrument}_close': 'last',
+#         f'{instrument}_volume': 'sum'
+#     })
 
-    df[f'{instrument}_mean'] = (df[f'{instrument}_close'] + df[f'{instrument}_low'] + df[f'{instrument}_high'] + df[f'{instrument}_open']) / 4
+#     df[f'{instrument}_mean'] = (df[f'{instrument}_close'] + df[f'{instrument}_low'] + df[f'{instrument}_high'] + df[f'{instrument}_open']) / 4
 
-    df[f'{instrument}_rmean_day'] = grouped[f'{instrument}_close'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).mean())
-    df[f'{instrument}_rhigh_day'] = grouped[f'{instrument}_high'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).max())
-    df[f'{instrument}_rlow_day'] = grouped[f'{instrument}_low'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).min())
-    df[f'{instrument}_rstd_day'] = grouped[f'{instrument}_close'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).std())
-    df[f'{instrument}_rvolume_day'] = grouped[f'{instrument}_volume'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).sum())
+#     df[f'{instrument}_rmean_day'] = grouped[f'{instrument}_close'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).mean())
+#     df[f'{instrument}_rhigh_day'] = grouped[f'{instrument}_high'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).max())
+#     df[f'{instrument}_rlow_day'] = grouped[f'{instrument}_low'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).min())
+#     df[f'{instrument}_rstd_day'] = grouped[f'{instrument}_close'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).std())
+#     df[f'{instrument}_rvolume_day'] = grouped[f'{instrument}_volume'].transform(lambda x: x.shift(1).rolling(window=len(x), min_periods=1).sum())
 
-    df[f'{instrument}_rmean_2h'] = df[f'{instrument}_close'].shift(1).rolling(window=120, min_periods=1).mean()
-    df[f'{instrument}_rmax_2h'] = df[f'{instrument}_high'].shift(1).rolling(window=120, min_periods=1).max()
-    df[f'{instrument}_rmin_2h'] = df[f'{instrument}_low'].shift(1).rolling(window=120, min_periods=1).min()
-    df[f'{instrument}_rstd_2h'] = df[f'{instrument}_close'].shift(1).rolling(window=120, min_periods=1).std()
-    df[f'{instrument}_rvolume_2h'] = df[f'{instrument}_volume'].shift(1).rolling(window=120, min_periods=1).sum()
+#     df[f'{instrument}_rmean_2h'] = df[f'{instrument}_close'].shift(1).rolling(window=120, min_periods=1).mean()
+#     df[f'{instrument}_rmax_2h'] = df[f'{instrument}_high'].shift(1).rolling(window=120, min_periods=1).max()
+#     df[f'{instrument}_rmin_2h'] = df[f'{instrument}_low'].shift(1).rolling(window=120, min_periods=1).min()
+#     df[f'{instrument}_rstd_2h'] = df[f'{instrument}_close'].shift(1).rolling(window=120, min_periods=1).std()
+#     df[f'{instrument}_rvolume_2h'] = df[f'{instrument}_volume'].shift(1).rolling(window=120, min_periods=1).sum()
 
-    df[f'{instrument}_rmean_4h'] = df[f'{instrument}_close'].shift(1).rolling(window=240, min_periods=1).mean()
-    df[f'{instrument}_rmax_4h'] = df[f'{instrument}_high'].shift(1).rolling(window=240, min_periods=1).max()
-    df[f'{instrument}_rmin_4h'] = df[f'{instrument}_low'].shift(1).rolling(window=240, min_periods=1).min()
-    df[f'{instrument}_rstd_4h'] = df[f'{instrument}_close'].shift(1).rolling(window=240, min_periods=1).std()
-    df[f'{instrument}_rvolume_4h'] = df[f'{instrument}_volume'].shift(1).rolling(window=240, min_periods=1).sum()
+#     df[f'{instrument}_rmean_4h'] = df[f'{instrument}_close'].shift(1).rolling(window=240, min_periods=1).mean()
+#     df[f'{instrument}_rmax_4h'] = df[f'{instrument}_high'].shift(1).rolling(window=240, min_periods=1).max()
+#     df[f'{instrument}_rmin_4h'] = df[f'{instrument}_low'].shift(1).rolling(window=240, min_periods=1).min()
+#     df[f'{instrument}_rstd_4h'] = df[f'{instrument}_close'].shift(1).rolling(window=240, min_periods=1).std()
+#     df[f'{instrument}_rvolume_4h'] = df[f'{instrument}_volume'].shift(1).rolling(window=240, min_periods=1).sum()
 
-    df[f'{instrument}_rmean_1h'] = df[f'{instrument}_close'].shift(1).rolling(window=60, min_periods=1).mean()
-    df[f'{instrument}_rmax_1h'] = df[f'{instrument}_high'].shift(1).rolling(window=60, min_periods=1).max()
-    df[f'{instrument}_rmin_1h'] = df[f'{instrument}_low'].shift(1).rolling(window=60, min_periods=1).min()
-    df[f'{instrument}_rstd_1h'] = df[f'{instrument}_close'].shift(1).rolling(window=60, min_periods=1).std()
-    df[f'{instrument}_rvolume_1h'] = df[f'{instrument}_volume'].shift(1).rolling(window=60, min_periods=1).sum()
+#     df[f'{instrument}_rmean_1h'] = df[f'{instrument}_close'].shift(1).rolling(window=60, min_periods=1).mean()
+#     df[f'{instrument}_rmax_1h'] = df[f'{instrument}_high'].shift(1).rolling(window=60, min_periods=1).max()
+#     df[f'{instrument}_rmin_1h'] = df[f'{instrument}_low'].shift(1).rolling(window=60, min_periods=1).min()
+#     df[f'{instrument}_rstd_1h'] = df[f'{instrument}_close'].shift(1).rolling(window=60, min_periods=1).std()
+#     df[f'{instrument}_rvolume_1h'] = df[f'{instrument}_volume'].shift(1).rolling(window=60, min_periods=1).sum()
     
-    daily_cols = []
-    weekly_cols = []
-    monthly_cols = []
+#     daily_cols = []
+#     weekly_cols = []
+#     monthly_cols = []
 
-    for col in ['high', 'low', 'open', 'close', 'volume']:
+#     for col in ['high', 'low', 'open', 'close', 'volume']:
 
-        for n_lag in [1, 3, 5]:
-            daily_data[f'{instrument}_{col}_{n_lag}d_ago'] = daily_data[f'{instrument}_{col}'].shift(n_lag)
-            daily_cols.append(f'{instrument}_{col}_{n_lag}d_ago')
+#         for n_lag in [1, 3, 5]:
+#             daily_data[f'{instrument}_{col}_{n_lag}d_ago'] = daily_data[f'{instrument}_{col}'].shift(n_lag)
+#             daily_cols.append(f'{instrument}_{col}_{n_lag}d_ago')
 
-        weekly_data[f'{instrument}_{col}_1w_ago'] = weekly_data[f'{instrument}_{col}'].shift(1)
-        weekly_cols.append(f'{instrument}_{col}_1w_ago')
+#         weekly_data[f'{instrument}_{col}_1w_ago'] = weekly_data[f'{instrument}_{col}'].shift(1)
+#         weekly_cols.append(f'{instrument}_{col}_1w_ago')
 
-        monthly_data[f'{instrument}_{col}_1m_ago'] = monthly_data[f'{instrument}_{col}'].shift(1)
-        monthly_cols.append(f'{instrument}_{col}_1m_ago')
+#         monthly_data[f'{instrument}_{col}_1m_ago'] = monthly_data[f'{instrument}_{col}'].shift(1)
+#         monthly_cols.append(f'{instrument}_{col}_1m_ago')
 
-    daily_data = daily_data[daily_cols].reset_index()
-    weekly_data = weekly_data[weekly_cols].reset_index()
-    monthly_data = monthly_data[monthly_cols].reset_index()
+#     daily_data = daily_data[daily_cols].reset_index()
+#     weekly_data = weekly_data[weekly_cols].reset_index()
+#     monthly_data = monthly_data[monthly_cols].reset_index()
 
-    daily_map_dict = daily_data.set_index('datetime').to_dict()
-    for k in daily_map_dict.keys():
-        df[k] = df['date'].map(daily_map_dict[k])
+#     daily_map_dict = daily_data.set_index('datetime').to_dict()
+#     for k in daily_map_dict.keys():
+#         df[k] = df['date'].map(daily_map_dict[k])
 
-    weekly_map_dict = weekly_data.set_index('datetime').to_dict()
-    for k in weekly_map_dict.keys():
-        df[k] = df['weekend_date'].map(weekly_map_dict[k])
+#     weekly_map_dict = weekly_data.set_index('datetime').to_dict()
+#     for k in weekly_map_dict.keys():
+#         df[k] = df['weekend_date'].map(weekly_map_dict[k])
 
-    monthly_map_dict = monthly_data.set_index('datetime').to_dict()
-    for k in monthly_map_dict.keys():
-        df[k] = df['month_date'].map(monthly_map_dict[k])
+#     monthly_map_dict = monthly_data.set_index('datetime').to_dict()
+#     for k in monthly_map_dict.keys():
+#         df[k] = df['month_date'].map(monthly_map_dict[k])
 
-df.drop(columns=['date', 'weekend_date', 'month_date'], inplace=True)
-df.dropna(inplace=True)
-df.reset_index(inplace=True)
-print(df.shape)
+# df.drop(columns=['date', 'weekend_date', 'month_date'], inplace=True)
+# df.dropna(inplace=True)
+# df.reset_index(inplace=True)
+# print(df.shape)
 
-df.to_csv("all_data_1min.csv", index=False)
+# df.to_csv("all_data_1min.csv", index=False)
