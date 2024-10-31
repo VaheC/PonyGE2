@@ -1,0 +1,247 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{::}
+{:import pandas as pd:}{::}
+{:import numpy as np:}{::}
+{:from fitness.indicators import numba_indicators, signals:}{::}
+{:from fitness.performance.helper_func import merge_pnl, get_drawdowns, get_pnl, trading_signals, get_lag:}{::}
+{:from numba import njit:}{::}
+{:COMMISSION = 0.015:}{::}
+{:SLIPPAGE = 0.00005:}{::}
+{:AVAILABLE_CAPITAL = 700000:}{::}
+{:TRADE_SIZE = 0.5:}{::}{::}
+{:MAX_LAG = 99:}{::}{::}
+{:buy_idxs, sell_idxs = trading_signals(buy_signal=<signal>, sell_signal=<signal>):}{::}
+{:if len(buy_idxs) == 0 or len(sell_idxs) == 0::}{::}
+{:{:return 999:}:}{::}{::}
+{:buy_idxs = np.array(buy_idxs):}{::}
+{:sell_idxs = np.array(sell_idxs):}{::}
+{:open_prices = price_data["'"btc_open"'"]:}{::}
+{:buy_prices = open_prices[np.isin(np.arange(len(open_prices)), buy_idxs)]:}{::}
+{:sell_prices = open_prices[np.isin(np.arange(len(open_prices)), sell_idxs)]:}{::}
+{:if buy_idxs[0] < sell_idxs[0]::}{::}
+{:{:buy_arr = get_pnl(sell_prices, buy_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1):}:}
+{:{:buy_pnl = np.sum(buy_arr):}:}{::}
+{:{:sell_arr = get_pnl(buy_prices[1:], sell_prices[:-1], COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0):}:}{::}
+{:{:sell_pnl = np.sum(sell_arr):}:}{::}
+{:{:all_arr = merge_pnl(buy_arr, sell_arr):}:}{::}
+{:else::}{::}
+{:{:sell_arr = get_pnl(buy_prices, sell_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0):}:}{::}
+{:{:sell_pnl = np.sum(sell_arr):}:}{::}
+{:{:buy_arr = get_pnl(sell_prices[1:], buy_prices[:-1], COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1):}:}
+{:{:buy_pnl = np.sum(buy_arr):}:}{::}
+{:{:all_arr = merge_pnl(sell_arr, buy_arr):}:}{::}{::}
+{:total_pnl = buy_pnl + sell_pnl:}{::}
+{:if total_pnl <= 0::}{::}
+{:{:return 999:}:}{::}
+{:equity_curve_arr = np.cumsum(all_arr):}{::}
+{:drawdowns = get_drawdowns(equity_curve_arr):}{::}
+{:if len(drawdowns[drawdowns!=0]) == 0::}{::}
+{:{:return 999:}:}{::}
+{:avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]):}{::}
+{:fitness = total_pnl / avg_drawdown:}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:return -fitness:}
+
+<callf> ::= fitness = fun(price_data)
+
+<var> ::= <indicator> | price_data["'"<data-prices>"'"][MAX_LAG:]
+| get_lag(price_data["'"<data-prices>"'"], lag=<lag-steps>)[MAX_LAG:]
+
+<var-volume> ::= <indicator-volume> | price_data["'"<volume>"'"][MAX_LAG:]
+
+<data-prices> ::= <close-prices> | <open-prices> | <high-prices> | <low-prices>
+
+<inst-tickers> ::= btc | 6e | aapl | aav | amzn | cl | coin | dog | es | fet | gc 
+| googl | inj | lin | meta | msft | ng | nq | nvda | pltr | sui | tia | tsla | xrp | zf | zn
+
+<close-prices> ::= <inst-tickers>_close
+
+<open-prices> ::= <inst-tickers>_open
+
+<high-prices> ::= <inst-tickers>_high
+
+<low-prices> ::= <inst-tickers>_low
+
+<volume> ::= <inst-tickers>_volume
+
+<indicator> ::= numba_indicators.moving_average(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.exponential_moving_average(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.relative_strength_index(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.macd(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>, signal_window=<window-const>)[0][MAX_LAG:]
+| numba_indicators.macd(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>, signal_window=<window-const>)[1][MAX_LAG:]
+| numba_indicators.macd(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>, signal_window=<window-const>)[2][MAX_LAG:]
+| numba_indicators.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<int-const>)[0][MAX_LAG:]
+| numba_indicators.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<int-const>)[1][MAX_LAG:]
+| numba_indicators.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<int-const>)[2][MAX_LAG:]
+| numba_indicators.momentum(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.stochastic_oscillator_kd(close_prices=price_data["'"<close-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>, smooth_period=<short-window-const>)[0][MAX_LAG:]
+| numba_indicators.stochastic_oscillator_kd(close_prices=price_data["'"<close-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>, smooth_period=<short-window-const>)[1][MAX_LAG:]
+| numba_indicators.average_true_range(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.moving_average_difference(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>)[MAX_LAG:]
+| numba_indicators.linear_perc_atr(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.quadratic_perc_atr(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.cubic_perc_atr(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.adx(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.min_max_adx(numba_indicators.adx(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>), window=<window-const>)[0][MAX_LAG:]
+| numba_indicators.min_max_adx(numba_indicators.adx(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>), window=<window-const>)[1][MAX_LAG:]
+| numba_indicators.residual_min_max_adx(numba_indicators.adx(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>), window=<window-const>)[0][MAX_LAG:]
+| numba_indicators.residual_min_max_adx(numba_indicators.adx(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>), window=<window-const>)[1][MAX_LAG:]
+| numba_indicators.delta_accel_adx(numba_indicators.adx(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>), window=<window-const>)[0][MAX_LAG:]
+| numba_indicators.delta_accel_adx(numba_indicators.adx(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>), window=<window-const>)[1][MAX_LAG:]
+| numba_indicators.intraday_intensity(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"])[MAX_LAG:]
+| numba_indicators.delta_intraday_intensity(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"])[MAX_LAG:]
+| numba_indicators.reactivity(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.delta_reactivity(numba_indicators.reactivity(prices=price_data["'"<close-prices>"'"], window=<window-const>))[MAX_LAG:]
+| numba_indicators.min_reactivity(numba_indicators.reactivity(prices=price_data["'"<close-prices>"'"], window=<window-const>), window=<window-const>)[MAX_LAG:]
+| numba_indicators.max_reactivity(numba_indicators.reactivity(prices=price_data["'"<close-prices>"'"], window=<window-const>), window=<window-const>)[MAX_LAG:]
+| numba_indicators.close_to_close(close=price_data["'"<close-prices>"'"])[MAX_LAG:]
+| numba_indicators.n_day_high(prices=price_data["'"<close-prices>"'"], n=<int-const>)[MAX_LAG:]
+| numba_indicators.n_day_low(prices=price_data["'"<close-prices>"'"], n=<int-const>)[MAX_LAG:]
+| numba_indicators.close_minus_moving_average(close=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.linear_deviation(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.quadratic_deviation(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.cubic_deviation(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.detrended_rsi(close=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.abs_price_change_oscillator(close=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.atr_ratio(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.n_day_narrower_wider(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], n=<int-const>)[0][MAX_LAG:]
+| numba_indicators.n_day_narrower_wider(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], n=<int-const>)[1][MAX_LAG:]
+| numba_indicators.price_skewness(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.change_skewness(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.price_kurtosis(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.change_kurtosis(prices=price_data["'"<close-prices>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.delta_price_skewness(numba_indicators.price_skewness(prices=price_data["'"<close-prices>"'"], window=<window-const>))[MAX_LAG:]
+| numba_indicators.delta_change_skewness(numba_indicators.change_skewness(prices=price_data["'"<close-prices>"'"], window=<window-const>))[MAX_LAG:]
+| numba_indicators.delta_price_kurtosis(numba_indicators.price_kurtosis(prices=price_data["'"<close-prices>"'"], window=<window-const>))[MAX_LAG:]
+| numba_indicators.delta_change_kurtosis(numba_indicators.change_kurtosis(prices=price_data["'"<close-prices>"'"], window=<window-const>))[MAX_LAG:]
+| numba_indicators.volume_weighted_ma_over_ma(price=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"], window=<window-const>)[0][MAX_LAG:]
+| numba_indicators.volume_weighted_ma_over_ma(price=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"], window=<window-const>)[1][MAX_LAG:]
+| numba_indicators.diff_volume_weighted_ma_over_ma(price=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.on_balance_volume(price=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"])[MAX_LAG:]
+| numba_indicators.delta_on_balance_volume(numba_indicators.on_balance_volume(price=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"]))[MAX_LAG:]
+| numba_indicators.product_price_volume(price=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"])[MAX_LAG:]
+| numba_indicators.sum_price_volume(price=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.price_entropy(prices=price_data["'"<close-prices>"'"], window=<window-const>, bins=<bins-const>)[MAX_LAG:]
+| numba_indicators.chaikin_ad_line(close=price_data["'"<close-prices>"'"], low=price_data["'"<low-prices>"'"], high=price_data["'"<high-prices>"'"], volume=price_data["'"<volume>"'"])[MAX_LAG:]
+| numba_indicators.chaikin_ad_oscillator(numba_indicators.chaikin_ad_line(close=price_data["'"<close-prices>"'"], low=price_data["'"<low-prices>"'"], high=price_data["'"<high-prices>"'"], volume=price_data["'"<volume>"'"]), short_window=<window-const>, long_window=<window-const>)[MAX_LAG:]
+| numba_indicators.absolute_price_oscillator(close=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>)[MAX_LAG:]
+| numba_indicators.aroon(prices=price_data["'"<close-prices>"'"], period=<window-const>)[0][MAX_LAG:]
+| numba_indicators.aroon(prices=price_data["'"<close-prices>"'"], period=<window-const>)[1][MAX_LAG:]
+| numba_indicators.balance_of_power(close=price_data["'"<close-prices>"'"], low=price_data["'"<low-prices>"'"], high=price_data["'"<high-prices>"'"])[MAX_LAG:]
+| numba_indicators.double_exponential_moving_average(close=price_data["'"<close-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.directional_movement_index(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], period=<window-const>)[0][MAX_LAG:]
+| numba_indicators.directional_movement_index(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], period=<window-const>)[1][MAX_LAG:]
+| numba_indicators.directional_movement_index(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], period=<window-const>)[2][MAX_LAG:]
+| numba_indicators.hilbert_dominant_cycle_period(close=price_data["'"<close-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.hilbert_dominant_cycle_phase(close=price_data["'"<close-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.hilbert_phasor_components(close=price_data["'"<close-prices>"'"])[MAX_LAG:, 0]
+| numba_indicators.hilbert_phasor_components(close=price_data["'"<close-prices>"'"])[MAX_LAG:, 1]
+| numba_indicators.hilbert_sinewave(close=price_data["'"<close-prices>"'"])[MAX_LAG:]
+| numba_indicators.hilbert_instantaneous_trendline(close=price_data["'"<close-prices>"'"])[MAX_LAG:]
+| numba_indicators.hilbert_trend_vs_cycle_mode(close=price_data["'"<close-prices>"'"])[MAX_LAG:]
+| numba_indicators.mesa_adaptive_moving_average(close=price_data["'"<close-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.median_price(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"])[MAX_LAG:]
+| numba_indicators.midpoint_over_period(close=price_data["'"<close-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.parabolic_sar(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"])[MAX_LAG:]
+| numba_indicators.triple_exponential_moving_average(close=price_data["'"<close-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.williams_r(close=price_data["'"<close-prices>"'"], low=price_data["'"<low-prices>"'"], high=price_data["'"<high-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.z_score(<var>)[MAX_LAG:]
+| numba_indicators.rolling_drawdown(<data-prices>, window_size=<window-const>)[MAX_LAG:]
+| numba_indicators.rolling_volatility(<data-prices>, window_size=<window-const>)[MAX_LAG:]
+| numba_indicators.rolling_parkinson_estimator(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], window_size=<window-const>)[MAX_LAG:]
+| numba_indicators.rolling_rogers_satchell_estimator(open=price_data["'"<open-prices>"'"], high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window_size=<window-const>)[MAX_LAG:]
+| numba_indicators.rolling_yang_zhang_estimator(open=price_data["'"<open-prices>"'"], high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window_size=<window-const>)[MAX_LAG:]
+| numba_indicators.rolling_garman_klass_estimator(open=price_data["'"<open-prices>"'"], high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window_size=<window-const>)[MAX_LAG:]
+| signals.moving_max(price_data["'"<data-prices>"'"], window=<window-const>)[MAX_LAG:]
+| signals.moving_min(price_data["'"<data-prices>"'"], window=<window-const>)[MAX_LAG:]
+| signals.moving_percentile(price_data["'"<data-prices>"'"], window=<window-const>, percentile=<perc-const>)[MAX_LAG:]
+| numba_indicators.ultimate_oscillator(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], period1=<digit>, period2=2 * <digit>, period3=3 * <digit>)[MAX_LAG:]
+| numba_indicators.medprice(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"])[MAX_LAG:]
+| numba_indicators.ldecay(price=price_data["'"<data-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.logret(price=price_data["'"<data-prices>"'"])[MAX_LAG:]
+| numba_indicators.pvi(price=price_data["'"<data-prices>"'"], volume=price_data["'"<volume>"'"])[MAX_LAG:]
+| numba_indicators.pvi(price=price_data["'"btc_close"'"], volume=price_data["'"btc_volume"'"])[MAX_LAG:]
+| numba_indicators.pctret(price=price_data["'"<data-prices>"'"])[MAX_LAG:]
+| numba_indicators.cti(price=price_data["'"<data-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.dema(price=price_data["'"<data-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.hma(price=price_data["'"<data-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.calculate_keltner_channels(high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], close_prices=price_data["'"<close-prices>"'"], period=<window-const>, multiplier=<digit>)[0][MAX_LAG:]
+| numba_indicators.calculate_keltner_channels(high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], close_prices=price_data["'"<close-prices>"'"], period=<window-const>, multiplier=<digit>)[1][MAX_LAG:]
+| numba_indicators.calculate_keltner_channels(high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], close_prices=price_data["'"<close-prices>"'"], period=<window-const>, multiplier=<digit>)[2][MAX_LAG:]
+| numba_indicators.commodity_channel_index(high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], close_prices=price_data["'"<close-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.bull_bar_tail_rolling(close_prices=price_data["'"<close-prices>"'"], open_prices=price_data["'"<open-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.bear_bar_tail_rolling(close_prices=price_data["'"<close-prices>"'"], open_prices=price_data["'"<open-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>)[MAX_LAG:]
+| numba_indicators.awesome_oscillator(high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], short_period=<digit>, long_period=<short-window-const>)[MAX_LAG:]
+
+<indicator-volume> ::= numba_indicators.volume_momentum(volume=price_data["'"<volume>"'"], window=<window-const>)[MAX_LAG:]
+| numba_indicators.delta_volume_momentum(numba_indicators.volume_momentum(volume=price_data["'"<volume>"'"], window=<window-const>))[MAX_LAG:]
+| numba_indicators.positive_volume_indicator(volume=price_data["'"<volume>"'"])[MAX_LAG:]
+| numba_indicators.negative_volume_indicator(volume=price_data["'"<volume>"'"])[MAX_LAG:]
+| numba_indicators.volume_entropy(volume=price_data["'"<volume>"'"], window=<window-const>, bins=<bins-const>)[MAX_LAG:]
+
+<signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
+| (<var> <c-op> <var>)
+| ((<var> <mat-op> <var>) <c-op> <var>)
+| ((<var> <mat-op> <var>) <c-op> <value>)
+| ((<var> <mat-op> <value>) <c-op> <value>)
+| (<mat-f> <c-op> <mat-f>)
+| (<mat-f> <c-op> <value>)
+| ((<mat-f> <mat-op> <mat-f>) <c-op> <value>)
+| ((<mat-f> <mat-op> <value>) <c-op> <value>)
+| (<var-volume> <c-op> <int-const>)
+| (<var-volume> <c-op> <var-volume>)
+| ((<var-volume> <mat-op> <var-volume>) <c-op> <var-volume>)
+| ((<var-volume> <mat-op> <var-volume>) <c-op> <value>)
+| ((<var-volume> <mat-op> <value>) <c-op> <value>)
+| (<matf-volume> <c-op> <matf-volume>)
+| (<matf-volume> <c-op> <value>)
+| ((<matf-volume> <mat-op> <matf-volume>) <c-op> <value>)
+| ((<matf-volume> <mat-op> <value>) <c-op> <value>)
+| (price_data["'"day_of_week"'"][MAX_LAG:] <c-op> <week-day>)
+| (price_data["'"month"'"][MAX_LAG:] <c-op> <month>)
+
+<value> ::= <int-const> | <real-const>
+
+<change-value> ::= 0.<int-const> | -0.<int-const> | 0.<int-const><int-const> | -0.<int-const><int-const>
+
+<int-const> ::= <digit><aug-digit><aug-digit><aug-digit><aug-digit> 
+| <digit><aug-digit><aug-digit><aug-digit> | <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<window-const> ::= <digit><aug-digit><aug-digit><aug-digit> | <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<short-window-const> ::= <digit> | <digit><aug-digit> 
+
+<long-window-const> ::= <digit><aug-digit><aug-digit><aug-digit>
+| <digit><aug-digit><aug-digit>
+
+<bins-const> ::= <digit><aug-digit><aug-digit><aug-digit> | <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<lag-steps> ::= <digit> | <digit><aug-digit>
+
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
+<month> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+
+<real-const> ::= 0.<int-const> | <int-const>.<int-const>
+
+<perc-const> ::= 0.<digit> | 0.<digit><aug-digit> 
+
+<c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
+
+<mat-op> ::= + | - | * | / | // | % | **
+
+<log-op> ::= "&" | "|" 
+
+<mat-f> ::= np.log(<var>) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) | np.exp(<var>) | np.expm1(<var>)
+| np.log10(<var>) | np.log2(<var>) | np.log1p(<var>) | np.abs(<var>)
+
+<matf-volume> ::= np.log(<var-volume>) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
+| np.exp(<var-volume>) | np.expm1(<var-volume>) | np.log10(<var-volume>) | np.log2(<var-volume>) 
+| np.log1p(<var-volume>) | np.abs(<var-volume>)

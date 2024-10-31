@@ -1,0 +1,137 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{::}
+{:import pandas as pd:}{::}
+{:import numpy as np:}{::}
+{:from fitness.indicators import numba_indicators, signals:}{::}
+{:from fitness.performance.helper_func import merge_pnl, get_drawdowns, get_pnl, trading_signals, get_lag:}{::}
+{:from numba import njit:}{::}
+{:COMMISSION = 0.015:}{::}
+{:SLIPPAGE = 0.00005:}{::}
+{:AVAILABLE_CAPITAL = 700000:}{::}
+{:TRADE_SIZE = 0.5:}{::}{::}
+{:MAX_LAG = 99:}{::}{::}
+{:buy_idxs, sell_idxs = trading_signals(buy_signal=<signal>, sell_signal=<signal>):}{::}
+{:if len(buy_idxs) == 0 or len(sell_idxs) == 0::}{::}
+{:{:return 999:}:}{::}{::}
+{:buy_idxs = np.array(buy_idxs):}{::}
+{:sell_idxs = np.array(sell_idxs):}{::}
+{:open_prices = price_data["'"btc_open"'"]:}{::}
+{:buy_prices = open_prices[np.isin(np.arange(len(open_prices)), buy_idxs)]:}{::}
+{:sell_prices = open_prices[np.isin(np.arange(len(open_prices)), sell_idxs)]:}{::}
+{:if buy_idxs[0] < sell_idxs[0]::}{::}
+{:{:buy_arr = get_pnl(sell_prices, buy_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1):}:}
+{:{:buy_pnl = np.sum(buy_arr):}:}{::}
+{:{:sell_arr = get_pnl(buy_prices[1:], sell_prices[:-1], COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0):}:}{::}
+{:{:sell_pnl = np.sum(sell_arr):}:}{::}
+{:{:all_arr = merge_pnl(buy_arr, sell_arr):}:}{::}
+{:else::}{::}
+{:{:sell_arr = get_pnl(buy_prices, sell_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0):}:}{::}
+{:{:sell_pnl = np.sum(sell_arr):}:}{::}
+{:{:buy_arr = get_pnl(sell_prices[1:], buy_prices[:-1], COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1):}:}
+{:{:buy_pnl = np.sum(buy_arr):}:}{::}
+{:{:all_arr = merge_pnl(sell_arr, buy_arr):}:}{::}{::}
+{:total_pnl = buy_pnl + sell_pnl:}{::}
+{:if total_pnl <= 0::}{::}
+{:{:return 999:}:}{::}
+{:equity_curve_arr = np.cumsum(all_arr):}{::}
+{:drawdowns = get_drawdowns(equity_curve_arr):}{::}
+{:if len(drawdowns[drawdowns!=0]) == 0::}{::}
+{:{:return 999:}:}{::}
+{:avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]):}{::}
+{:fitness = total_pnl / avg_drawdown:}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:return -fitness:}
+
+<callf> ::= fitness = fun(price_data)
+
+<signal> ::= (price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:])
+| (price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:])
+| (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30)
+| (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70)
+| (price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:])
+| (price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:])
+| (price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:])
+| (price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:])
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30) & (price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70) & (price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30) & (price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70) & (price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30) & (price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70) & (price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30) & (price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70) & (price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 15))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 15))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30) & (numba_indicators.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 15))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70) & (numba_indicators.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 15))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 15))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 15))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 15))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 15))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 30))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 30))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 30))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 30))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 30))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 30))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 30))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] > 30))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] < 70))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] < 70))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] < 70))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] < 70))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] < 70))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] < 70))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] < 70))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-filter>)[MAX_LAG:] < 70))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] > numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] > numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] > numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] > numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] > numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] > numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] > numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] > numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] < numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] < numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] < 30) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] < numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((numba_indicators.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:] > 70) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] < numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] < numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] < numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] > numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] < numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+| ((price_data["'"btc_close"'"][MAX_LAG:] < numba_indicators.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)[MAX_LAG:]) & (numba_indicators.rolling_max_index(price_data["'"btc_high"'"], window=<window-filter>)[MAX_LAG:] < numba_indicators.rolling_min_index(price_data["'"btc_low"'"], window=<window-filter>)[MAX_LAG:]))
+
+<window-const> ::= <digit><aug-digit> 
+
+<window-filter> ::= <digit><aug-digit><aug-digit> 
+
+<lag-steps> ::= <digit> | <digit><aug-digit>
+
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
