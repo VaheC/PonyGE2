@@ -1192,3 +1192,324 @@ def ultimate_oscillator(high, low, close, period1, period2, period3):
             uo[i] = 100 * (weighted_bp / weighted_tr)
     
     return uo
+
+@njit(cache=True)
+def medprice(high, low):
+    return (high + low) / 2
+
+@njit(cache=True)
+def ldecay(price, period):
+    
+    decay_values = np.full_like(price, -999.0)
+    weights = np.arange(1, period + 1)
+    weights = weights / weights.sum()
+    
+    for i in range(period - 1, len(price)):
+        decay_values[i] = np.dot(price[i-period+1:i+1], weights)
+    
+    return decay_values
+
+@njit(cache=True)
+def logret(price):
+    
+    log_returns = np.full_like(price, -999.0)
+    
+    for i in range(1, len(price)):
+        log_returns[i] = np.log(price[i] / price[i - 1])
+    
+    return log_returns
+
+@njit(cache=True)
+def pvi(price, volume):
+
+    pvi_values = np.full_like(price, -999.0)
+    pvi_values[0] = 1000
+    
+    for i in range(1, len(price)):
+        if volume[i] > volume[i - 1]:
+            pvi_values[i] = pvi_values[i - 1] + (price[i] - price[i - 1]) / price[i - 1] * pvi_values[i - 1]
+        else:
+            pvi_values[i] = pvi_values[i - 1]
+    
+    return pvi_values
+
+@njit(cache=True)
+def pctret(price):
+    
+    pct_returns = np.full_like(price, -999.0)
+    
+    for i in range(1, len(price)):
+        pct_returns[i] = (price[i] - price[i - 1]) / price[i - 1] * 100
+    
+    return pct_returns
+
+@njit(cache=True)
+def cti(price, period):
+    
+    cti_values = np.full_like(price, -999.0)
+    
+    for i in range(period, len(price)):
+        current_price = price[i]
+        high = np.max(price[i - period + 1:i + 1])
+        low = np.min(price[i - period + 1:i + 1])
+        cti_values[i] = (2 * (current_price - low) / (high - low) - 1) * 100 if high != low else 0
+    
+    return cti_values
+
+@njit(cache=True)
+def dema(price, period):
+    
+    ema1 = np.full_like(price, -999.0)
+    ema2 = np.full_like(price, -999.0)
+    dema_values = np.full_like(price, -999.0)
+    alpha = 2 / (period + 1)
+    
+    # Calculate first EMA
+    ema1[period - 1] = np.mean(price[:period])  # Initial value for the first EMA
+    for i in range(period, len(price)):
+        ema1[i] = alpha * price[i] + (1 - alpha) * ema1[i - 1]
+    
+    # Calculate second EMA on the first EMA
+    ema2[period - 1] = ema1[period - 1]
+    for i in range(period, len(ema1)):
+        ema2[i] = alpha * ema1[i] + (1 - alpha) * ema2[i - 1]
+    
+    # DEMA is calculated as: 2 * EMA1 - EMA2
+    for i in range(period - 1, len(price)):
+        dema_values[i] = 2 * ema1[i] - ema2[i]
+    
+    return dema_values
+
+@njit(cache=True)
+def hma(price, period):
+    
+    half_length = period // 2
+    sqrt_length = int(np.sqrt(period))
+    
+    wma_half = np.full_like(price, -999.0)
+    wma_full = np.full_like(price, -999.0)
+    hma_values = np.full_like(price, -999.0)
+    
+    # Create weights arrays as float64 for compatibility with Numba
+    half_weights = np.arange(1, half_length + 1, dtype=np.float64)
+    full_weights = np.arange(1, period + 1, dtype=np.float64)
+    sqrt_weights = np.arange(1, sqrt_length + 1, dtype=np.float64)
+    
+    # Calculate WMA for half and full period lengths
+    for i in range(period - 1, len(price)):
+        wma_half[i] = np.dot(price[i-half_length+1:i+1], half_weights) / np.sum(half_weights)
+        wma_full[i] = np.dot(price[i-period+1:i+1], full_weights) / np.sum(full_weights)
+        
+    # Calculate the HMA over the square root length
+    for i in range(period - 1, len(price)):
+        hma_values[i] = np.dot(2 * wma_half[i-sqrt_length+1:i+1] - wma_full[i-sqrt_length+1:i+1], sqrt_weights) / np.sum(sqrt_weights)
+    
+    return hma_values
+
+@njit(cache=True)
+def stochastic_oscillator_kd(close_prices, high_prices, low_prices, period=14, smooth_period=3):
+    n = len(close_prices)
+    stoch_k = np.full(n, -999.0)  # Initialize %K line with -999
+    stoch_d = np.full(n, -999.0)  # Initialize %D line with -999
+
+    # Calculate %K values for each point in the series where there are enough values
+    for i in range(period - 1, n):
+        highest_high = np.max(high_prices[i - period + 1:i + 1])
+        lowest_low = np.min(low_prices[i - period + 1:i + 1])
+        current_close = close_prices[i]
+
+        if highest_high != lowest_low:
+            stoch_k[i] = 100 * (current_close - lowest_low) / (highest_high - lowest_low)
+
+    # Calculate %D values as a moving average of %K, starting from smooth_period - 1 elements after %K calculation begins
+    for i in range(period - 1 + smooth_period - 1, n):
+        if stoch_k[i - smooth_period + 1:i + 1].min() != -999:
+            stoch_d[i] = np.mean(stoch_k[i - smooth_period + 1:i + 1])
+
+    return stoch_k, stoch_d
+
+@njit(cache=True)
+def money_flow_index(high_prices, low_prices, close_prices, volumes, period=14):
+    
+    n = len(close_prices)
+    mfi = np.full(n, -999.0)  # Initialize MFI output array with -999
+
+    # Calculate Typical Price and Raw Money Flow
+    typical_price = (high_prices + low_prices + close_prices) / 3
+    raw_money_flow = typical_price * volumes
+
+    # Loop through each period to calculate MFI
+    for i in range(period, n):
+        pos_flow = 0.0  # Positive money flow
+        neg_flow = 0.0  # Negative money flow
+        
+        # Calculate positive and negative money flow over the look-back period
+        for j in range(i - period + 1, i + 1):
+            if typical_price[j] > typical_price[j - 1]:
+                pos_flow += raw_money_flow[j]
+            elif typical_price[j] < typical_price[j - 1]:
+                neg_flow += raw_money_flow[j]
+
+        # Avoid division by zero
+        if neg_flow == 0:
+            mfi[i] = 100.0
+        else:
+            money_flow_ratio = pos_flow / neg_flow
+            mfi[i] = 100 - (100 / (1 + money_flow_ratio))
+
+    return mfi
+
+@njit(cache=True)
+def calculate_keltner_channels(high_prices, low_prices, close_prices, period=20, multiplier=2):
+
+    n = len(close_prices)
+    middle_line = np.full(n, -999.0)  # EMA of close prices
+    upper_band = np.full(n, -999.0)   # Upper Keltner Channel
+    lower_band = np.full(n, -999.0)   # Lower Keltner Channel
+    atr_values = np.full(n, -999.0)   # ATR values
+    
+    # Calculate the True Range (TR) for each period
+    tr = np.empty(n)
+    tr[0] = 0  # First TR is undefined, can be set to zero or left out of calculation
+    for i in range(1, n):
+        tr[i] = max(
+            high_prices[i] - low_prices[i], abs(high_prices[i] - close_prices[i - 1]), 
+            abs(low_prices[i] - close_prices[i - 1])
+        )
+
+    # Calculate the Average True Range (ATR) using a simple moving average
+    for i in range(period, n):
+        atr_values[i] = np.mean(tr[i - period + 1:i + 1])
+
+    # Calculate EMA of the close prices for the middle line
+    alpha = 2 / (period + 1)  # EMA smoothing factor
+    ema = close_prices[0]  # Start EMA with the first close price
+    for i in range(n):
+        if i >= period - 1:
+            ema = alpha * close_prices[i] + (1 - alpha) * ema
+            middle_line[i] = ema
+
+    # Calculate Upper and Lower Keltner Channels
+    for i in range(period, n):
+        if atr_values[i] != -999:
+            upper_band[i] = middle_line[i] + multiplier * atr_values[i]
+            lower_band[i] = middle_line[i] - multiplier * atr_values[i]
+
+    return middle_line, upper_band, lower_band
+
+@njit(cache=True)
+def commodity_channel_index(high_prices, low_prices, close_prices, period=20):
+    n = len(close_prices)
+    cci = np.full(n, -999.0)  # Initialize CCI output with -999
+    
+    # Calculate Typical Price (TP)
+    typical_price = (high_prices + low_prices + close_prices) / 3
+    
+    # Loop through each period to calculate CCI
+    for i in range(period - 1, n):
+        # Calculate the Simple Moving Average (SMA) of TP
+        sma_tp = np.mean(typical_price[i - period + 1:i + 1])
+        
+        # Calculate the Mean Deviation (MD) of TP from its SMA
+        mean_dev = np.mean(np.abs(typical_price[i - period + 1:i + 1] - sma_tp))
+        
+        # Avoid division by zero and calculate CCI
+        if mean_dev != 0:
+            cci[i] = (typical_price[i] - sma_tp) / (0.015 * mean_dev)
+
+    return cci
+
+@njit(cache=True)
+def bull_bar_tail_rolling(close_prices, open_prices, high_prices, low_prices, period=20):
+
+    n = len(close_prices)
+    bull_bar_tail_count = np.full(n, -999, dtype=np.int32)  # Initialize output with -999 for insufficient data
+    
+    # Loop through each bar to calculate the rolling count of bars meeting the conditions
+    for i in range(period - 1, n):
+        count = 0
+        
+        # Check each bar in the rolling window
+        for j in range(i - period + 1, i + 1):
+            # Check the conditions for a BullBarTail
+            if (close_prices[j] > open_prices[j] and
+                (open_prices[j] - low_prices[j]) > (close_prices[j] - open_prices[j]) and
+                high_prices[j] > high_prices[j - 1]):
+                count += 1
+        
+        # Set the count in the result array
+        bull_bar_tail_count[i] = count
+
+    return bull_bar_tail_count
+
+@njit(cache=True)
+def bear_bar_tail_rolling(close_prices, open_prices, high_prices, low_prices, period=20):
+    n = len(close_prices)
+    bear_bar_tail_count = np.full(n, -999, dtype=np.int32)  # Initialize output with -999 for insufficient data
+    
+    # Loop through each bar to calculate the rolling count of bars meeting the conditions
+    for i in range(period - 1, n):
+        count = 0
+        
+        # Check each bar in the rolling window
+        for j in range(i - period + 1, i + 1):
+            # Check the conditions for a BearBarTail
+            if (close_prices[j] < open_prices[j] and
+                (high_prices[j] - open_prices[j]) > (open_prices[j] - close_prices[j]) and
+                low_prices[j] < low_prices[j - 1]):
+                count += 1
+        
+        # Set the count in the result array
+        bear_bar_tail_count[i] = count
+
+    return bear_bar_tail_count
+
+@njit(cache=True)
+def awesome_oscillator(high_prices, low_prices, short_period=5, long_period=34):
+    n = len(high_prices)
+    ao_values = np.full(n, -999.0)  # Initialize AO array with -999 for insufficient data
+    
+    # Calculate the Median Price
+    median_prices = (high_prices + low_prices) / 2
+    
+    # Calculate AO by finding the difference between the short and long period SMAs of the median price
+    for i in range(long_period - 1, n):
+        short_sma = np.mean(median_prices[i - short_period + 1:i + 1])
+        long_sma = np.mean(median_prices[i - long_period + 1:i + 1])
+        ao_values[i] = short_sma - long_sma
+
+    return ao_values
+
+@njit(cache=True)
+def rolling_max_index(arr, window):
+    n = len(arr)
+    result = np.full(n, -999, dtype=np.int32)  # Initialize result array with -999
+
+    for i in range(n):
+        # Check if there are enough data points for the window
+        if i >= window - 1:
+            # Extract the window of values
+            window_values = arr[i - window + 1: i + 1]
+            # Find the index of the maximum within the window
+            max_index_within_window = np.argmax(window_values)
+            # Convert to original array index
+            result[i] = i - window + 1 + max_index_within_window
+
+    return result
+
+@njit(cache=True)
+def rolling_min_index(arr, window):
+    n = len(arr)
+    result = np.full(n, -999, dtype=np.int32)  # Initialize result array with -999
+
+    for i in range(n):
+        # Check if there are enough data points for the window
+        if i >= window - 1:
+            # Extract the window of values
+            window_values = arr[i - window + 1: i + 1]
+            # Find the index of the minimum within the window
+            min_index_within_window = np.argmin(window_values)
+            # Convert to original array index
+            result[i] = i - window + 1 + min_index_within_window
+
+    return result
