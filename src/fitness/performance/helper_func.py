@@ -115,6 +115,10 @@ def trading_signals_buy(buy_signal, exit_signal):
     signal = buy + sell
     buy_idxs = []
     sell_idxs = []
+
+    if -1 not in np.unique(signal) or 1 not in np.unique(signal):
+        return buy_idxs, sell_idxs
+    
     is_buy = 0
     is_sell = 0
 
@@ -152,6 +156,10 @@ def trading_signals_sell(sell_signal, exit_signal):
     signal = buy + sell
     buy_idxs = []
     sell_idxs = []
+
+    if -1 not in np.unique(signal) or 1 not in np.unique(signal):
+        return sell_idxs, buy_idxs
+
     is_buy = 0
     is_sell = 0
 
@@ -183,6 +191,9 @@ def trading_signals_sell(sell_signal, exit_signal):
 
 @njit(cache=True)
 def change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs):
+
+    # if len(buy_idxs) == 0 or len(sell_idxs) == 0 or len(buy_exit_idxs) == 0 or len(sell_exit_idxs) == 0:
+    #     return np.array(buy_idxs), np.array(buy_exit_idxs), np.array(sell_idxs), np.array(sell_exit_idxs)
 
     remove_buy_idxs = []
     remove_sell_idxs = []
