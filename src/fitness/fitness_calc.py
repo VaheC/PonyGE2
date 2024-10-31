@@ -4,7 +4,7 @@ import polars as pl
 import re
 
 def generate_data():
-    df = pl.read_csv(Path(r'/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\all_data_1min.csv'))
+    df = pl.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\all_data_1min.csv'))
 
     df = df.with_columns(pl.col('datetime').str.to_datetime())
     df = df.sort('datetime', descending=False)

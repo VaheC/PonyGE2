@@ -9,13 +9,15 @@ from pathlib import Path
 def generate_data():
     # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\BTCUSD_ohlcv.csv'))
     # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\BTC-ETH-1m.csv'))
-    df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\all_data_1min.csv'))
+    # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\all_data_1min.csv'))
+    df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\all_data_1min.csv'))
     # df = pd.read_csv('/kaggle/input/btcusd-test/BTCUSD_ohlcv.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/BTC-ETH-1m.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/all_data_1min.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
     # df = df.iloc[-10080:]
     # df = df.iloc[-525600:]
+    # df = df.iloc[252000: (252000+50400)]
     df.sort_values('datetime', ascending=True, inplace=True)
     df.reset_index(inplace=True, drop=True)
     price_data = {}
@@ -30,6 +32,7 @@ def generate_data():
         else:
             price_data[col] = df[col].values
     price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
+    price_data['month'] = df['datetime'].dt.month.values
     # price_data['month'] = df['datetime'].dt.month.values
     # price_data['day_of_year'] = df['datetime'].dt.dayofyear.values
     return price_data
