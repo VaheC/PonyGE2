@@ -255,7 +255,7 @@ def get_random_idxs(arr, num_elements, exclude_arr=np.array([])):
     exclude_set = set(exclude_arr)
 
     # Create an array to hold unique indices
-    indices = np.zeros(num_elements, dtype=np.int32)
+    indices = np.zeros(num_elements, dtype=np.int64)
     chosen_set = set()
 
     for i in range(num_elements):
