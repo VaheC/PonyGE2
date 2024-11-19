@@ -1,0 +1,11 @@
+numpy == 1.26.4
+scipy == 1.13.1
+matplotlib == 3.7.1
+pandas == 2.1.4
+scikit-learn == 1.3.2
+pandas_ta == 0.3.14b0
+numba == 0.60.0
+tqdm == 4.66.5
+polars == 1.11.0
+vectorbt==0.26.2
+nbformat>=4.2.0
