@@ -230,6 +230,17 @@ def get_lag(prices, lag=1):
     return result
 
 @njit(cache=True)
+def get_var_lag(prices, lags):
+    n = len(prices)
+    result = np.full(n, np.nan, dtype=np.float64)  # Initialize with -999
+
+    for i in range(n):
+        if i >= lags[i]:
+            result[i] = prices[i - lags[i]]
+
+    return result
+
+@njit(cache=True)
 def get_max_drawdown(pnl_list):
     max_dd = 0.0
     peak = pnl_list[0]
@@ -255,7 +266,7 @@ def get_random_idxs(arr, num_elements, exclude_arr=np.array([])):
     exclude_set = set(exclude_arr)
 
     # Create an array to hold unique indices
-    indices = np.zeros(num_elements, dtype=np.int64)
+    indices = np.zeros(num_elements, dtype=np.int32)
     chosen_set = set()
 
     for i in range(num_elements):
