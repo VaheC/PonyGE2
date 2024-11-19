@@ -321,8 +321,8 @@
 <log-op> ::= "&" | "|" 
 
 <mat-f> ::= np.log(<var>) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) | np.exp(<var>) | np.expm1(<var>)
-| np.log10(<var>) | np.log2(<var>) | np.log1p(<var>) | np.abs(<var>)
+| np.log10(<var>) | np.log2(<var>) | np.log1p(<var>) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
 
 <matf-volume> ::= np.log(<var-volume>) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
 | np.exp(<var-volume>) | np.expm1(<var-volume>) | np.log10(<var-volume>) | np.log2(<var-volume>) 
-| np.log1p(<var-volume>) | np.abs(<var-volume>)
+| np.log1p(<var-volume>) | np.abs(<var-volume>) | np.max(<var-volume>) | np.min(<var-volume>)
