@@ -186,22 +186,22 @@ def save_all_ind_to_file(inds, end=False, name="ge_results"):
     filename = path.join(params['FILE_PATH'], (str(name) + ".csv"))
     savefile = open(filename, 'w')
 
-    savefile.write(f"buy;sell;fitness\n\n")
-    # savefile.write(f"buy;exit_buy;sell;exit_sell;fitness\n\n")
+    # savefile.write(f"buy;sell;fitness\n\n")
+    savefile.write(f"buy;exit_buy;sell;exit_sell;fitness\n\n")
 
     for k, v in inds.items():
 
-        buy_signal = re.findall(r"trading_signals\(buy_signal\=(.*)\, sell_signal", k)[0]
-        sell_signal = re.findall(r"\, sell_signal\=(.*)\)", k)[0]
+        # buy_signal = re.findall(r"trading_signals\(buy_signal\=(.*)\, sell_signal", k)[0]
+        # sell_signal = re.findall(r"\, sell_signal\=(.*)\)", k)[0]
 
-        savefile.write(f"{buy_signal};{sell_signal};{v}\n\n")
+        # savefile.write(f"{buy_signal};{sell_signal};{v}\n\n")
 
-        # buy_signal = re.findall(r"trading_signals_buy\(buy_signal\=(.*)\, exit_signal", k)[0]
-        # buy_exit_signal = re.findall(r"\, exit_signal\=(.*)\)", k)[0]
-        # sell_signal = re.findall(r"trading_signals_sell\(sell_signal\=(.*)\, exit_signal", k)[0]
-        # sell_exit_signal = re.findall(r"\, exit_signal\=(.*)\)", k)[0]
+        buy_signal = re.findall(r"trading_signals_buy\(buy_signal\=(.*)\, exit_signal", k)[0]
+        buy_exit_signal = re.findall(r"\, exit_signal\=(.*)\)", k)[0]
+        sell_signal = re.findall(r"trading_signals_sell\(sell_signal\=(.*)\, exit_signal", k)[0]
+        sell_exit_signal = re.findall(r"\, exit_signal\=(.*)\)", k)[0]
 
-        # savefile.write(f"{buy_signal};{buy_exit_signal};{sell_signal};{sell_exit_signal};{v}\n\n")
+        savefile.write(f"{buy_signal};{buy_exit_signal};{sell_signal};{sell_exit_signal};{v}\n\n")
 
 
     savefile.close()
