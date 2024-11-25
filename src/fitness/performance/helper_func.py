@@ -323,3 +323,22 @@ def get_monkey_test_results(open_prices, buy_idxs, sell_idxs, COMMISSION, SLIPPA
         max_dd_arr[i] = get_max_drawdown(equity_curve_arr)
     
     return pnl_arr, max_dd_arr
+
+@njit(cache=True)
+def get_returns(buy_idxs, buy_pnl, sell_idxs, sell_pnl, n_data):
+
+    pnl_values = np.zeros(n_data)
+
+    for i in range(len(buy_idxs)):
+        pnl_values[buy_idxs[i]] = buy_pnl[i]
+
+    for i in range(len(sell_idxs)):
+        pnl_values[sell_idxs[i]] = sell_pnl[i]
+
+    pnl_cum = np.cumsum(pnl_values)
+
+    # pnl_preturn = np.diff(pnl_cum + 1) / (pnl_cum[:-1] + 1)
+
+    pnl_lreturn = np.log(pnl_cum[1:] + 1) - np.log(pnl_cum[:-1] + 1)
+
+    return pnl_lreturn

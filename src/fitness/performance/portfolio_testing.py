@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from pathlib import Path
 from collections import defaultdict
 import gc
@@ -9,6 +10,43 @@ from .testing_func import (calculate_mean_win_perc_entry_testing, calculate_mean
                           calculate_mc_performance, get_entry_win_pc_df, get_exit_win_pc_df,
                           get_core_win_pc_df, get_perf_df, get_mc_df)
 from .filter_strategies import generate_fold_data
+
+def downside_deviation(returns, target):
+    downside_returns = returns[returns < target]
+    deviations = downside_returns - target
+    return deviations
+
+def calculate_portfolio_frontier(df, annualized_log_return, var_matrix, downside_cov_matrix, annual_factor):
+
+    port_returns = []
+    port_volatility = []
+    port_weights = []
+    port_downside_volatility = []
+
+    n_strs = df.shape[1]
+
+    n_ports = 10000
+
+    for _ in range(n_ports):
+
+        temp_weights = np.random.random(n_strs)
+        temp_weights = temp_weights / np.sum(temp_weights)
+        port_weights.append(temp_weights)
+
+        temp_port_return = np.dot(temp_weights, annualized_log_return.values)
+        port_returns.append(temp_port_return)
+
+        var = var_matrix.mul(temp_weights, axis=0).mul(temp_weights, axis=1).sum().sum()
+        sd = np.sqrt(var)
+        ann_sd = sd * np.sqrt(annual_factor)
+        port_volatility.append(ann_sd)
+
+        downside_var = downside_cov_matrix.mul(temp_weights, axis=0).mul(temp_weights, axis=1).sum().sum()
+        downside_sd = np.sqrt(downside_var)
+        ann_downside_sd = downside_sd * np.sqrt(annual_factor)
+        port_downside_volatility.append(ann_downside_sd)
+
+    return port_returns, port_volatility, port_weights, port_downside_volatility
 
 def create_txt_code1(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt, 
                      fee=0.015, slippage=0.00005, inv_amount=700000, trade_size=0.5, max_lag=99):
@@ -117,6 +155,72 @@ else:
     all_arr = merge_buy_sell_pnl(buy_idxs, sell_idxs, buy_arr, sell_arr)
     total_pnl = buy_pnl + sell_pnl
     equity_curve_arr = np.cumsum(all_arr)
+    drawdowns = get_drawdowns(equity_curve_arr)
+    if len(drawdowns[drawdowns!=0]) != 0:
+        avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0])
+        fitness = total_pnl / avg_drawdown
+    else:
+        fitness = np.nan
+        avg_drawdown = np.nan
+gc.collect()'''
+    
+    return text_code
+
+def create_txt_code_pnl1(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt, 
+                     fee=0.015, slippage=0.00005, inv_amount=700000, trade_size=0.5, max_lag=99):
+
+    text_code = f'''import os
+CUR_DIR = os.getcwd()
+# os.chdir('src')
+#import pandas as pd
+import numpy as np
+import gc
+from fitness.indicators import numba_indicators, signals
+from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag
+from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit, get_returns
+# os.chdir(CUR_DIR)
+#from numba import njit
+COMMISSION = {fee}
+SLIPPAGE = {slippage}
+AVAILABLE_CAPITAL = {inv_amount}
+TRADE_SIZE = {trade_size}
+MAX_LAG = {max_lag}
+buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal={buy_signal_txt}, exit_signal={buy_exit_txt})
+sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal={sell_signal_txt}, exit_signal={sell_exit_txt})
+# if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+#     fitness = -9999999
+#     avg_drawdown = -9999999
+# else:
+try:
+    buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs)
+except:
+    pass
+if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+    fitness = np.nan
+    avg_drawdown = np.nan
+else:
+    buy_idxs = np.array(buy_idxs)
+    sell_idxs = np.array(sell_idxs)
+    open_prices = price_data['btc_open']
+    # pnl_mren_arr, max_dd_mren_arr = get_monkey_test_results(open_prices, buy_idxs, sell_idxs, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE)
+    buy_prices = open_prices[np.isin(np.arange(len(open_prices)), buy_idxs)]
+    buy_exit_prices = open_prices[np.isin(np.arange(len(open_prices)), buy_exit_idxs)]
+    sell_prices = open_prices[np.isin(np.arange(len(open_prices)), sell_idxs)]
+    sell_exit_prices = open_prices[np.isin(np.arange(len(open_prices)), sell_exit_idxs)]
+    buy_arr = get_pnl(buy_exit_prices, buy_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1)
+    buy_pnl = np.sum(buy_arr)
+    sell_arr = get_pnl(sell_exit_prices, sell_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0)
+    sell_pnl = np.sum(sell_arr)
+    all_arr = merge_buy_sell_pnl(buy_idxs, sell_idxs, buy_arr, sell_arr)
+    total_pnl = buy_pnl + sell_pnl
+    equity_curve_arr = np.cumsum(all_arr)
+    pnl_returns = get_returns(
+        buy_idxs=buy_idxs, 
+        buy_pnl=buy_arr, 
+        sell_idxs=sell_idxs, 
+        sell_pnl=sell_arr, 
+        n_data=len(open_prices)
+    )
     drawdowns = get_drawdowns(equity_curve_arr)
     if len(drawdowns[drawdowns!=0]) != 0:
         avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0])
@@ -367,7 +471,7 @@ def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_s
             df_selected_live.to_csv(selected_path, index=False)
             logger.info("Out of fold survived strategies saved!")
 
-def creating_port_weights(lstr_path, logger, port_path='portfolio_strategies', 
+def creating_port_weights(lstr_path, logger, port_path='portfolio_strategies',
                           port_file_name='baseline', is_prob=False, prob_threshold=0.9):
 
     logger.info("Creating %s directory if it doesn't exist...", port_path)
@@ -399,7 +503,154 @@ def creating_port_weights(lstr_path, logger, port_path='portfolio_strategies',
     port_df['weight'] = port_df['prob'] / port_df['prob'].sum()
     port_df.to_csv(f'{port_path}/portfolio_{port_file_name}.csv', index=False)
     logger.info('Weights are saved to {port_path} directory!')
+
+def creating_port_weights_mvp(lstr_path, data_path, n_bars=50400, n_total_folds=9, 
+                              create_txt_code=create_txt_code_pnl1, freq_minutes=1,
+                              port_path='portfolio_strategies', port_file_name='portfolio',
+                              is_min_variance_port=True, is_sharpe_port=False, is_sortino_port=False,
+                              is_prob=True, prob_threshold=0.9):
     
+    if not os.path.exists(port_path):
+        os.mkdir(port_path)
+
+    live_strategy_files = os.listdir(lstr_path)
+
+    df_str = pd.DataFrame()
+
+    for file in live_strategy_files:
+
+        temp_df = pd.read_csv(f'{lstr_path}/{file}')
+        # temp_df.drop(columns='strategy', inplace=True)
+        # temp_df = temp_df['prob'].to_frame()
+        
+        df_str = pd.concat([df_str, temp_df], axis=0)
+
+    if is_prob:
+        df_str = df_str[df_str['prob'] > prob_threshold]
+
+    df_str.reset_index(inplace=True, drop=True)
+    
+    final_port_dict = defaultdict(list)
+
+    for i_fold in range(1, n_total_folds+1):
+
+        # if i_fold == n_fold:
+        #     continue
+
+        # n_total_cases += 1
+
+        # df = df_52w.iloc[idx:idx+bars_per_5week, :]
+        # df.reset_index(drop=True, inplace=True)
+        df = generate_fold_data(data_path, fold=i_fold, n_bars=n_bars)
+        # df.reset_index(drop=True, inplace=True)
+
+        price_data = {}
+        for col in df.columns:
+            if col == 'datetime':
+                continue
+            else:
+                price_data[col] = df[col].values
+        price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
+        price_data['month'] = df['datetime'].dt.month.values
+
+        exec_dict = {'price_data': price_data}
+
+        df_returns = pd.DataFrame()
+
+        for row in tqdm(df_str.itertuples()):
+
+            buy_signal_txt = row.buy
+            buy_exit_txt = row.exit_buy
+            sell_signal_txt = row.sell
+            sell_exit_txt = row.exit_sell
+            strategy = row.strategy
+
+            text_code = create_txt_code(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt)
+
+            try:
+                exec(text_code, exec_dict)
+                df_returns[strategy] = list(exec_dict['pnl_returns'])
+            except:
+                continue
+
+        str_list = list(df_returns.columns)
+
+        df_returns['date'] = df.iloc[1:]['datetime'].dt.date.values
+
+        # 1. Aggregate the minute log returns to daily log returns (sum them for each day)
+        daily_log_returns = df_returns.groupby('date')[str_list].sum()
+
+        # 2. Calculate the mean of daily log returns
+        mean_daily_log_return = daily_log_returns.mean()
+
+        # 3. Annualize the log return (mean daily log return * 365 days in a year)
+        annualized_log_return = mean_daily_log_return * 365  # 365 days for Bitcoin
+
+        df_returns.drop(columns='date', inplace=True)
+
+        n_days_per_year = 365
+
+        annual_factor = n_days_per_year * 24 * 60 // freq_minutes
+
+        var_matrix = df_returns.cov()
+
+        # variance_matrix = var_matrix * annual_factor
+
+        # port_weight = np.array([[0.5], [0.5]])
+
+        # port_var = np.transpose(port_weight) @ variance_matrix @ port_weight
+        # port_vol = np.sqrt(port_var)
+
+        downside_dict = {}
+        for col in df_returns.columns:
+            temp_downside_deviations = downside_deviation(df_returns[col], target=0)
+            downside_dict[col] = temp_downside_deviations
+
+        # 2. Create a DataFrame for downside deviations
+        downside_df = pd.DataFrame(downside_dict)
+
+        # 3. Drop rows with NaN values (where there was no downside return)
+        downside_df.dropna(inplace=True)
+
+        # 4. Calculate the downside covariance matrix
+        downside_cov_matrix = downside_df.cov()
+
+        port_returns, port_volatility, port_weights, port_downside_volatility = calculate_portfolio_frontier(
+            df_returns, annualized_log_return, var_matrix, downside_cov_matrix, annual_factor)
+        
+        data_dict = {'Returns': port_returns, 'Volatility': port_volatility, 'Downside_Volatility': port_downside_volatility}
+
+        for idx, str_name in enumerate(str_list):
+            data_dict[str_name] = [elem[idx] for elem in port_weights]
+
+        port_df = pd.DataFrame(data_dict)
+
+        if is_min_variance_port:
+            temp_port_dict = port_df.iloc[port_df['Volatility'].idxmin()][list(df_returns.columns)].to_dict()
+        elif is_sharpe_port:
+            temp_port_dict = port_df.iloc[(port_df['Returns'] / port_df['Volatility']).idxmax()][list(df_returns.columns)].to_dict()
+        elif is_sortino_port:
+            temp_port_dict = port_df.iloc[(port_df['Returns'] / port_df['Downside_Volatility']).idxmax()][list(df_returns.columns)].to_dict()
+
+        for k in temp_port_dict.keys():
+            final_port_dict[k].append(temp_port_dict[k])
+
+        gc.collect()
+
+    if is_min_variance_port:
+        port_file_name += '_mvp'
+    elif is_sharpe_port:
+        port_file_name += '_sharpe'
+    elif is_sortino_port:
+        port_file_name += '_sortino'
+
+    avg_weight_sum = np.sum([np.nanmean(final_port_dict[k]) for k in final_port_dict.keys()])
+
+    port_map_dict = {k: np.nanmean(final_port_dict[k]) / avg_weight_sum for k in final_port_dict.keys()}
+
+    df_str['weight'] = df_str['strategy'].map(port_map_dict)
+    df_str.to_csv(f'{port_path}/{port_file_name}.csv', index=False)
+
 def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1):
 
     # final_entry_win_pc_df = pd.DataFrame()

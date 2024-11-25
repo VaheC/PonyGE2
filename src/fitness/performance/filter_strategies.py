@@ -378,5 +378,3 @@ def filter_save_strategies(strategy_file_path, logger, stats_path='testing_resul
         df_selected_str.to_csv(selected_path, index=False)
         logger.info('Saving survived strategies to %s directory completed!', str_path)
 
-
-
