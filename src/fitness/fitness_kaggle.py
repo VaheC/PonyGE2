@@ -8,35 +8,6 @@ from pathlib import Path
 from fitness.custom_logger.load_logger import create_terminal_logger
 from fitness.performance.helper_func import get_max_drawdown
 
-import tensorflow as tf
-
-def use_tpu():
-    # Check if TPU is available and connect
-    try:
-        # Initialize TPU
-        tpu = tf.distribute.cluster_resolver.TPUClusterResolver()  
-        print('Running on TPU ', tpu.cluster_spec().as_dict()['worker'])
-        
-        # Connect to TPU and initialize the system
-        tf.config.experimental_connect_to_cluster(tpu)
-        tf.tpu.experimental.initialize_tpu_system(tpu)
-        
-        # Create a distribution strategy for TPU
-        strategy = tf.distribute.TPUStrategy(tpu)
-    except ValueError:
-        print('No TPU found. Falling back to CPU or GPU.')
-        strategy = tf.distribute.get_strategy()  # Use CPU or GPU fallback
-
-    # Use the TPU strategy scope to execute code on the TPU
-    with strategy.scope():
-        # Create two random tensors
-        tensor_a = tf.random.uniform(shape=[3, 3], minval=0, maxval=10, dtype=tf.float32)
-        tensor_b = tf.random.uniform(shape=[3, 3], minval=0, maxval=10, dtype=tf.float32)
-        
-        # Add the two tensors
-        result = tf.add(tensor_a, tensor_b)
-
-
 def generate_data():
 
     df = pd.read_csv('/kaggle/input/btcusd-test/data_1min_fold/data_fold3.csv')
@@ -74,8 +45,6 @@ class fitness_kaggle(base_ff):
         d = {'price_data': self.test_data}
 
         logger = create_terminal_logger()
-
-        use_tpu()
 
         try:
             # t0 = time.time()
