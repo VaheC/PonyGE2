@@ -7,33 +7,33 @@ from stats.stats import get_stats, stats
 from utilities.algorithm.initialise_run import pool_init
 from utilities.stats import trackers
 
-import tensorflow as tf
+# import tensorflow as tf
 
-def use_tpu():
-    # Check if TPU is available and connect
-    try:
-        # Initialize TPU
-        tpu = tf.distribute.cluster_resolver.TPUClusterResolver()  
-        print('Running on TPU ', tpu.cluster_spec().as_dict()['worker'])
+# def use_tpu():
+#     # Check if TPU is available and connect
+#     try:
+#         # Initialize TPU
+#         tpu = tf.distribute.cluster_resolver.TPUClusterResolver()  
+#         print('Running on TPU ', tpu.cluster_spec().as_dict()['worker'])
         
-        # Connect to TPU and initialize the system
-        tf.config.experimental_connect_to_cluster(tpu)
-        tf.tpu.experimental.initialize_tpu_system(tpu)
+#         # Connect to TPU and initialize the system
+#         tf.config.experimental_connect_to_cluster(tpu)
+#         tf.tpu.experimental.initialize_tpu_system(tpu)
         
-        # Create a distribution strategy for TPU
-        strategy = tf.distribute.TPUStrategy(tpu)
-    except ValueError:
-        print('No TPU found. Falling back to CPU or GPU.')
-        strategy = tf.distribute.get_strategy()  # Use CPU or GPU fallback
+#         # Create a distribution strategy for TPU
+#         strategy = tf.distribute.TPUStrategy(tpu)
+#     except ValueError:
+#         print('No TPU found. Falling back to CPU or GPU.')
+#         strategy = tf.distribute.get_strategy()  # Use CPU or GPU fallback
 
-    # Use the TPU strategy scope to execute code on the TPU
-    with strategy.scope():
-        # Create two random tensors
-        tensor_a = tf.random.uniform(shape=[3, 3], minval=0, maxval=10, dtype=tf.float32)
-        tensor_b = tf.random.uniform(shape=[3, 3], minval=0, maxval=10, dtype=tf.float32)
+#     # Use the TPU strategy scope to execute code on the TPU
+#     with strategy.scope():
+#         # Create two random tensors
+#         tensor_a = tf.random.uniform(shape=[3, 3], minval=0, maxval=10, dtype=tf.float32)
+#         tensor_b = tf.random.uniform(shape=[3, 3], minval=0, maxval=10, dtype=tf.float32)
         
-        # Add the two tensors
-        result = tf.add(tensor_a, tensor_b)
+#         # Add the two tensors
+#         result = tf.add(tensor_a, tensor_b)
 
 def search_loop():
     """
@@ -61,7 +61,7 @@ def search_loop():
     # Traditional GE
     for generation in range(1, (params['GENERATIONS'] + 1)):
         stats['gen'] = generation
-        use_tpu()
+        # use_tpu()
         # New generation
         individuals = params['STEP'](individuals)
 
