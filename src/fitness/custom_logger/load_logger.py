@@ -7,7 +7,7 @@ def create_logger(filename='process.log', dir_path='log'):
         os.mkdir(dir_path)
     
     logger = logging.getLogger(__name__)
-    logger.setLevel('DEBUG')
+    logger.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter(
         "%(levelname)s %(asctime)s: %(message)s",
@@ -16,12 +16,12 @@ def create_logger(filename='process.log', dir_path='log'):
     )
 
     terminal_handler = logging.StreamHandler()
-    terminal_handler.setLevel('DEBUG')
+    # terminal_handler.setLevel('DEBUG')
     terminal_handler.setFormatter(formatter)
     logger.addHandler(terminal_handler)
 
     file_handler = logging.FileHandler(filename=f"{dir_path}/{filename}", mode='a', encoding='utf-8')
-    file_handler.setLevel('DEBUG')
+    # file_handler.setLevel('DEBUG')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
