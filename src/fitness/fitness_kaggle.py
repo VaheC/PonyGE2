@@ -5,13 +5,12 @@ from pathlib import Path
 # import numpy as np
 # import re
 # import os
-from fitness.custom_logger.load_logger import create_terminal_logger
-from fitness.performance.helper_func import get_max_drawdown
+# from fitness.custom_logger.load_logger import create_terminal_logger
+# from fitness.performance.helper_func import get_max_drawdown
 
 def generate_data():
 
-    df = pd.read_csv('/kaggle/input/btcusd-test/data_1min_fold/data_fold3.csv')
-    
+    df = pd.read_csv('/kaggle/input/btcusd-test/data_15min_fold/data_fold1.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
     df.sort_values('datetime', ascending=True, inplace=True)
     df.reset_index(inplace=True, drop=True)
@@ -44,7 +43,7 @@ class fitness_kaggle(base_ff):
         self.test_data = generate_data()
         d = {'price_data': self.test_data}
 
-        logger = create_terminal_logger()
+        # logger = create_terminal_logger()
 
         try:
             # t0 = time.time()
@@ -52,16 +51,16 @@ class fitness_kaggle(base_ff):
             # t1 = time.time()
             fitness = d['fitness']
 
-            try:
-                roi = d['pf'].stats()['Total Return [%]']
-                mdd = d['pf'].stats()['Max Drawdown [%]']
-            except:
-                roi = 100 * d['equity_curve_arr'][-1] / (d['AVAILABLE_CAPITAL'] * d['TRADE_SIZE'])
-                mdd = get_max_drawdown(d['equity_curve_arr'])
+            # try:
+            #     roi = d['pf'].stats()['Total Return [%]']
+            #     mdd = d['pf'].stats()['Max Drawdown [%]']
+            # except:
+            #     roi = 100 * d['equity_curve_arr'][-1] / (d['AVAILABLE_CAPITAL'] * d['TRADE_SIZE'])
+            #     mdd = get_max_drawdown(d['equity_curve_arr'])
 
-            temp_txt_logger = f"ROI: {roi:.4f}, MDD: {mdd:.4f}, Fitness: {fitness:.4f}"
+            # temp_txt_logger = f"ROI: {roi:.4f}, MDD: {mdd:.4f}, Fitness: {fitness:.4f}"
 
-            logger.info(temp_txt_logger)
+            # logger.info(temp_txt_logger)
         except:
             fitness = 404
             
