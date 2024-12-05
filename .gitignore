@@ -7,3 +7,4 @@ Banknote_shuf.csv
 .idea/
 src/python_log.txt
 *.csv
+*.log
