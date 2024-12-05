@@ -270,7 +270,10 @@ def get_important_stats(df_str, df_data, bars_per_span = 7 * 60 * 24 * 5, n_bars
 def save_stats(data_path, strategy_file_path, n_fold, logger, stats_path='testing_results', stats_file_name='baseline', n_bars=50400):
 
     logger.info('Starting data loading process...')
-    df_data = generate_fold_data(data_path, fold=n_fold, n_bars=n_bars)
+    if n_fold == 0:
+        df_data = generate_data(data_path)
+    else:
+        df_data = generate_fold_data(data_path, fold=n_fold, n_bars=n_bars)
     logger.info('Data loading process completed!')
 
     logger.info("Starting strategies' loading process...")
