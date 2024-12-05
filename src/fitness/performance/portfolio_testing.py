@@ -10,11 +10,19 @@ from .testing_func import (calculate_mean_win_perc_entry_testing, calculate_mean
                           calculate_mc_performance, get_entry_win_pc_df, get_exit_win_pc_df,
                           get_core_win_pc_df, get_perf_df, get_mc_df)
 from .filter_strategies import generate_fold_data
+from scipy.cluster.hierarchy import linkage
+from scipy.cluster.hierarchy import fcluster
+from scipy.spatial.distance import squareform
 
 def downside_deviation(returns, target):
     downside_returns = returns[returns < target]
     deviations = downside_returns - target
     return deviations
+
+def inverse_variance_weights(cov_matrix):
+    inv_var = 1 / np.diag(cov_matrix)
+    weights = inv_var / np.sum(inv_var)
+    return weights
 
 def calculate_portfolio_frontier(df, annualized_log_return, var_matrix, downside_cov_matrix, annual_factor):
 
@@ -273,7 +281,7 @@ def test_out_of_fold(df_str, data_path, n_fold, n_bars=50400, n_total_folds=9, c
 
             if i_fold == n_fold:
                 continue
-
+            
             n_total_cases += 1
 
             # df = df_52w.iloc[idx:idx+bars_per_5week, :]
@@ -289,9 +297,14 @@ def test_out_of_fold(df_str, data_path, n_fold, n_bars=50400, n_total_folds=9, c
                     price_data[col] = df[col].values
             price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
             price_data['month'] = df['datetime'].dt.month.values
+            price_data['hour'] = df['datetime'].dt.hour.values
+            price_data['minute'] = df['datetime'].dt.minute.values
 
             exec_dict = {'price_data': price_data}
-            exec(text_code, exec_dict)
+            try:
+                exec(text_code, exec_dict)
+            except:
+                pass
 
             try:
                 equity_curve_arr = exec_dict['equity_curve_arr']
@@ -393,10 +406,13 @@ def test_out_of_fold(df_str, data_path, n_fold, n_bars=50400, n_total_folds=9, c
 def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_strategies', 
                      lstr_file_name='baseline', is_subset=False, start_subset=0, end_subset=10,
                      entry_testing_threshold=50, exit_testing_threshold=50, core_testing_threshold=60,
-                     prob_threshold=0.8):
+                     prob_threshold=0.8, n_bars=50400, n_total_folds=9):
 
     logger.info('Loading survived strategies from %s', str_file_path)
-    df_selected_str = pd.read_csv(str_file_path)
+    try:
+        df_selected_str = pd.read_csv(str_file_path)
+    except:
+        df_selected_str = pd.read_csv(str_file_path, sep=';')
     logger.info('Survived strategies loaded!')
 
     if df_selected_str.shape[0] != 0:
@@ -406,12 +422,12 @@ def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_s
         if is_subset:
             (final_entry_win_pc_df_fold, final_exit_win_pc_df_fold, final_core_win_pc_df_fold, 
             final_perf_df_fold, final_mc_df_fold, equity_curve_dict_fold) = test_out_of_fold(
-                df_selected_str.iloc[start_subset:end_subset], data_path, n_fold
+                df_selected_str.iloc[start_subset:end_subset], data_path, n_fold, n_bars, n_total_folds
             )
         else:
             (final_entry_win_pc_df_fold, final_exit_win_pc_df_fold, final_core_win_pc_df_fold, 
             final_perf_df_fold, final_mc_df_fold, equity_curve_dict_fold) = test_out_of_fold(
-                df_selected_str, data_path, n_fold
+                df_selected_str, data_path, n_fold, n_bars, n_total_folds
             )
 
         logger.info('Out of fold testing stats calculation completed!')
@@ -508,7 +524,7 @@ def creating_port_weights_mvp(lstr_path, data_path, n_bars=50400, n_total_folds=
                               create_txt_code=create_txt_code_pnl1, freq_minutes=1,
                               port_path='portfolio_strategies', port_file_name='portfolio',
                               is_min_variance_port=True, is_sharpe_port=False, is_sortino_port=False,
-                              is_prob=True, prob_threshold=0.9):
+                              is_prob=True, prob_threshold=0.9, n_days_per_year=365):
     
     if not os.path.exists(port_path):
         os.mkdir(port_path)
@@ -584,11 +600,9 @@ def creating_port_weights_mvp(lstr_path, data_path, n_bars=50400, n_total_folds=
         mean_daily_log_return = daily_log_returns.mean()
 
         # 3. Annualize the log return (mean daily log return * 365 days in a year)
-        annualized_log_return = mean_daily_log_return * 365  # 365 days for Bitcoin
+        annualized_log_return = mean_daily_log_return * n_days_per_year  # 365 days for Bitcoin
 
         df_returns.drop(columns='date', inplace=True)
-
-        n_days_per_year = 365
 
         annual_factor = n_days_per_year * 24 * 60 // freq_minutes
 
@@ -626,14 +640,27 @@ def creating_port_weights_mvp(lstr_path, data_path, n_bars=50400, n_total_folds=
         port_df = pd.DataFrame(data_dict)
 
         if is_min_variance_port:
-            temp_port_dict = port_df.iloc[port_df['Volatility'].idxmin()][list(df_returns.columns)].to_dict()
+            try:
+                temp_port_dict = port_df.iloc[port_df['Volatility'].idxmin()][list(df_returns.columns)].to_dict()
+            except:
+                temp_port_dict = {}
         elif is_sharpe_port:
-            temp_port_dict = port_df.iloc[(port_df['Returns'] / port_df['Volatility']).idxmax()][list(df_returns.columns)].to_dict()
+            try:
+                temp_port_dict = port_df.iloc[(port_df['Returns'] / port_df['Volatility']).idxmax()][list(df_returns.columns)].to_dict()
+            except:
+                temp_port_dict = {}
         elif is_sortino_port:
-            temp_port_dict = port_df.iloc[(port_df['Returns'] / port_df['Downside_Volatility']).idxmax()][list(df_returns.columns)].to_dict()
+            try:
+                temp_port_dict = port_df.iloc[(port_df['Returns'] / port_df['Downside_Volatility']).idxmax()][list(df_returns.columns)].to_dict()
+            except:
+                temp_port_dict = {}
 
-        for k in temp_port_dict.keys():
-            final_port_dict[k].append(temp_port_dict[k])
+        if len(temp_port_dict) == 0:
+            for k in temp_port_dict.keys():
+                final_port_dict[k].append(np.nan)
+        else:
+            for k in temp_port_dict.keys():
+                final_port_dict[k].append(temp_port_dict[k])
 
         gc.collect()
 
@@ -643,6 +670,116 @@ def creating_port_weights_mvp(lstr_path, data_path, n_bars=50400, n_total_folds=
         port_file_name += '_sharpe'
     elif is_sortino_port:
         port_file_name += '_sortino'
+
+    avg_weight_sum = np.sum([np.nanmean(final_port_dict[k]) for k in final_port_dict.keys()])
+
+    port_map_dict = {k: np.nanmean(final_port_dict[k]) / avg_weight_sum for k in final_port_dict.keys()}
+
+    df_str['weight'] = df_str['strategy'].map(port_map_dict)
+    df_str.to_csv(f'{port_path}/{port_file_name}.csv', index=False)
+
+def creating_port_weights_hrp(lstr_path, data_path, n_bars=50400, n_total_folds=9, 
+                              create_txt_code=create_txt_code_pnl1,
+                              port_path='portfolio_strategies', port_file_name='portfolio_hrp',
+                              is_prob=True, prob_threshold=0.9):
+    
+    if not os.path.exists(port_path):
+        os.mkdir(port_path)
+
+    live_strategy_files = os.listdir(lstr_path)
+
+    df_str = pd.DataFrame()
+
+    for file in live_strategy_files:
+
+        temp_df = pd.read_csv(f'{lstr_path}/{file}')
+        # temp_df.drop(columns='strategy', inplace=True)
+        # temp_df = temp_df['prob'].to_frame()
+        
+        df_str = pd.concat([df_str, temp_df], axis=0)
+
+    if is_prob:
+        df_str = df_str[df_str['prob'] > prob_threshold]
+
+    df_str.reset_index(inplace=True, drop=True)
+    
+    final_port_dict = defaultdict(list)
+
+    for i_fold in range(1, n_total_folds+1):
+
+        # if i_fold == n_fold:
+        #     continue
+
+        # n_total_cases += 1
+
+        # df = df_52w.iloc[idx:idx+bars_per_5week, :]
+        # df.reset_index(drop=True, inplace=True)
+        df = generate_fold_data(data_path, fold=i_fold, n_bars=n_bars)
+        # df.reset_index(drop=True, inplace=True)
+
+        price_data = {}
+        for col in df.columns:
+            if col == 'datetime':
+                continue
+            else:
+                price_data[col] = df[col].values
+        price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
+        price_data['month'] = df['datetime'].dt.month.values
+
+        exec_dict = {'price_data': price_data}
+
+        df_returns = pd.DataFrame()
+
+        for row in tqdm(df_str.itertuples()):
+
+            buy_signal_txt = row.buy
+            buy_exit_txt = row.exit_buy
+            sell_signal_txt = row.sell
+            sell_exit_txt = row.exit_sell
+            strategy = row.strategy
+
+            text_code = create_txt_code(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt)
+
+            try:
+                exec(text_code, exec_dict)
+                df_returns[strategy] = list(exec_dict['pnl_returns'])
+            except:
+                continue
+        
+        try:
+            correlation_matrix = df_returns.corr()
+
+            distance_matrix = 1 - correlation_matrix
+
+            linkage_matrix = linkage(squareform(distance_matrix), method='ward')
+
+            clusters = fcluster(linkage_matrix, t=1.5, criterion='distance')
+
+            covariance_matrix = df_returns.cov()
+
+            cluster_weights = {}
+            for cluster_id in np.unique(clusters):
+                cluster_strategies = [df_returns.columns[i] for i in range(len(clusters)) if clusters[i] == cluster_id]
+                cluster_cov = covariance_matrix.loc[cluster_strategies, cluster_strategies]
+                cluster_weights[cluster_id] = inverse_variance_weights(cluster_cov)
+
+            # cluster_sizes = {cid: sum(clusters == cid) for cid in np.unique(clusters)}
+            total_cluster_weights = {cid: np.sum(cluster_weights[cid]) / len(cluster_weights) for cid in cluster_weights}
+            final_weights = {}
+
+            for cid, strategies in cluster_weights.items():
+                for strategy, weight in zip(df_returns.columns[clusters == cid], strategies):
+                    final_weights[strategy] = weight * total_cluster_weights[cid]
+
+            final_weights = {k: v / sum(final_weights.values()) for k, v in final_weights.items()}
+
+            for k in final_weights.keys():
+                final_port_dict[k].append(final_weights[k])
+
+        except:
+            continue
+
+    gc.collect()
 
     avg_weight_sum = np.sum([np.nanmean(final_port_dict[k]) for k in final_port_dict.keys()])
 
@@ -709,7 +846,10 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
         price_data['minute'] = df['datetime'].dt.minute.values
 
         exec_dict = {'price_data': price_data}
-        exec(text_code, exec_dict)
+        try:
+            exec(text_code, exec_dict)
+        except:
+            pass
 
         try:
             equity_curve_arr = exec_dict['equity_curve_arr']
@@ -818,6 +958,8 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger, n_bars=504
 
     logger.info("Loading portfolio weights from %s...", port_file_path)
     port_df = pd.read_csv(port_file_path)
+    port_df.dropna(inplace=True)
+    port_df.reset_index(drop=True, inplace=True)
     logger.info('Weights loaded!')
 
     logger.info('Starting out of sample ROI calculation...')
