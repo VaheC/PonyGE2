@@ -175,7 +175,10 @@ def get_important_stats(df_str, df_data, bars_per_span = 7 * 60 * 24 * 5, n_bars
             price_data['minute'] = df['datetime'].dt.minute.values
 
             exec_dict = {'price_data': price_data}
-            exec(text_code, exec_dict)
+            try:
+                exec(text_code, exec_dict)
+            except:
+                continue
 
             try:
                 equity_curve_arr = exec_dict['equity_curve_arr']
@@ -272,8 +275,10 @@ def save_stats(data_path, strategy_file_path, n_fold, logger, stats_path='testin
     logger.info('Starting data loading process...')
     if n_fold == 0:
         df_data = generate_data(data_path)
+        n_bars_per_data = df_data.shape[0]
     else:
         df_data = generate_fold_data(data_path, fold=n_fold, n_bars=n_bars)
+        n_bars_per_data = n_bars
     logger.info('Data loading process completed!')
 
     logger.info("Starting strategies' loading process...")
@@ -283,7 +288,7 @@ def save_stats(data_path, strategy_file_path, n_fold, logger, stats_path='testin
     # getting the stats
     logger.info('Starting testing stats calculation...')
     (final_entry_win_pc_df, final_exit_win_pc_df, 
-     final_core_win_pc_df, final_perf_df, final_mc_df) = get_important_stats(df_str, df_data)
+     final_core_win_pc_df, final_perf_df, final_mc_df) = get_important_stats(df_str, df_data, bars_per_span = n_bars, n_bars_per_data=n_bars_per_data)
     logger.info('Testing stats calculation completed!')
 
     logger.info("Creating %s directory if it doesn't exist...", stats_path)

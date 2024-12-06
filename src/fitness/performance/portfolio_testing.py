@@ -798,7 +798,7 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
 
     equity_curve_dict = defaultdict(list)
 
-    strategy_idx = 1
+    # strategy_idx = 1
 
     for row in tqdm(df_port.itertuples()):
 
@@ -807,6 +807,7 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
         sell_signal_txt = row.sell
         sell_exit_txt = row.exit_sell
         weight = row.weight
+        strategy_name = row.strategy
 
         text_code = create_txt_code_port(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt, weight)
         
@@ -853,7 +854,7 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
 
         try:
             equity_curve_arr = exec_dict['equity_curve_arr']
-            equity_curve_dict[strategy_idx].append(equity_curve_arr)
+            equity_curve_dict[strategy_name].append(equity_curve_arr)
             # print(f"fold{n_fold}: {len(equity_curve_arr)}")
         except:
             pass
@@ -912,7 +913,7 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
 
         temp_signal_df = pd.DataFrame(
             {
-                'strategy': f'strategy{strategy_idx}', 
+                'strategy': strategy_name, #f'strategy{strategy_idx}', 
                 'buy': [buy_signal_txt], 
                 'sell': [sell_signal_txt],
                 'exit_buy': [buy_exit_txt], 
@@ -940,7 +941,7 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
         # mc_df = pd.concat([temp_signal_df, mc_df], axis=1)
         # final_mc_df = pd.concat([final_mc_df, mc_df])
 
-        strategy_idx += 1
+        # strategy_idx += 1
 
         gc.collect()
 
@@ -951,12 +952,12 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger, n_bars=504
                                    port_perf_path='portfolio_out_sample_performance',
                                    port_perf_file_name='baseline'):
     
-    logger.info("Creating %s directory if it doesn't exist...", port_perf_path)
+    logger.info(f"Creating {port_perf_path} directory if it doesn't exist...")
     if not os.path.exists(port_perf_path):
         os.mkdir(port_perf_path)
-    logger.info("%s directory created!", port_perf_path)
+    logger.info(f"{port_perf_path} directory created!")
 
-    logger.info("Loading portfolio weights from %s...", port_file_path)
+    logger.info(f"Loading portfolio weights from {port_file_path}...")
     port_df = pd.read_csv(port_file_path)
     port_df.dropna(inplace=True)
     port_df.reset_index(drop=True, inplace=True)
@@ -970,7 +971,7 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger, n_bars=504
 
     for i in range(start_fold, end_fold+1):
 
-        logger.info("Starting portfolio ROI calculation for sample number %s...", str(i))
+        logger.info(f"Starting portfolio ROI calculation for sample number {str(i)}...")
 
         df_prices = generate_fold_data(data_path, fold=i, n_bars=n_bars)
 
@@ -984,13 +985,213 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger, n_bars=504
         fold_list.append(f'fold{i}')
         pnl_list.append(final_perf_df_port['PNL'].sum())
 
-        logger.info("portfolio ROI for sample number %s: %s %", (str(i), str(port_roi)))
+        logger.info(f"portfolio ROI for sample number {str(i)}: {str(port_roi)} %")
 
-    logger.info("Saving the portfolio performance to %s directory...", port_perf_path)
+    logger.info(f"Saving the portfolio performance to {port_perf_path} directory...")
     port_perf_df = pd.DataFrame()
     port_perf_df['fold'] = fold_list
     port_perf_df['ROI (%)'] = roi_list
     port_perf_df['PNL'] = pnl_list
     port_perf_df.to_csv(f'{port_perf_path}/perf_{port_perf_file_name}.csv', index=False)
     logger.info('Portfolio performance saved!')
+
+def calculate_str_stats(df_str, df, create_txt_code_port=create_txt_code1):
+
+    # final_entry_win_pc_df = pd.DataFrame()
+    # final_exit_win_pc_df = pd.DataFrame()
+    # final_core_win_pc_df = pd.DataFrame()
+    final_perf_df = pd.DataFrame()
+    # final_mc_df = pd.DataFrame()
+
+    equity_curve_dict = defaultdict(list)
+
+    # strategy_idx = 1
+
+    for row in tqdm(df_str.itertuples()):
+
+        buy_signal_txt = row.buy
+        buy_exit_txt = row.exit_buy
+        sell_signal_txt = row.sell
+        sell_exit_txt = row.exit_sell
+        strategy_name = row.strategy
+
+        text_code = create_txt_code_port(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt)
+        
+        # entry_test_n_not_worked = 0
+        # exit_test_n_not_worked = 0
+        # core_test_n_not_worked = 0
+        perf_n_not_worked = 0
+        # mc_n_not_worked = 0
+        n_total_cases = 0
+
+        # entry_walk_forward_dict = defaultdict(list)
+
+        # exit_walk_forward_dict = defaultdict(list)
+
+        # core_walk_forward_dict = defaultdict(list)
+
+        performance_walk_forward_dict = defaultdict(list)
+
+        # mc_walk_forward_dict = defaultdict(list)
+
+        n_total_cases += 1
+
+        # df = df_52w.iloc[idx:idx+bars_per_5week, :]
+        # df.reset_index(drop=True, inplace=True)
+        # df = generate_fold_data(data_path, fold=n_fold)
+        # df.reset_index(drop=True, inplace=True)
+
+        price_data = {}
+        for col in df.columns:
+            if col == 'datetime':
+                continue
+            else:
+                price_data[col] = df[col].values
+        price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
+        price_data['month'] = df['datetime'].dt.month.values
+        price_data['hour'] = df['datetime'].dt.hour.values
+        price_data['minute'] = df['datetime'].dt.minute.values
+
+        exec_dict = {'price_data': price_data}
+        try:
+            exec(text_code, exec_dict)
+        except:
+            pass
+
+        try:
+            equity_curve_arr = exec_dict['equity_curve_arr']
+            equity_curve_dict[strategy_name].append(equity_curve_arr)
+            # print(f"fold{n_fold}: {len(equity_curve_arr)}")
+        except:
+            pass
+
+        # try:
+        #     fixed_winning_percent, fixed_bar_winning_percent, random_winning_percent = calculate_mean_win_perc_entry_testing(exec_dict, df)
+        #     entry_walk_forward_dict['fixed_sp_testing'].append(fixed_winning_percent)
+        #     entry_walk_forward_dict['fixed_bar_testing'].append(fixed_bar_winning_percent)
+        #     entry_walk_forward_dict['random_exit_testing'].append(random_winning_percent)
+        # except:
+        #     entry_test_n_not_worked += 1
+
+        # try:
+        #     trend_winning_percent, countertrend_winning_percent, random_winning_percent = calculate_mean_win_perc_exit_testing(exec_dict, df)
+        #     exit_walk_forward_dict['trend_entry_testing'].append(trend_winning_percent)
+        #     exit_walk_forward_dict['countertrend_entry_testing'].append(countertrend_winning_percent)
+        #     exit_walk_forward_dict['random_entry_testing'].append(random_winning_percent)
+        # except:
+        #     exit_test_n_not_worked += 1
+
+        # try:
+        #     winning_percent = calculate_mean_win_perc_core_testing(exec_dict)
+        #     core_walk_forward_dict['core_testing'].append(winning_percent)
+        # except:
+        #     core_test_n_not_worked += 1
+
+        try:
+            metric_dict = calculate_mean_performance(exec_dict, monkey_test=False)
+            performance_walk_forward_dict['n_trades'].append(metric_dict['n_trades'])
+            performance_walk_forward_dict['pnl'].append(metric_dict['overall_pnl'])
+            performance_walk_forward_dict['roi'].append(metric_dict['roi'])
+            performance_walk_forward_dict['avg_drawdown'].append(metric_dict['avg_drawdown'])
+            performance_walk_forward_dict['drawdown'].append(metric_dict['max_dd'])
+            performance_walk_forward_dict['drawdown_dur'].append(metric_dict['drawdown_dur'])
+            performance_walk_forward_dict['pnl_avgd_ratio'].append(metric_dict['pnl_avgd_ratio'])
+            performance_walk_forward_dict['sharpe_ratio'].append(metric_dict['sharpe_ratio'])
+            performance_walk_forward_dict['sortino_ratio'].append(metric_dict['sortino_ratio'])
+            if 'mt_pnl' in metric_dict.keys():
+                performance_walk_forward_dict['mt_pnl'].append(metric_dict['mt_pnl'])
+                performance_walk_forward_dict['mt_mdd'].append(metric_dict['mt_mdd'])
+        except:
+            perf_n_not_worked += 1
+
+        # try:
+        #     mc_dict = calculate_mc_performance(exec_dict)
+        #     mc_walk_forward_dict['median_max_dd'].append(mc_dict['median_max_dd'])
+        #     mc_walk_forward_dict['median_dd_dur'].append(mc_dict['median_dd_dur'])
+        #     mc_walk_forward_dict['median_profit'].append(mc_dict['median_profit'])
+        #     mc_walk_forward_dict['median_return'].append(mc_dict['median_return'])
+        #     mc_walk_forward_dict['return_dd_ratio'].append(mc_dict['return_dd_ratio'])
+        #     mc_walk_forward_dict['prob_profit'].append(mc_dict['prob_profit'])
+        # except:
+        #     mc_n_not_worked += 1
+
+        # temp_signal_df = pd.DataFrame({'strategy': f'strategy{strategy_idx}', 'buy': [buy_signal_txt], 'sell': [sell_signal_txt]})
+
+        temp_signal_df = pd.DataFrame(
+            {
+                'strategy': strategy_name, #f'strategy{strategy_idx}', 
+                'buy': [buy_signal_txt], 
+                'sell': [sell_signal_txt],
+                'exit_buy': [buy_exit_txt], 
+                'exit_sell': [sell_exit_txt]
+            }
+        )
+
+        # entry_win_pc_df = get_entry_win_pc_df(entry_walk_forward_dict, entry_test_n_not_worked, n_total_cases)
+        # entry_win_pc_df = pd.concat([temp_signal_df, entry_win_pc_df], axis=1)
+        # final_entry_win_pc_df = pd.concat([final_entry_win_pc_df, entry_win_pc_df])
+
+        # exit_win_pc_df = get_exit_win_pc_df(exit_walk_forward_dict, exit_test_n_not_worked, n_total_cases)
+        # exit_win_pc_df = pd.concat([temp_signal_df, exit_win_pc_df], axis=1)
+        # final_exit_win_pc_df = pd.concat([final_exit_win_pc_df, exit_win_pc_df])
+
+        # core_win_pc_df = get_core_win_pc_df(core_walk_forward_dict, core_test_n_not_worked, n_total_cases)
+        # core_win_pc_df = pd.concat([temp_signal_df, core_win_pc_df], axis=1)
+        # final_core_win_pc_df = pd.concat([final_core_win_pc_df, core_win_pc_df])
+
+        perf_df = get_perf_df(performance_walk_forward_dict, perf_n_not_worked, n_total_cases)
+        perf_df = pd.concat([temp_signal_df, perf_df], axis=1)
+        final_perf_df = pd.concat([final_perf_df, perf_df])
+
+        # mc_df = get_mc_df(mc_walk_forward_dict, mc_n_not_worked, n_total_cases)
+        # mc_df = pd.concat([temp_signal_df, mc_df], axis=1)
+        # final_mc_df = pd.concat([final_mc_df, mc_df])
+
+        # strategy_idx += 1
+
+        gc.collect()
+
+    return final_perf_df, equity_curve_dict
+
+def calculate_str_out_sample_perf(data_path, port_file_path, logger, n_bars=50400, 
+                                   initial_amount=350000, start_fold=3, end_fold=9, 
+                                   str_perf_path='str_out_sample_performance',
+                                   str_perf_file_name='baseline'):
+    
+    logger.info(f"Creating {str_perf_path} directory if it doesn't exist...")
+    if not os.path.exists(str_perf_path):
+        os.mkdir(str_perf_path)
+    logger.info(f"{str_perf_path} directory created!")
+
+    logger.info(f"Loading portfolio strategies from {port_file_path}...")
+    port_df = pd.read_csv(port_file_path)
+    port_df.dropna(inplace=True)
+    port_df.reset_index(drop=True, inplace=True)
+    logger.info('Strategies loaded!')
+
+    logger.info('Starting out of sample ROI calculation...')
+
+    str_perf_df = pd.DataFrame()
+
+    for i in range(start_fold, end_fold+1):
+
+        logger.info(f"Starting portfolio ROI calculation for sample number {str(i)}...")
+
+        df_prices = generate_fold_data(data_path, fold=i, n_bars=n_bars)
+
+        temp_perf_df, equity_curve_dict_port = calculate_str_stats(df_str=port_df.copy(), df=df_prices.copy())
+
+        temp_perf_df['ROI'] = 100 * temp_perf_df['PNL'] / initial_amount
+
+        temp_perf_df = temp_perf_df[['strategy', 'ROI']]
+        temp_perf_df.rename(columns={'ROI': f'fold{i}'}, inplace=True)
+
+        if i == start_fold:
+            str_perf_df = pd.concat([str_perf_df, temp_perf_df])
+        else:
+            str_perf_df = pd.merge(str_perf_df, temp_perf_df, on='strategy')
+
+    logger.info(f"Saving the strategies' performance to {str_perf_path} directory...")
+    str_perf_df.to_csv(f'{str_perf_path}/perf_{str_perf_file_name}.csv', index=False)
+    logger.info("Strategies' performance saved!")
 
