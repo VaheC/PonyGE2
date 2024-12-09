@@ -31,7 +31,7 @@ def generate_data():
     # price_data['day_of_year'] = df['datetime'].dt.dayofyear.values
     return price_data
 
-class fitness_kaggle(base_ff):
+class fitness_kaggle_tpu(base_ff):
 
     def __init__(self):
 
