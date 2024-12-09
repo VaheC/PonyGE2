@@ -76,9 +76,9 @@
 | numba_indicators_nan.macd(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>, signal_window=<window-const>)[0]
 | numba_indicators_nan.macd(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>, signal_window=<window-const>)[1]
 | numba_indicators_nan.macd(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>, signal_window=<window-const>)[2]
-| numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<int-const>)[0]
-| numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<int-const>)[1]
-| numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<int-const>)[2]
+| numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<digit>)[0]
+| numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<digit>)[1]
+| numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<digit>)[2]
 | numba_indicators_nan.momentum(prices=price_data["'"<close-prices>"'"], window=<window-const>)
 | numba_indicators_nan.stochastic_oscillator_kd(close_prices=price_data["'"<close-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>, smooth_period=<short-window-const>)[0]
 | numba_indicators_nan.stochastic_oscillator_kd(close_prices=price_data["'"<close-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>, smooth_period=<short-window-const>)[1]
@@ -226,19 +226,17 @@
 
 <change-value> ::= 0.<int-const> | -0.<int-const> | 0.<int-const><int-const> | -0.<int-const><int-const>
 
-<int-const> ::= <digit><aug-digit><aug-digit><aug-digit><aug-digit> 
-| <digit><aug-digit><aug-digit><aug-digit> | <digit><aug-digit> 
+<int-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit>
 
-<window-const> ::= <digit><aug-digit><aug-digit><aug-digit> | <digit><aug-digit> 
+<window-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit>
 
 <short-window-const> ::= <digit> | <digit><aug-digit> 
 
-<long-window-const> ::= <digit><aug-digit><aug-digit><aug-digit>
-| <digit><aug-digit><aug-digit>
+<long-window-const> ::= <digit><aug-digit><aug-digit>
 
-<bins-const> ::= <digit><aug-digit><aug-digit><aug-digit> | <digit><aug-digit> 
+<bins-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit>
 
 <lag-steps> ::= <digit> | <digit><aug-digit>
@@ -263,9 +261,9 @@
 
 <log-op> ::= "&" | "|" 
 
-<mat-f> ::= np.log(<var>) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) | np.exp(<var>) | np.expm1(<var>)
-| np.log10(<var>) | np.log2(<var>) | np.log1p(<var>) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
+<mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) | np.exp(<var>) | np.expm1(<var>)
+| np.log10(<var> + 1) | np.log2(<var> + 1) | np.log1p(<var> + 1) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
 
-<matf-volume> ::= np.log(<var-volume>) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
-| np.exp(<var-volume>) | np.expm1(<var-volume>) | np.log10(<var-volume>) | np.log2(<var-volume>) 
-| np.log1p(<var-volume>) | np.abs(<var-volume>) | np.max(<var-volume>) | np.min(<var-volume>)
+<matf-volume> ::= np.log(<var-volume> + 1) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
+| np.exp(<var-volume>) | np.expm1(<var-volume>) | np.log10(<var-volume> + 1) | np.log2(<var-volume> + 1) 
+| np.log1p(<var-volume> + 1) | np.abs(<var-volume>) | np.max(<var-volume>) | np.min(<var-volume>)
