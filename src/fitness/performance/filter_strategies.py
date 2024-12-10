@@ -175,10 +175,10 @@ def get_important_stats(df_str, df_data, bars_per_span = 7 * 60 * 24 * 5, n_bars
             price_data['minute'] = df['datetime'].dt.minute.values
 
             exec_dict = {'price_data': price_data}
-            try:
-                exec(text_code, exec_dict)
-            except:
-                continue
+            # try:
+            exec(text_code, exec_dict)
+            # except:
+            #     continue
 
             try:
                 equity_curve_arr = exec_dict['equity_curve_arr']

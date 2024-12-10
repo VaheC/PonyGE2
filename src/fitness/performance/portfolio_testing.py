@@ -303,8 +303,10 @@ def test_out_of_fold(df_str, data_path, n_fold, n_bars=50400, n_total_folds=9, c
             exec_dict = {'price_data': price_data}
             try:
                 exec(text_code, exec_dict)
-            except:
-                pass
+            except Exception as e:
+                print(f'fold = {i_fold}')
+                print(e)
+                print(text_code)
 
             try:
                 equity_curve_arr = exec_dict['equity_curve_arr']
@@ -847,10 +849,10 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
         price_data['minute'] = df['datetime'].dt.minute.values
 
         exec_dict = {'price_data': price_data}
-        try:
-            exec(text_code, exec_dict)
-        except:
-            pass
+        # try:
+        exec(text_code, exec_dict)
+        # except:
+        #     pass
 
         try:
             equity_curve_arr = exec_dict['equity_curve_arr']
@@ -1053,10 +1055,12 @@ def calculate_str_stats(df_str, df, create_txt_code_port=create_txt_code1):
         price_data['minute'] = df['datetime'].dt.minute.values
 
         exec_dict = {'price_data': price_data}
-        try:
-            exec(text_code, exec_dict)
-        except:
-            pass
+        # try:
+        exec(text_code, exec_dict)
+        # except Exception as e:
+        #     print(e)
+        #     print(text_code)
+        #     pass
 
         try:
             equity_curve_arr = exec_dict['equity_curve_arr']
