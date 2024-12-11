@@ -10,7 +10,7 @@ from pathlib import Path
 
 def generate_data():
 
-    df = pd.read_csv('/kaggle/input/btcusd-test/data_folds_60min/data_fold2.csv')
+    df = pd.read_csv('/kaggle/input/btcusd-test/data_folds_60min/data_fold3.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
     df.sort_values('datetime', ascending=True, inplace=True)
     df.reset_index(inplace=True, drop=True)
