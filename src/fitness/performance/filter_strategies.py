@@ -60,7 +60,7 @@ CUR_DIR = os.getcwd()
 #import pandas as pd
 import numpy as np
 import gc
-from fitness.indicators import numba_indicators, signals
+from fitness.indicators import numba_indicators_nan, signals
 from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag
 from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit
 # os.chdir(CUR_DIR)
@@ -70,8 +70,14 @@ SLIPPAGE = {slippage}
 AVAILABLE_CAPITAL = {inv_amount}
 TRADE_SIZE = {trade_size}
 MAX_LAG = {max_lag}
-buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal={buy_signal_txt}, exit_signal={buy_exit_txt})
-sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal={sell_signal_txt}, exit_signal={sell_exit_txt})
+try:
+    buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal={buy_signal_txt}, exit_signal={buy_exit_txt})
+except:
+    buy_idxs, buy_exit_idxs = [], []
+try:
+    sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal={sell_signal_txt}, exit_signal={sell_exit_txt})
+except:
+    sell_idxs, sell_exit_idxs = [], []
 # if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
 #     fitness = -9999999
 #     avg_drawdown = -9999999
