@@ -92,57 +92,13 @@
 
 <signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>)
 
-<sell-signal> ::= (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=1))
-| ((price_data["'"<close-prices>"'"]  - get_lag(price_data["'"<close-prices>"'"], lag=<lag-steps>)) / get_lag(price_data["'"<close-prices>"'"], lag=<lag-steps>) <c-op> <change-value>)
-| ((price_data["'"btc_close"'"]  - get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) / get_lag(price_data["'"btc_close"'"], lag=<lag-steps>) <c-op> <change-value>)
-| (price_data["'"<close-prices>"'"] < get_lag(price_data["'"<close-prices>"'"], lag=<lag-steps>))
-| ((price_data["'"day_of_week"'"] == 5) & (price_data["'"btc_close"'"] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)))
-| ((price_data["'"day_of_week"'"] == <week-day>) & (price_data["'"<close-prices>"'"] == signals.moving_min(price_data["'"<close-prices>"'"], window=<window-const>)))
-| ((get_lag(price_data["'"<low-prices>"'"], lag=3) > price_data["'"<high-prices>"'"]) & (price_data["'"<high-prices>"'"] > get_lag(price_data["'"<low-prices>"'"], lag=1)) & (price_data["'"<low-prices>"'"] > get_lag(price_data["'"<low-prices>"'"], lag=2)) & (get_lag(price_data["'"<low-prices>"'"], lag=1) > get_lag(price_data["'"<low-prices>"'"], lag=2)))
-| ((get_lag(price_data["'"btc_low"'"], lag=3) > price_data["'"btc_high"'"]) & (price_data["'"btc_high"'"] > get_lag(price_data["'"btc_low"'"], lag=1)) & (price_data["'"btc_low"'"] > get_lag(price_data["'"btc_low"'"], lag=2)) & (get_lag(price_data["'"btc_low"'"], lag=1) > get_lag(price_data["'"btc_low"'"], lag=2)))
-| ((get_lag(price_data["'"btc_open"'"], lag=1) < price_data["'"btc_low"'"]) & (price_data["'"btc_open"'"] < get_lag(price_data["'"btc_close"'"], lag=1)) & (get_lag(price_data["'"btc_close"'"], lag=1) < get_lag(price_data["'"btc_high"'"], lag=1)) & (get_lag(price_data["'"btc_high"'"], lag=1) < price_data["'"btc_close"'"]))
-| ((get_lag(price_data["'"btc_high"'"], lag=3) < price_data["'"btc_low"'"]) & (price_data["'"btc_low"'"] < get_lag(price_data["'"btc_high"'"], lag=1)) & (get_lag(price_data["'"btc_high"'"], lag=1) < get_lag(price_data["'"btc_high"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=1) > price_data["'"btc_close"'"]))
-| ((get_lag(price_data["'"btc_close"'"], lag=1) < get_lag(price_data["'"btc_close"'"], lag=3)) & (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=2) < get_lag(price_data["'"btc_close"'"], lag=1)))
-| ((get_lag(price_data["'"btc_low"'"], lag=2) < get_lag(price_data["'"btc_low"'"], lag=1)) & (get_lag(price_data["'"btc_high"'"], lag=2) > get_lag(price_data["'"btc_high"'"], lag=1)) & (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_low"'"], lag=2)))
-| ((get_lag(price_data["'"btc_close"'"], lag=1) > get_lag(price_data["'"btc_close"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=2) > get_lag(price_data["'"btc_close"'"], lag=5)) & (get_lag(price_data["'"btc_close"'"], lag=5) > get_lag(price_data["'"btc_close"'"], lag=3)) & (get_lag(price_data["'"btc_close"'"], lag=3) > get_lag(price_data["'"btc_close"'"], lag=4)))
-| ((price_data["'"btc_close"'"] < get_lag(signals.moving_min(price_data["'"btc_low"'"], window=<window-const>), lag=1)) & (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=1)) & (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=3)) & (get_lag(price_data["'"btc_close"'"], lag=1) < get_lag(price_data["'"btc_close"'"], lag=2)))
-| ((get_lag(price_data["'"btc_high"'"], lag=1) - get_lag(price_data["'"btc_low"'"], lag=1)) < (get_lag(price_data["'"btc_high"'"], lag=2) - get_lag(price_data["'"btc_low"'"], lag=2)) & (price_data["'"btc_close"'"] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)))
-| (price_data["'"btc_low"'"] == signals.moving_max(price_data["'"btc_low"'"], window=<window-const>))
-| <signal>
+<sell-signal> ::= <signal>
 
-<buy-signal> ::= (price_data["'"<close-prices>"'"] > get_lag(price_data["'"<close-prices>"'"], lag=1))
-| ((price_data["'"<close-prices>"'"] - get_lag(price_data["'"<close-prices>"'"], lag=<lag-steps>)) / get_lag(price_data["'"<close-prices>"'"], lag=<lag-steps>) <c-op> <change-value>)
-| ((price_data["'"btc_close"'"] - get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) / get_lag(price_data["'"btc_close"'"], lag=<lag-steps>) <c-op> <change-value>)
-| (price_data["'"<close-prices>"'"] > get_lag(price_data["'"<close-prices>"'"], lag=<lag-steps>))
-| ((price_data["'"day_of_week"'"] == 5) & (price_data["'"btc_close"'"] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)))
-| ((price_data["'"day_of_week"'"] == <week-day>) & (price_data["'"<close-prices>"'"] == signals.moving_max(price_data["'"<close-prices>"'"], window=<window-const>)))
-| ((get_lag(price_data["'"<high-prices>"'"], lag=3) < price_data["'"<low-prices>"'"]) & (price_data["'"<low-prices>"'"] < get_lag(price_data["'"<high-prices>"'"], lag=1)) & (price_data["'"<high-prices>"'"] < get_lag(price_data["'"<high-prices>"'"], lag=2)) & (get_lag(price_data["'"<high-prices>"'"], lag=1) < get_lag(price_data["'"<high-prices>"'"], lag=2)))
-| ((get_lag(price_data["'"btc_high"'"], lag=3) < price_data["'"btc_low"'"]) & (price_data["'"btc_low"'"] < get_lag(price_data["'"btc_high"'"], lag=1)) & (price_data["'"btc_high"'"] < get_lag(price_data["'"btc_high"'"], lag=2)) & (get_lag(price_data["'"btc_high"'"], lag=1) < get_lag(price_data["'"btc_high"'"], lag=2)))
-| ((get_lag(price_data["'"btc_open"'"], lag=1) > price_data["'"btc_high"'"]) & (price_data["'"btc_open"'"] > get_lag(price_data["'"btc_close"'"], lag=1)) & (get_lag(price_data["'"btc_close"'"], lag=1) > get_lag(price_data["'"btc_low"'"], lag=1)) & (get_lag(price_data["'"btc_low"'"], lag=1) > price_data["'"btc_close"'"]))
-| ((get_lag(price_data["'"btc_low"'"], lag=3) > price_data["'"btc_high"'"]) & (price_data["'"btc_high"'"] > get_lag(price_data["'"btc_low"'"], lag=1)) & (get_lag(price_data["'"btc_low"'"], lag=1) > get_lag(price_data["'"btc_low"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=1) < price_data["'"btc_close"'"]))
-| ((get_lag(price_data["'"btc_close"'"], lag=1) > get_lag(price_data["'"btc_close"'"], lag=3)) & (price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=2) > get_lag(price_data["'"btc_close"'"], lag=1)))
-| ((get_lag(price_data["'"btc_high"'"], lag=2) > get_lag(price_data["'"btc_high"'"], lag=1)) & (get_lag(price_data["'"btc_low"'"], lag=2) < get_lag(price_data["'"btc_low"'"], lag=1)) & (price_data["'"btc_close"'"] > get_lag(price_data["'"btc_high"'"], lag=2)))
-| ((get_lag(price_data["'"btc_close"'"], lag=1) < get_lag(price_data["'"btc_close"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=2) < get_lag(price_data["'"btc_close"'"], lag=5)) & (get_lag(price_data["'"btc_close"'"], lag=5) < get_lag(price_data["'"btc_close"'"], lag=3)) & (get_lag(price_data["'"btc_close"'"], lag=3) < get_lag(price_data["'"btc_close"'"], lag=4)))
-| ((price_data["'"btc_close"'"] > get_lag(signals.moving_max(price_data["'"btc_high"'"], window=<window-const>), lag=1)) & (price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=1)) & (price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=3)) & (get_lag(price_data["'"btc_close"'"], lag=1) > get_lag(price_data["'"btc_close"'"], lag=2)))
-| ((get_lag(price_data["'"btc_high"'"], lag=1) - get_lag(price_data["'"btc_low"'"], lag=1)) < (get_lag(price_data["'"btc_high"'"], lag=2) - get_lag(price_data["'"btc_low"'"], lag=2)) & (price_data["'"btc_close"'"] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)))
-| (price_data["'"btc_high"'"] == signals.moving_max(price_data["'"btc_high"'"], window=<window-const>))
-| <signal>
+<buy-signal> ::= <signal>
 
-<sell-exit-signal> ::= (price_data["'"btc_close"'"] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>))
-| (price_data["'"<close-prices>"'"] == signals.moving_max(price_data["'"<close-prices>"'"], window=<window-const>))
-| (price_data["'"day_of_week"'"] <c-op> <week-day>)
-| (price_data["'"btc_close"'"] > signals.moving_percentile(price_data["'"btc_close"'"], window=<window-const>, percentile=<perc-const>))
-| (price_data["'"btc_close"'"] > signals.moving_percentile(price_data["'"btc_close"'"], window=5, percentile=0.5))
-| ((price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=1)) & (get_lag(price_data["'"btc_close"'"], lag=1) < get_lag(price_data["'"btc_close"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=2) < get_lag(price_data["'"btc_close"'"], lag=3)))
-| <signal>
+<sell-exit-signal> ::= <signal>
 
-<buy-exit-signal> ::= (price_data["'"btc_close"'"] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))
-| (price_data["'"<close-prices>"'"] == signals.moving_min(price_data["'"<close-prices>"'"], window=<window-const>))
-| (price_data["'"day_of_week"'"] <c-op> <week-day>)
-| (price_data["'"btc_close"'"] < signals.moving_percentile(price_data["'"btc_close"'"], window=<window-const>, percentile=<perc-const>))
-| (price_data["'"btc_close"'"] < signals.moving_percentile(price_data["'"btc_close"'"], window=5, percentile=0.5))
-| ((price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=1)) & (get_lag(price_data["'"btc_close"'"], lag=1) > get_lag(price_data["'"btc_close"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=2) > get_lag(price_data["'"btc_close"'"], lag=3)))
-| <signal>
+<buy-exit-signal> ::= <signal>
 
 <value> ::= <int-const> | <real-const>
 
