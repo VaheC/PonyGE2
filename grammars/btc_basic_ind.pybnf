@@ -185,7 +185,7 @@
 | numba_indicators_nan.negative_volume_indicator(volume=price_data["'"<volume>"'"])
 | numba_indicators_nan.volume_entropy(volume=price_data["'"<volume>"'"], window=<window-const>, bins=<bins-const>)
 
-<signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
+<simple-signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
 | (<var> <c-op> <var>)
 | ((<var> <mat-op> <var>) <c-op> <var>)
 | ((<var> <mat-op> <var>) <c-op> <value>)
@@ -213,6 +213,8 @@
 | ((signals.moving_std(arr=price_data["'"btc_close"'"], window=30) > np.quantile(signals.moving_std(arr=price_data["'"btc_close"'"], window=30), 0.75)) & (price_data["'"hour"'"] >= 22) & (price_data["'"hour"'"] <= 23))
 | (numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=1) > numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>))
 | (price_data["'"btc_volume"'"] < numba_indicators_nan.moving_average(prices=price_data["'"btc_volume"'"], window=<window-const>))
+
+<signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>)
 
 <sell-signal> ::= <signal>
 
