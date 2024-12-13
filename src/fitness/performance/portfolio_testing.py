@@ -426,7 +426,7 @@ def test_out_of_fold(df_str, data_path, n_fold, n_bars=50400, n_total_folds=9, c
 def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_strategies', 
                      lstr_file_name='baseline', is_subset=False, start_subset=0, end_subset=10,
                      entry_testing_threshold=50, exit_testing_threshold=50, core_testing_threshold=60,
-                     prob_threshold=0.8, n_bars=50400, n_total_folds=9):
+                     prob_threshold=0.8, n_bars=50400, n_total_folds=9, is_counter_trend_exit=True, is_random_exit=True):
 
     logger.info('Loading survived strategies from %s', str_file_path)
     try:
@@ -463,12 +463,25 @@ def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_s
         logger.info('Out of fold entry testing filtering finished!')
 
         logger.info('Starting out of fold exit testing filtering...')
-        exit_testing_strategies_fold = final_exit_win_pc_df_fold[
-            (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) & 
-            (final_exit_win_pc_df_fold['Countertrend_testing'] >= exit_testing_threshold) & 
-            # (final_exit_win_pc_df_fold['Random_Entry_testing'] >= exit_testing_threshold) &
-            (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
-        ]['strategy'].tolist()
+        if is_counter_trend_exit and is_random_exit:
+            exit_testing_strategies_fold = final_exit_win_pc_df_fold[
+                (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) & 
+                (final_exit_win_pc_df_fold['Countertrend_testing'] >= exit_testing_threshold) & 
+                (final_exit_win_pc_df_fold['Random_Entry_testing'] >= exit_testing_threshold) &
+                (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+            ]['strategy'].tolist()
+        elif is_counter_trend_exit:
+            exit_testing_strategies_fold = final_exit_win_pc_df_fold[
+                (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) & 
+                (final_exit_win_pc_df_fold['Countertrend_testing'] >= exit_testing_threshold) & 
+                (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+            ]['strategy'].tolist()
+        elif is_random_exit:
+            exit_testing_strategies_fold = final_exit_win_pc_df_fold[
+                (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) &  
+                (final_exit_win_pc_df_fold['Random_Entry_testing'] >= exit_testing_threshold) &
+                (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+            ]['strategy'].tolist()
         logger.info('Out of fold exit testing filtering finished!')
 
         logger.info('Starting out of fold core testing filtering...')
