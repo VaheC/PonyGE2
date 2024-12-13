@@ -482,6 +482,11 @@ def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_s
                 (final_exit_win_pc_df_fold['Random_Entry_testing'] >= exit_testing_threshold) &
                 (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
             ]['strategy'].tolist()
+        else:
+            exit_testing_strategies_fold = final_exit_win_pc_df_fold[
+                (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) &  
+                (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+            ]['strategy'].tolist()
         logger.info('Out of fold exit testing filtering finished!')
 
         logger.info('Starting out of fold core testing filtering...')

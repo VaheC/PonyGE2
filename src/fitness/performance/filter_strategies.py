@@ -360,6 +360,11 @@ def filter_save_strategies(strategy_file_path, logger, stats_path='testing_resul
             (final_exit_win_pc_df['Random_Entry_testing'] >= exit_testing_threshold) &
             (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
         ]['strategy'].tolist()
+    else:
+        exit_testing_strategies = final_exit_win_pc_df[
+            (final_exit_win_pc_df['Trend_testing'] >= exit_testing_threshold) &  
+            (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
+        ]['strategy'].tolist()
     logger.info('Exit testing filtering completed!')
 
     # getting strategies that has passed both entry and exit testing and have winning percentage equal to 60 or more
