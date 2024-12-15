@@ -214,7 +214,9 @@
 | (numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=1) > numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>))
 | (price_data["'"btc_volume"'"] < numba_indicators_nan.moving_average(prices=price_data["'"btc_volume"'"], window=<window-const>))
 
-<signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>)
+<signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>) 
+| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
+| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
 
 <sell-signal> ::= <signal>
 

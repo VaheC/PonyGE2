@@ -91,6 +91,8 @@
 | ((signals.moving_std(arr=price_data["'"btc_close"'"], window=30) > np.quantile(signals.moving_std(arr=price_data["'"btc_close"'"], window=30), 0.75)) & (price_data["'"hour"'"] >= 22) & (price_data["'"hour"'"] <= 23))
 
 <signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>)
+| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
+| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
 
 <sell-signal> ::= <signal>
 
