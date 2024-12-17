@@ -216,7 +216,6 @@
 
 <signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>) 
 | (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
-| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
 
 <sell-signal> ::= <signal>
 
@@ -245,7 +244,7 @@
 
 <lag-steps> ::= <digit> | <digit><aug-digit>
 
-<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 <aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
 <week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
@@ -261,13 +260,13 @@
 
 <c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
 
-<mat-op> ::= + | - | * | / | // | % | **
+<mat-op> ::= + | - | * | /
 
 <log-op> ::= "&" | "|" 
 
-<mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) | np.exp(<var>) | np.expm1(<var>)
+<mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) |
 | np.log10(<var> + 1) | np.log2(<var> + 1) | np.log1p(<var> + 1) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
 
 <matf-volume> ::= np.log(<var-volume> + 1) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
-| np.exp(<var-volume>) | np.expm1(<var-volume>) | np.log10(<var-volume> + 1) | np.log2(<var-volume> + 1) 
+| np.log10(<var-volume> + 1) | np.log2(<var-volume> + 1) 
 | np.log1p(<var-volume> + 1) | np.abs(<var-volume>) | np.max(<var-volume>) | np.min(<var-volume>)
