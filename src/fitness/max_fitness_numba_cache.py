@@ -5,8 +5,8 @@ from pathlib import Path
 # import numpy as np
 # import re
 # import os
-from fitness.custom_logger.load_logger import create_terminal_logger
-from fitness.performance.helper_func import get_max_drawdown
+# from fitness.custom_logger.load_logger import create_terminal_logger
+# from fitness.performance.helper_func import get_max_drawdown
 
 def generate_data():
     # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\BTCUSD_ohlcv.csv'))
@@ -14,7 +14,9 @@ def generate_data():
     # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\datasets/\all_data_1min.csv'))
     # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\all_data_1min.csv'))
 
-    df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\data_folds_15min/\data_fold1.csv'))
+    # df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\data_folds_15min/\data_fold1.csv'))
+
+    df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\data_folds2_60min/\data_fold1.csv'))
     
     # df = pd.read_csv('/kaggle/input/btcusd-test/BTCUSD_ohlcv.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/BTC-ETH-1m.csv')
@@ -58,7 +60,7 @@ class max_fitness_numba_cache(base_ff):
         self.test_data = generate_data()
         d = {'price_data': self.test_data}
 
-        logger = create_terminal_logger()
+        # logger = create_terminal_logger()
 
         try:
             # t0 = time.time()
@@ -66,14 +68,14 @@ class max_fitness_numba_cache(base_ff):
             # t1 = time.time()
             fitness = d['fitness']
 
-            try:
-                roi = d['pf'].stats()['Total Return [%]']
-                mdd = d['pf'].stats()['Max Drawdown [%]']
-            except:
-                roi = 100 * d['equity_curve_arr'][-1] / (d['AVAILABLE_CAPITAL'] * d['TRADE_SIZE'])
-                mdd = get_max_drawdown(d['equity_curve_arr'])
+            # try:
+            #     roi = d['pf'].stats()['Total Return [%]']
+            #     mdd = d['pf'].stats()['Max Drawdown [%]']
+            # except:
+            #     roi = 100 * d['equity_curve_arr'][-1] / (d['AVAILABLE_CAPITAL'] * d['TRADE_SIZE'])
+            #     mdd = get_max_drawdown(d['equity_curve_arr'])
 
-            logger.info(f"ROI: {roi:.4f}, MDD: {mdd:.4f}, Fitness: {fitness:.4f}")
+            # logger.info(f"ROI: {roi:.4f}, MDD: {mdd:.4f}, Fitness: {fitness:.4f}")
         except:
             fitness = 404
             
