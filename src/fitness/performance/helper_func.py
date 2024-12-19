@@ -329,11 +329,13 @@ def get_returns(buy_idxs, buy_pnl, sell_idxs, sell_pnl, n_data):
 
     pnl_values = np.zeros(n_data)
 
-    for i in range(len(buy_idxs)):
-        pnl_values[buy_idxs[i]] = buy_pnl[i]
+    if buy_idxs[0] != -1:
+        for i in range(len(buy_idxs)):
+            pnl_values[buy_idxs[i]] = buy_pnl[i]
 
-    for i in range(len(sell_idxs)):
-        pnl_values[sell_idxs[i]] = sell_pnl[i]
+    if sell_idxs[0] != -1:
+        for i in range(len(sell_idxs)):
+            pnl_values[sell_idxs[i]] = sell_pnl[i]
 
     pnl_cum = np.cumsum(pnl_values)
 

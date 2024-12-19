@@ -240,6 +240,12 @@ else:
     all_arr = merge_buy_sell_pnl(buy_idxs, sell_idxs, buy_arr, sell_arr)
     total_pnl = buy_pnl + sell_pnl
     equity_curve_arr = np.cumsum(all_arr)
+    if len(sell_idxs) == 0:
+        sell_idxs = np.array([-1])
+        sell_arr = np.array([0])
+    elif len(buy_idxs) == 0:
+        buy_idxs[0] = np.array([-1])
+        buy_arr = np.array([0])
     pnl_returns = get_returns(
         buy_idxs=buy_idxs, 
         buy_pnl=buy_arr, 
@@ -304,7 +310,7 @@ def test_out_of_fold(df_str, data_path, n_fold, n_bars=50400, n_total_folds=9, c
 
             # df = df_52w.iloc[idx:idx+bars_per_5week, :]
             # df.reset_index(drop=True, inplace=True)
-            df = generate_fold_data(data_path, fold=i_fold, n_bars=n_bars)
+            df = generate_fold_data(data_path, fold=i_fold-1, n_bars=n_bars)
             # df.reset_index(drop=True, inplace=True)
 
             price_data = {}
@@ -426,7 +432,8 @@ def test_out_of_fold(df_str, data_path, n_fold, n_bars=50400, n_total_folds=9, c
 def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_strategies', 
                      lstr_file_name='baseline', is_subset=False, start_subset=0, end_subset=10,
                      entry_testing_threshold=50, exit_testing_threshold=50, core_testing_threshold=60,
-                     prob_threshold=0.8, n_bars=50400, n_total_folds=9, is_counter_trend_exit=True, is_random_exit=True):
+                     prob_threshold=0.8, n_bars=50400, n_total_folds=9, is_counter_trend_exit=True, 
+                     is_random_exit=True, entry_exit_on=True):
 
     logger.info('Loading survived strategies from %s', str_file_path)
     try:
@@ -454,47 +461,57 @@ def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_s
 
         gc.collect()
 
-        logger.info('Starting out of fold entry testing filtering...')
-        entry_testing_strategies_fold = final_entry_win_pc_df_fold[
-            (final_entry_win_pc_df_fold['Fixed_StopLoss_TakeProfit_testing'] >= entry_testing_threshold) & 
-            (final_entry_win_pc_df_fold['Fixed_Bar_testing'] >= entry_testing_threshold) & 
-            (final_entry_win_pc_df_fold['Random_Exit_testing'] >= entry_testing_threshold)
-        ]['strategy'].tolist()
-        logger.info('Out of fold entry testing filtering finished!')
+        if entry_exit_on:
 
-        logger.info('Starting out of fold exit testing filtering...')
-        if is_counter_trend_exit and is_random_exit:
-            exit_testing_strategies_fold = final_exit_win_pc_df_fold[
-                (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) & 
-                (final_exit_win_pc_df_fold['Countertrend_testing'] >= exit_testing_threshold) & 
-                (final_exit_win_pc_df_fold['Random_Entry_testing'] >= exit_testing_threshold) &
-                (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+            logger.info('Starting out of fold entry testing filtering...')
+            entry_testing_strategies_fold = final_entry_win_pc_df_fold[
+                (final_entry_win_pc_df_fold['Fixed_StopLoss_TakeProfit_testing'] >= entry_testing_threshold) & 
+                (final_entry_win_pc_df_fold['Fixed_Bar_testing'] >= entry_testing_threshold) & 
+                (final_entry_win_pc_df_fold['Random_Exit_testing'] >= entry_testing_threshold)
             ]['strategy'].tolist()
-        elif is_counter_trend_exit:
-            exit_testing_strategies_fold = final_exit_win_pc_df_fold[
-                (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) & 
-                (final_exit_win_pc_df_fold['Countertrend_testing'] >= exit_testing_threshold) & 
-                (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+            logger.info('Out of fold entry testing filtering finished!')
+
+            logger.info('Starting out of fold exit testing filtering...')
+            if is_counter_trend_exit and is_random_exit:
+                exit_testing_strategies_fold = final_exit_win_pc_df_fold[
+                    (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) & 
+                    (final_exit_win_pc_df_fold['Countertrend_testing'] >= exit_testing_threshold) & 
+                    (final_exit_win_pc_df_fold['Random_Entry_testing'] >= exit_testing_threshold) &
+                    (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+                ]['strategy'].tolist()
+            elif is_counter_trend_exit:
+                exit_testing_strategies_fold = final_exit_win_pc_df_fold[
+                    (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) & 
+                    (final_exit_win_pc_df_fold['Countertrend_testing'] >= exit_testing_threshold) & 
+                    (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+                ]['strategy'].tolist()
+            elif is_random_exit:
+                exit_testing_strategies_fold = final_exit_win_pc_df_fold[
+                    (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) &  
+                    (final_exit_win_pc_df_fold['Random_Entry_testing'] >= exit_testing_threshold) &
+                    (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+                ]['strategy'].tolist()
+            else:
+                exit_testing_strategies_fold = final_exit_win_pc_df_fold[
+                    (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) &  
+                    (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
+                ]['strategy'].tolist()
+            logger.info('Out of fold exit testing filtering finished!')
+
+            logger.info('Starting out of fold core testing filtering...')
+            core_testing_strategies_fold = final_core_win_pc_df_fold[
+                (final_core_win_pc_df_fold['Core_Testing'] >= core_testing_threshold) &
+                (final_core_win_pc_df_fold['strategy'].isin(exit_testing_strategies_fold))
             ]['strategy'].tolist()
-        elif is_random_exit:
-            exit_testing_strategies_fold = final_exit_win_pc_df_fold[
-                (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) &  
-                (final_exit_win_pc_df_fold['Random_Entry_testing'] >= exit_testing_threshold) &
-                (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
-            ]['strategy'].tolist()
+            logger.info('Out of fold core testing filtering finished!')
+
         else:
-            exit_testing_strategies_fold = final_exit_win_pc_df_fold[
-                (final_exit_win_pc_df_fold['Trend_testing'] >= exit_testing_threshold) &  
-                (final_exit_win_pc_df_fold['strategy'].isin(entry_testing_strategies_fold))
-            ]['strategy'].tolist()
-        logger.info('Out of fold exit testing filtering finished!')
 
-        logger.info('Starting out of fold core testing filtering...')
-        core_testing_strategies_fold = final_core_win_pc_df_fold[
-            (final_core_win_pc_df_fold['Core_Testing'] >= core_testing_threshold) &
-            (final_core_win_pc_df_fold['strategy'].isin(exit_testing_strategies_fold))
-        ]['strategy'].tolist()
-        logger.info('Out of fold core testing filtering finished!')
+            logger.info('Starting out of fold core testing filtering...')
+            core_testing_strategies_fold = final_core_win_pc_df_fold[
+                (final_core_win_pc_df_fold['Core_Testing'] >= core_testing_threshold)
+            ]['strategy'].tolist()
+            logger.info('Out of fold core testing filtering finished!')
 
         logger.info('Starting out of fold ROI filtering...')
         perf_strategies_fold = final_perf_df_fold[
@@ -595,7 +612,7 @@ def creating_port_weights_mvp(lstr_path, data_path, n_bars=50400, n_total_folds=
 
         # df = df_52w.iloc[idx:idx+bars_per_5week, :]
         # df.reset_index(drop=True, inplace=True)
-        df = generate_fold_data(data_path, fold=i_fold, n_bars=n_bars)
+        df = generate_fold_data(data_path, fold=i_fold-1, n_bars=n_bars)
         # df.reset_index(drop=True, inplace=True)
 
         price_data = {}
@@ -620,11 +637,21 @@ def creating_port_weights_mvp(lstr_path, data_path, n_bars=50400, n_total_folds=
             strategy = row.strategy
 
             text_code = create_txt_code(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt)
+            # text_code = create_txt_code1(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt)
 
             try:
                 exec(text_code, exec_dict)
+                # print(f"fold = {i_fold}, df shape = {df.shape}, df str shape = {df_str.shape}, str = {strategy}")
+                # print(len(exec_dict['buy_idxs']), len(exec_dict['buy_exit_idxs']), len(exec_dict['sell_idxs']), len(exec_dict['sell_exit_idxs']))
+                # print(exec_dict['pnl_returns'])
                 df_returns[strategy] = list(exec_dict['pnl_returns'])
             except:
+                # print(f"str = {strategy}")
+                # try:
+                #     print(exec_dict['sell_arr'])
+                # except:
+                #     pass
+                # print(e)
                 continue
 
         str_list = list(df_returns.columns)
@@ -666,6 +693,12 @@ def creating_port_weights_mvp(lstr_path, data_path, n_bars=50400, n_total_folds=
 
         # 4. Calculate the downside covariance matrix
         downside_cov_matrix = downside_df.cov()
+
+        # print(df_returns)
+        # print(annualized_log_return.shape)
+        # print(var_matrix.shape)
+        # print(downside_cov_matrix.shape)
+        # print(annual_factor)
 
         port_returns, port_volatility, port_weights, port_downside_volatility = calculate_portfolio_frontier(
             df_returns, annualized_log_return, var_matrix, downside_cov_matrix, annual_factor)
@@ -714,6 +747,7 @@ def creating_port_weights_mvp(lstr_path, data_path, n_bars=50400, n_total_folds=
     port_map_dict = {k: np.nanmean(final_port_dict[k]) / avg_weight_sum for k in final_port_dict.keys()}
 
     df_str['weight'] = df_str['strategy'].map(port_map_dict)
+    df_str['weight'] = df_str['weight'].apply(lambda x: 0 if pd.isna(x) else x)
     df_str.to_csv(f'{port_path}/{port_file_name}.csv', index=False)
 
 def creating_port_weights_hrp(lstr_path, data_path, n_bars=50400, n_total_folds=9, 
@@ -752,7 +786,7 @@ def creating_port_weights_hrp(lstr_path, data_path, n_bars=50400, n_total_folds=
 
         # df = df_52w.iloc[idx:idx+bars_per_5week, :]
         # df.reset_index(drop=True, inplace=True)
-        df = generate_fold_data(data_path, fold=i_fold, n_bars=n_bars)
+        df = generate_fold_data(data_path, fold=i_fold-1, n_bars=n_bars)
         # df.reset_index(drop=True, inplace=True)
 
         price_data = {}
@@ -824,6 +858,7 @@ def creating_port_weights_hrp(lstr_path, data_path, n_bars=50400, n_total_folds=
     port_map_dict = {k: np.nanmean(final_port_dict[k]) / avg_weight_sum for k in final_port_dict.keys()}
 
     df_str['weight'] = df_str['strategy'].map(port_map_dict)
+    df_str['weight'] = df_str['weight'].apply(lambda x: 0 if pd.isna(x) else x)
     df_str.to_csv(f'{port_path}/{port_file_name}.csv', index=False)
 
 def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1):
@@ -1011,7 +1046,7 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger, n_bars=504
 
         logger.info(f"Starting portfolio ROI calculation for sample number {str(i)}...")
 
-        df_prices = generate_fold_data(data_path, fold=i, n_bars=n_bars)
+        df_prices = generate_fold_data(data_path, fold=i-1, n_bars=n_bars)
 
         final_perf_df_port, equity_curve_dict_port = calculate_port_stats(df_port=port_df.copy(), df=df_prices.copy())
 
@@ -1217,7 +1252,7 @@ def calculate_str_out_sample_perf(data_path, port_file_path, logger, n_bars=5040
 
         logger.info(f"Starting portfolio ROI calculation for sample number {str(i)}...")
 
-        df_prices = generate_fold_data(data_path, fold=i, n_bars=n_bars)
+        df_prices = generate_fold_data(data_path, fold=i-1, n_bars=n_bars)
 
         temp_perf_df, equity_curve_dict_port = calculate_str_stats(df_str=port_df.copy(), df=df_prices.copy())
 

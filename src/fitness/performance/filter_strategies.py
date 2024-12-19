@@ -283,7 +283,7 @@ def save_stats(data_path, strategy_file_path, n_fold, logger, stats_path='testin
         df_data = generate_data(data_path)
         n_bars_per_data = df_data.shape[0]
     else:
-        df_data = generate_fold_data(data_path, fold=n_fold, n_bars=n_bars)
+        df_data = generate_fold_data(data_path, fold=n_fold-1, n_bars=n_bars)
         n_bars_per_data = n_bars
     logger.info('Data loading process completed!')
 
@@ -314,7 +314,8 @@ def filter_save_strategies(strategy_file_path, logger, stats_path='testing_resul
                            stats_file_name='baseline', str_path='selected_strategies', 
                            str_file_name='baseline', entry_testing_threshold=50,
                            exit_testing_threshold=50, core_testing_threshold=60,
-                           prob_threshold=0.98, is_counter_trend_exit=True, is_random_exit=True):
+                           prob_threshold=0.98, is_counter_trend_exit=True, is_random_exit=True,
+                           entry_exit_on=True):
 
     logger.info('Loading strategies...')
     df_str = generate_strategy_data(strategy_file_path)
@@ -328,52 +329,62 @@ def filter_save_strategies(strategy_file_path, logger, stats_path='testing_resul
     final_mc_df = pd.read_csv(f'{stats_path}/mc_{stats_file_name}.csv')
     logger.info('Saved testing stats loaded!')
     
-    # getting strategies that have winning percentage equal to 50 or more for entry testing cases
-    logger.info('Filtering strategies based on entry testing...')
-    entry_testing_strategies = final_entry_win_pc_df[
-        (final_entry_win_pc_df['Fixed_StopLoss_TakeProfit_testing'] >= entry_testing_threshold) & 
-        (final_entry_win_pc_df['Fixed_Bar_testing'] >= entry_testing_threshold) & 
-        (final_entry_win_pc_df['Random_Exit_testing'] >= entry_testing_threshold)
-    ]['strategy'].tolist()
-    final_entry_win_pc_df[final_entry_win_pc_df['strategy'].isin(entry_testing_strategies)]
-    logger.info('Entry testing filtering completed!')
+    if entry_exit_on:
+        # getting strategies that have winning percentage equal to 50 or more for entry testing cases
+        logger.info('Filtering strategies based on entry testing...')
+        entry_testing_strategies = final_entry_win_pc_df[
+            (final_entry_win_pc_df['Fixed_StopLoss_TakeProfit_testing'] >= entry_testing_threshold) & 
+            (final_entry_win_pc_df['Fixed_Bar_testing'] >= entry_testing_threshold) & 
+            (final_entry_win_pc_df['Random_Exit_testing'] >= entry_testing_threshold)
+        ]['strategy'].tolist()
+        final_entry_win_pc_df[final_entry_win_pc_df['strategy'].isin(entry_testing_strategies)]
+        logger.info('Entry testing filtering completed!')
 
-    # getting strategies that have passed entry testing and have winning percentage 
-    # equal to 50 or more (except for Random_Entry_testing)
-    logger.info('Filtering survived strategies using exit testing...')
-    if is_counter_trend_exit and is_random_exit:
-        exit_testing_strategies = final_exit_win_pc_df[
-            (final_exit_win_pc_df['Trend_testing'] >= exit_testing_threshold) & 
-            (final_exit_win_pc_df['Countertrend_testing'] >= exit_testing_threshold) & 
-            (final_exit_win_pc_df['Random_Entry_testing'] >= exit_testing_threshold) &
-            (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
+        # getting strategies that have passed entry testing and have winning percentage 
+        # equal to 50 or more (except for Random_Entry_testing)
+        logger.info('Filtering survived strategies using exit testing...')
+        if is_counter_trend_exit and is_random_exit:
+            exit_testing_strategies = final_exit_win_pc_df[
+                (final_exit_win_pc_df['Trend_testing'] >= exit_testing_threshold) & 
+                (final_exit_win_pc_df['Countertrend_testing'] >= exit_testing_threshold) & 
+                (final_exit_win_pc_df['Random_Entry_testing'] >= exit_testing_threshold) &
+                (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
+            ]['strategy'].tolist()
+        elif is_counter_trend_exit:
+            exit_testing_strategies = final_exit_win_pc_df[
+                (final_exit_win_pc_df['Trend_testing'] >= exit_testing_threshold) & 
+                (final_exit_win_pc_df['Countertrend_testing'] >= exit_testing_threshold) & 
+                (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
+            ]['strategy'].tolist()
+        elif is_random_exit:
+            exit_testing_strategies = final_exit_win_pc_df[
+                (final_exit_win_pc_df['Trend_testing'] >= exit_testing_threshold) &  
+                (final_exit_win_pc_df['Random_Entry_testing'] >= exit_testing_threshold) &
+                (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
+            ]['strategy'].tolist()
+        else:
+            exit_testing_strategies = final_exit_win_pc_df[
+                (final_exit_win_pc_df['Trend_testing'] >= exit_testing_threshold) &  
+                (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
+            ]['strategy'].tolist()
+        logger.info('Exit testing filtering completed!')
+
+        # getting strategies that has passed both entry and exit testing and have winning percentage equal to 60 or more
+        logger.info('Filtering survived strategies using core testing...')
+        core_testing_strategies = final_core_win_pc_df[
+            (final_core_win_pc_df['Core_Testing'] >= core_testing_threshold) &
+            (final_core_win_pc_df['strategy'].isin(exit_testing_strategies))
         ]['strategy'].tolist()
-    elif is_counter_trend_exit:
-        exit_testing_strategies = final_exit_win_pc_df[
-            (final_exit_win_pc_df['Trend_testing'] >= exit_testing_threshold) & 
-            (final_exit_win_pc_df['Countertrend_testing'] >= exit_testing_threshold) & 
-            (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
-        ]['strategy'].tolist()
-    elif is_random_exit:
-        exit_testing_strategies = final_exit_win_pc_df[
-            (final_exit_win_pc_df['Trend_testing'] >= exit_testing_threshold) &  
-            (final_exit_win_pc_df['Random_Entry_testing'] >= exit_testing_threshold) &
-            (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
-        ]['strategy'].tolist()
+        logger.info('Core testing filtering completed!')
+
     else:
-        exit_testing_strategies = final_exit_win_pc_df[
-            (final_exit_win_pc_df['Trend_testing'] >= exit_testing_threshold) &  
-            (final_exit_win_pc_df['strategy'].isin(entry_testing_strategies))
-        ]['strategy'].tolist()
-    logger.info('Exit testing filtering completed!')
 
-    # getting strategies that has passed both entry and exit testing and have winning percentage equal to 60 or more
-    logger.info('Filtering survived strategies using core testing...')
-    core_testing_strategies = final_core_win_pc_df[
-        (final_core_win_pc_df['Core_Testing'] >= core_testing_threshold) &
-        (final_core_win_pc_df['strategy'].isin(exit_testing_strategies))
-    ]['strategy'].tolist()
-    logger.info('Core testing filtering completed!')
+        # getting strategies that has passed both entry and exit testing and have winning percentage equal to 60 or more
+        logger.info('Filtering survived strategies using core testing...')
+        core_testing_strategies = final_core_win_pc_df[
+            (final_core_win_pc_df['Core_Testing'] >= core_testing_threshold)
+        ]['strategy'].tolist()
+        logger.info('Core testing filtering completed!')
 
     # getting performance for strategies that has passed all tests and have positive ROI
     logger.info('Filtering survived strategies using ROI...')
