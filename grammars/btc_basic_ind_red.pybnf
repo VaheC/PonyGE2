@@ -3,6 +3,7 @@
 <deff> ::= def fun(price_data):{::}
 {:import pandas as pd:}{::}
 {:import numpy as np:}{::}
+{:from scipy.stats import kurtosis, skew:}{::}
 {:from fitness.indicators import numba_indicators_nan, signals:}{::}
 {:from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag:}{::}
 {:from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit:}{::}
@@ -53,7 +54,7 @@
 <var> ::= <indicator> | price_data["'"<data-prices>"'"]
 | get_lag(price_data["'"<data-prices>"'"], lag=<lag-steps>)
 
-<var-volume> ::= <indicator-volume> | price_data["'"<volume>"'"]
+<var-volume> ::= price_data["'"<volume>"'"]
 
 <data-prices> ::= <close-prices> | <open-prices> | <high-prices> | <low-prices>
 
@@ -73,28 +74,11 @@
 <indicator> ::= numba_indicators_nan.moving_average(prices=price_data["'"<close-prices>"'"], window=<window-const>)
 | numba_indicators_nan.exponential_moving_average(prices=price_data["'"<close-prices>"'"], window=<window-const>)
 | numba_indicators_nan.relative_strength_index(prices=price_data["'"<close-prices>"'"], window=<window-const>)
-| numba_indicators_nan.macd(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>, signal_window=<window-const>)[0]
-| numba_indicators_nan.macd(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>, signal_window=<window-const>)[1]
-| numba_indicators_nan.macd(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>, signal_window=<window-const>)[2]
 | numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<digit>)[0]
 | numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<digit>)[1]
 | numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<digit>)[2]
 | numba_indicators_nan.momentum(prices=price_data["'"<close-prices>"'"], window=<window-const>)
-| numba_indicators_nan.stochastic_oscillator_kd(close_prices=price_data["'"<close-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>, smooth_period=<short-window-const>)[0]
-| numba_indicators_nan.stochastic_oscillator_kd(close_prices=price_data["'"<close-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>, smooth_period=<short-window-const>)[1]
 | numba_indicators_nan.average_true_range(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>)
-| numba_indicators_nan.moving_average_difference(prices=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>)
-| numba_indicators_nan.adx(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window=<window-const>)
-| numba_indicators_nan.intraday_intensity(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], volume=price_data["'"<volume>"'"])
-| numba_indicators_nan.reactivity(prices=price_data["'"<close-prices>"'"], window=<window-const>)
-| numba_indicators_nan.close_to_close(close=price_data["'"<close-prices>"'"])
-| numba_indicators_nan.n_day_high(prices=price_data["'"<close-prices>"'"], n=<int-const>)
-| numba_indicators_nan.n_day_low(prices=price_data["'"<close-prices>"'"], n=<int-const>)
-| numba_indicators_nan.chaikin_ad_line(close=price_data["'"<close-prices>"'"], low=price_data["'"<low-prices>"'"], high=price_data["'"<high-prices>"'"], volume=price_data["'"<volume>"'"])
-| numba_indicators_nan.chaikin_ad_oscillator(numba_indicators_nan.chaikin_ad_line(close=price_data["'"<close-prices>"'"], low=price_data["'"<low-prices>"'"], high=price_data["'"<high-prices>"'"], volume=price_data["'"<volume>"'"]), short_window=<window-const>, long_window=<window-const>)
-| numba_indicators_nan.absolute_price_oscillator(close=price_data["'"<close-prices>"'"], short_window=<window-const>, long_window=<window-const>)
-| numba_indicators_nan.aroon(prices=price_data["'"<close-prices>"'"], period=<window-const>)[0]
-| numba_indicators_nan.aroon(prices=price_data["'"<close-prices>"'"], period=<window-const>)[1]
 | numba_indicators_nan.hilbert_dominant_cycle_period(close=price_data["'"<close-prices>"'"], period=<window-const>)
 | numba_indicators_nan.hilbert_dominant_cycle_phase(close=price_data["'"<close-prices>"'"], period=<window-const>)
 | numba_indicators_nan.hilbert_phasor_components(close=price_data["'"<close-prices>"'"])[MAX_LAG:, 0]
@@ -102,36 +86,17 @@
 | numba_indicators_nan.hilbert_sinewave(close=price_data["'"<close-prices>"'"])
 | numba_indicators_nan.hilbert_instantaneous_trendline(close=price_data["'"<close-prices>"'"])
 | numba_indicators_nan.hilbert_trend_vs_cycle_mode(close=price_data["'"<close-prices>"'"])
-| numba_indicators_nan.mesa_adaptive_moving_average(close=price_data["'"<close-prices>"'"], period=<window-const>)
-| numba_indicators_nan.median_price(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"])
-| numba_indicators_nan.midpoint_over_period(close=price_data["'"<close-prices>"'"], period=<window-const>)
-| numba_indicators_nan.parabolic_sar(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"])
-| numba_indicators_nan.triple_exponential_moving_average(close=price_data["'"<close-prices>"'"], period=<window-const>)
 | numba_indicators_nan.williams_r(close=price_data["'"<close-prices>"'"], low=price_data["'"<low-prices>"'"], high=price_data["'"<high-prices>"'"], period=<window-const>)
 | numba_indicators_nan.z_score(<var>)
 | numba_indicators_nan.rolling_drawdown(price_data["'"<data-prices>"'"], window_size=<window-const>)
 | numba_indicators_nan.rolling_volatility(price_data["'"<data-prices>"'"], window_size=<window-const>)
-| numba_indicators_nan.rolling_parkinson_estimator(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], window_size=<window-const>)
-| numba_indicators_nan.rolling_rogers_satchell_estimator(open=price_data["'"<open-prices>"'"], high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window_size=<window-const>)
-| numba_indicators_nan.rolling_yang_zhang_estimator(open=price_data["'"<open-prices>"'"], high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window_size=<window-const>)
-| numba_indicators_nan.rolling_garman_klass_estimator(open=price_data["'"<open-prices>"'"], high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], window_size=<window-const>)
 | signals.moving_max(price_data["'"<data-prices>"'"], window=<window-const>)
 | signals.moving_min(price_data["'"<data-prices>"'"], window=<window-const>)
 | signals.moving_percentile(price_data["'"<data-prices>"'"], window=<window-const>, percentile=<perc-const>)
 | numba_indicators_nan.ultimate_oscillator(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"], close=price_data["'"<close-prices>"'"], period1=<digit>, period2=2 * <digit>, period3=3 * <digit>)
-| numba_indicators_nan.medprice(high=price_data["'"<high-prices>"'"], low=price_data["'"<low-prices>"'"])
-| numba_indicators_nan.dema(price=price_data["'"<data-prices>"'"], period=<window-const>)
-| numba_indicators_nan.hma(price=price_data["'"<data-prices>"'"], period=<window-const>)
-| numba_indicators_nan.calculate_keltner_channels(high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], close_prices=price_data["'"<close-prices>"'"], period=<window-const>, multiplier=<digit>)[0]
-| numba_indicators_nan.calculate_keltner_channels(high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], close_prices=price_data["'"<close-prices>"'"], period=<window-const>, multiplier=<digit>)[1]
-| numba_indicators_nan.calculate_keltner_channels(high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], close_prices=price_data["'"<close-prices>"'"], period=<window-const>, multiplier=<digit>)[2]
 | numba_indicators_nan.bull_bar_tail_rolling(close_prices=price_data["'"<close-prices>"'"], open_prices=price_data["'"<open-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>)
 | numba_indicators_nan.bear_bar_tail_rolling(close_prices=price_data["'"<close-prices>"'"], open_prices=price_data["'"<open-prices>"'"], high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], period=<window-const>)
 | numba_indicators_nan.awesome_oscillator(high_prices=price_data["'"<high-prices>"'"], low_prices=price_data["'"<low-prices>"'"], short_period=<digit>, long_period=<short-window-const>)
-
-<indicator-volume> ::= numba_indicators_nan.volume_momentum(volume=price_data["'"<volume>"'"], window=<window-const>)
-| numba_indicators_nan.positive_volume_indicator(volume=price_data["'"<volume>"'"])
-| numba_indicators_nan.negative_volume_indicator(volume=price_data["'"<volume>"'"])
 
 <simple-signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
 | (<var> <c-op> <var>)
@@ -192,7 +157,7 @@
 
 <lag-steps> ::= <digit> | <digit><aug-digit>
 
-<digit> ::= 1 | 2 | 3 | 4 | 5 
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 <aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
 <week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
@@ -214,7 +179,12 @@
 
 <mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) |
 | np.log10(<var> + 1) | np.log2(<var> + 1) | np.log1p(<var> + 1) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
+| np.quantile(<var>, 0.75) | np.quantile(<var>, 0.25) | np.quantile(<var>, 0.5) 
+| np.quantile(<var>, 0.9) | np.quantile(<var>, 0.1) | np.mean(<var>) | np.std(<var>) | kurtosis(<var>) | skew(<var>)
 
 <matf-volume> ::= np.log(<var-volume> + 1) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
 | np.log10(<var-volume> + 1) | np.log2(<var-volume> + 1) 
 | np.log1p(<var-volume> + 1) | np.abs(<var-volume>) | np.max(<var-volume>) | np.min(<var-volume>)
+| np.quantile(<var-volume>, 0.75) | np.quantile(<var-volume>, 0.25) | np.quantile(<var-volume>, 0.5) 
+| np.quantile(<var-volume>, 0.9) | np.quantile(<var-volume>, 0.1)
+| np.mean(<var-volume>) | np.std(<var-volume>) | kurtosis(<var-volume>) | skew(<var-volume>)
