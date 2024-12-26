@@ -1,0 +1,130 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{::}
+{:import vectorbt as vbt:}{::}
+{:import pandas as pd:}{::}
+{:import numpy as np:}{::}
+{:from fitness.indicators import signals:}{::}
+{:from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag:}{::}
+{:from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit:}{::}
+{:from numba import njit:}{::}
+{:COMMISSION = 0.015:}{::}
+{:SLIPPAGE = 0.00005:}{::}
+{:AVAILABLE_CAPITAL = 700000:}{::}
+{:TRADE_SIZE = 0.5:}{::}{::}
+{:buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal=<buy-signal>, exit_signal=<buy-exit-signal>):}{::}
+{:sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal=<sell-signal>, exit_signal=<sell-exit-signal>):}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs):}:}{::}
+{:except::}
+{:{:pass:}:}
+{:if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0)::}{::}
+{:{:return 999:}:}{::}{::}
+{:buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:price_data_open = pd.Series(price_data["'"btc_open"'"], index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
+{:pf = vbt.Portfolio.from_signals(price_data_open, entries=buy_entries, exits=buy_exits, init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, slippage=SLIPPAGE, size=TRADE_SIZE, short_entries=sell_entries, short_exits=sell_exits):}{::}
+{:fitness = pf.stats()["'"Total Return [%]"'"] / pf.stats()["'"Max Drawdown [%]"'"]:}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:return -fitness:}
+
+<callf> ::= fitness = fun(price_data)
+
+<var> ::= price_data["'"<data-prices>"'"]
+| get_lag(price_data["'"<data-prices>"'"], lag=<lag-steps>)
+
+<var-volume> ::= price_data["'"<volume>"'"]
+
+<data-prices> ::= <close-prices> | <open-prices> | <high-prices> | <low-prices>
+
+<inst-tickers> ::= btc | 6e | aapl | aav | amzn | cl | coin | dog | es | fet | gc 
+| googl | inj | lin | meta | msft | ng | nq | nvda | pltr | sui | tia | tsla | xrp | zf | zn
+
+<close-prices> ::= <inst-tickers>_close
+
+<open-prices> ::= <inst-tickers>_open
+
+<high-prices> ::= <inst-tickers>_high
+
+<low-prices> ::= <inst-tickers>_low
+
+<volume> ::= <inst-tickers>_volume
+
+<simple-signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
+| (<var> <c-op> <var>)
+| ((<var> <mat-op> <var>) <c-op> <var>)
+| ((<var> <mat-op> <var>) <c-op> <value>)
+| ((<var> <mat-op> <value>) <c-op> <value>)
+| (<mat-f> <c-op> <mat-f>)
+| (<mat-f> <c-op> <value>)
+| ((<mat-f> <mat-op> <mat-f>) <c-op> <value>)
+| ((<mat-f> <mat-op> <value>) <c-op> <value>)
+| (<var-volume> <c-op> <int-const>)
+| (<var-volume> <c-op> <var-volume>)
+| ((<var-volume> <mat-op> <var-volume>) <c-op> <var-volume>)
+| ((<var-volume> <mat-op> <var-volume>) <c-op> <value>)
+| ((<var-volume> <mat-op> <value>) <c-op> <value>)
+| (<matf-volume> <c-op> <matf-volume>)
+| (<matf-volume> <c-op> <value>)
+| ((<matf-volume> <mat-op> <matf-volume>) <c-op> <value>)
+| ((<matf-volume> <mat-op> <value>) <c-op> <value>)
+| (price_data["'"day_of_week"'"] <c-op> <week-day>)
+| (price_data["'"hour"'"] <c-op> <hour>)
+| (price_data["'"minute"'"] <c-op> <minute>)
+| ((price_data["'"hour"'"] >= 21) & (price_data["'"hour"'"] <= 23))
+| ((price_data["'"hour"'"] >= 22) & (price_data["'"hour"'"] <= 23))
+| ((signals.moving_std(arr=price_data["'"btc_close"'"], window=30) > np.quantile(signals.moving_std(arr=price_data["'"btc_close"'"], window=30), 0.75)) & (price_data["'"hour"'"] >= 21) & (price_data["'"hour"'"] <= 23))
+| ((signals.moving_std(arr=price_data["'"btc_close"'"], window=30) > np.quantile(signals.moving_std(arr=price_data["'"btc_close"'"], window=30), 0.75)) & (price_data["'"hour"'"] >= 22) & (price_data["'"hour"'"] <= 23))
+
+<signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>)
+| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
+
+<sell-signal> ::= <signal>
+
+<buy-signal> ::= <signal>
+
+<sell-exit-signal> ::= <signal>
+
+<buy-exit-signal> ::= <signal>
+
+<value> ::= <int-const> | <real-const>
+
+<change-value> ::= 0.<int-const> | -0.<int-const> | 0.<int-const><int-const> | -0.<int-const><int-const>
+
+<int-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<window-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<lag-steps> ::= <digit> | <digit><aug-digit>
+
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
+<month> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+<hour> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+<minute> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 
+| 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47 
+| 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59
+
+<real-const> ::= 0.<int-const> | <int-const>.<int-const>
+
+<perc-const> ::= 0.<digit> | 0.<digit><aug-digit> 
+
+<c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
+
+<mat-op> ::= + | - | * | /
+
+<log-op> ::= "&" | "|" 
+
+<mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>)
+| np.log10(<var> + 1) | np.log2(<var> + 1) | np.log1p(<var> + 1) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
+
+<matf-volume> ::= np.log(<var-volume> + 1) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
+| np.log10(<var-volume> + 1) | np.log2(<var-volume> + 1) 
+| np.log1p(<var-volume> + 1) | np.abs(<var-volume>) | np.max(<var-volume>) | np.min(<var-volume>)
