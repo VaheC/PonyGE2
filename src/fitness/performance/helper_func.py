@@ -344,3 +344,19 @@ def get_returns(buy_idxs, buy_pnl, sell_idxs, sell_pnl, n_data):
     pnl_lreturn = np.log(pnl_cum[1:] + 1) - np.log(pnl_cum[:-1] + 1)
 
     return pnl_lreturn
+
+@njit(cache=True)
+def get_returns_vbt(idxs, pnl, n_data):
+
+    pnl_values = np.zeros(n_data)
+
+    for i in range(len(idxs)):
+        pnl_values[idxs[i]] = pnl[i]
+
+    pnl_cum = np.cumsum(pnl_values)
+
+    # pnl_preturn = np.diff(pnl_cum + 1) / (pnl_cum[:-1] + 1)
+
+    pnl_lreturn = np.log(pnl_cum[1:] + 1) - np.log(pnl_cum[:-1] + 1)
+
+    return pnl_lreturn

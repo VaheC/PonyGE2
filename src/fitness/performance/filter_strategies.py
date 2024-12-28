@@ -118,6 +118,63 @@ gc.collect()'''
     
     return text_code
 
+def create_txt_code1_vbt(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt, 
+                     fee=0.015, slippage=0.00005, inv_amount=700000, trade_size=0.5, max_lag=99):
+
+    text_code = f'''import os
+CUR_DIR = os.getcwd()
+# os.chdir('src')
+import pandas as pd
+import numpy as np
+import vectorbt as vbt
+import gc
+from fitness.indicators import numba_indicators_nan, signals
+from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag
+from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit
+# os.chdir(CUR_DIR)
+#from numba import njit
+COMMISSION = {fee}
+SLIPPAGE = {slippage}
+AVAILABLE_CAPITAL = {inv_amount}
+TRADE_SIZE = {trade_size}
+MAX_LAG = {max_lag}
+try:
+    buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal={buy_signal_txt}, exit_signal={buy_exit_txt})
+except:
+    buy_idxs, buy_exit_idxs = [], []
+try:
+    sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal={sell_signal_txt}, exit_signal={sell_exit_txt})
+except:
+    sell_idxs, sell_exit_idxs = [], []
+# if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+#     fitness = -9999999
+#     avg_drawdown = -9999999
+# else:
+try:
+    buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs)
+except:
+    pass
+if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+    fitness = np.nan
+else:
+    buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data['btc_open']))])
+    buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
+    sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
+    sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
+    price_data_open = pd.Series(price_data['btc_open'], index=pd.to_datetime(price_data['datetime']))
+    pf = vbt.Portfolio.from_signals(
+        price_data_open, entries=buy_entries, exits=buy_exits, 
+        init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
+        slippage=SLIPPAGE, size=TRADE_SIZE, 
+        short_entries=sell_entries, short_exits=sell_exits
+    )
+    total_return_p = pf.stats()['Total Return [%]']
+    max_drawdown_p = pf.stats()['Max Drawdown [%]']
+    fitness = total_return_p / max_drawdown_p
+gc.collect()'''
+    
+    return text_code
+
 def get_important_stats(df_str, df_data, bars_per_span = 7 * 60 * 24 * 5, n_bars_per_data = 7 * 60 * 24 * 5, 
                         create_txt_code=create_txt_code1):
 
@@ -173,10 +230,10 @@ def get_important_stats(df_str, df_data, bars_per_span = 7 * 60 * 24 * 5, n_bars
 
             price_data = {}
             for col in df.columns:
-                if col == 'datetime':
-                    continue
-                else:
-                    price_data[col] = df[col].values
+                # if col == 'datetime':
+                #     continue
+                # else:
+                price_data[col] = df[col].values
             price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
             price_data['month'] = df['datetime'].dt.month.values
             price_data['hour'] = df['datetime'].dt.hour.values
@@ -278,7 +335,11 @@ def get_important_stats(df_str, df_data, bars_per_span = 7 * 60 * 24 * 5, n_bars
 
     return final_entry_win_pc_df, final_exit_win_pc_df, final_core_win_pc_df, final_perf_df, final_mc_df
 
-def save_stats(data_path, strategy_file_path, n_fold, logger, stats_path='testing_results', stats_file_name='baseline', n_bars=50400):
+def save_stats(
+    data_path, strategy_file_path, n_fold, logger, 
+    stats_path='testing_results', stats_file_name='baseline', 
+    n_bars=50400, create_txt_code=create_txt_code1
+):
 
     logger.info('Starting data loading process...')
     if n_fold == 0:
@@ -296,7 +357,9 @@ def save_stats(data_path, strategy_file_path, n_fold, logger, stats_path='testin
     # getting the stats
     logger.info('Starting testing stats calculation...')
     (final_entry_win_pc_df, final_exit_win_pc_df, 
-     final_core_win_pc_df, final_perf_df, final_mc_df) = get_important_stats(df_str, df_data, bars_per_span = n_bars, n_bars_per_data=n_bars_per_data)
+     final_core_win_pc_df, final_perf_df, final_mc_df) = get_important_stats(
+         df_str, df_data, bars_per_span = n_bars, n_bars_per_data=n_bars_per_data, create_txt_code=create_txt_code
+    )
     logger.info('Testing stats calculation completed!')
 
     logger.info("Creating %s directory if it doesn't exist...", stats_path)

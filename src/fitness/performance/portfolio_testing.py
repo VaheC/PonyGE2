@@ -121,6 +121,63 @@ gc.collect()'''
     
     return text_code
 
+def create_txt_code1_vbt(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt, 
+                     fee=0.015, slippage=0.00005, inv_amount=700000, trade_size=0.5, max_lag=99):
+
+    text_code = f'''import os
+CUR_DIR = os.getcwd()
+# os.chdir('src')
+import pandas as pd
+import numpy as np
+import vectorbt as vbt
+import gc
+from fitness.indicators import numba_indicators_nan, signals
+from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag
+from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit
+# os.chdir(CUR_DIR)
+#from numba import njit
+COMMISSION = {fee}
+SLIPPAGE = {slippage}
+AVAILABLE_CAPITAL = {inv_amount}
+TRADE_SIZE = {trade_size}
+MAX_LAG = {max_lag}
+try:
+    buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal={buy_signal_txt}, exit_signal={buy_exit_txt})
+except:
+    buy_idxs, buy_exit_idxs = [], []
+try:
+    sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal={sell_signal_txt}, exit_signal={sell_exit_txt})
+except:
+    sell_idxs, sell_exit_idxs = [], []
+# if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+#     fitness = -9999999
+#     avg_drawdown = -9999999
+# else:
+try:
+    buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs)
+except:
+    pass
+if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+    fitness = np.nan
+else:
+    buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data['btc_open']))])
+    buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
+    sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
+    sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
+    price_data_open = pd.Series(price_data['btc_open'], index=pd.to_datetime(price_data['datetime']))
+    pf = vbt.Portfolio.from_signals(
+        price_data_open, entries=buy_entries, exits=buy_exits, 
+        init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
+        slippage=SLIPPAGE, size=TRADE_SIZE, 
+        short_entries=sell_entries, short_exits=sell_exits
+    )
+    total_return_p = pf.stats()['Total Return [%]']
+    max_drawdown_p = pf.stats()['Max Drawdown [%]']
+    fitness = total_return_p / max_drawdown_p
+gc.collect()'''
+    
+    return text_code
+
 def create_txt_code_port1(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt, weight,
                      fee=0.015, slippage=0.00005, inv_amount=700000, trade_size=0.5, max_lag=99):
 
@@ -186,6 +243,63 @@ gc.collect()'''
     
     return text_code
 
+def create_txt_code_port1_vbt(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt, weight,
+                     fee=0.015, slippage=0.00005, inv_amount=700000, trade_size=0.5, max_lag=99):
+
+    text_code = f'''import os
+CUR_DIR = os.getcwd()
+# os.chdir('src')
+import pandas as pd
+import numpy as np
+import vectorbt as vbt
+import gc
+from fitness.indicators import numba_indicators_nan, signals
+from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag
+from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit
+# os.chdir(CUR_DIR)
+#from numba import njit
+COMMISSION = {fee}
+SLIPPAGE = {slippage}
+AVAILABLE_CAPITAL = {inv_amount}
+TRADE_SIZE = {trade_size} * {weight}
+MAX_LAG = {max_lag}
+try:
+    buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal={buy_signal_txt}, exit_signal={buy_exit_txt})
+except:
+    buy_idxs, buy_exit_idxs = [], []
+try:
+    sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal={sell_signal_txt}, exit_signal={sell_exit_txt})
+except:
+    sell_idxs, sell_exit_idxs = [], []
+# if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+#     fitness = -9999999
+#     avg_drawdown = -9999999
+# else:
+try:
+    buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs)
+except:
+    pass
+if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+    fitness = np.nan
+else:
+    buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data['btc_open']))])
+    buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
+    sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
+    sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
+    price_data_open = pd.Series(price_data['btc_open'], index=pd.to_datetime(price_data['datetime']))
+    pf = vbt.Portfolio.from_signals(
+        price_data_open, entries=buy_entries, exits=buy_exits, 
+        init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
+        slippage=SLIPPAGE, size=TRADE_SIZE, 
+        short_entries=sell_entries, short_exits=sell_exits
+    )
+    total_return_p = pf.stats()['Total Return [%]']
+    max_drawdown_p = pf.stats()['Max Drawdown [%]']
+    fitness = total_return_p / max_drawdown_p
+gc.collect()'''
+    
+    return text_code
+
 def create_txt_code_pnl1(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt, 
                      fee=0.015, slippage=0.00005, inv_amount=700000, trade_size=0.5, max_lag=99):
 
@@ -240,16 +354,16 @@ else:
     all_arr = merge_buy_sell_pnl(buy_idxs, sell_idxs, buy_arr, sell_arr)
     total_pnl = buy_pnl + sell_pnl
     equity_curve_arr = np.cumsum(all_arr)
-    if len(sell_idxs) == 0:
-        sell_idxs = np.array([-1])
+    if len(sell_exit_idxs) == 0:
+        sell_exit_idxs = np.array([-1])
         sell_arr = np.array([0])
-    elif len(buy_idxs) == 0:
-        buy_idxs[0] = np.array([-1])
+    elif len(buy_exit_idxs) == 0:
+        buy_exit_idxs[0] = np.array([-1])
         buy_arr = np.array([0])
     pnl_returns = get_returns(
-        buy_idxs=buy_idxs, 
+        buy_idxs=buy_exit_idxs, 
         buy_pnl=buy_arr, 
-        sell_idxs=sell_idxs, 
+        sell_idxs=sell_exit_idxs, 
         sell_pnl=sell_arr, 
         n_data=len(open_prices)
     )
@@ -260,6 +374,69 @@ else:
     else:
         fitness = np.nan
         avg_drawdown = np.nan
+gc.collect()'''
+    
+    return text_code
+
+def create_txt_code_pnl1_vbt(buy_signal_txt, buy_exit_txt, sell_signal_txt, sell_exit_txt, 
+                     fee=0.015, slippage=0.00005, inv_amount=700000, trade_size=0.5, max_lag=99):
+
+    text_code = f'''import os
+CUR_DIR = os.getcwd()
+# os.chdir('src')
+import pandas as pd
+import numpy as np
+import vectorbt as vbt
+import gc
+from fitness.indicators import numba_indicators_nan, signals
+from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag
+from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit, get_returns_vbt
+# os.chdir(CUR_DIR)
+#from numba import njit
+COMMISSION = {fee}
+SLIPPAGE = {slippage}
+AVAILABLE_CAPITAL = {inv_amount}
+TRADE_SIZE = {trade_size}
+MAX_LAG = {max_lag}
+try:
+    buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal={buy_signal_txt}, exit_signal={buy_exit_txt})
+except:
+    buy_idxs, buy_exit_idxs = [], []
+try:
+    sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal={sell_signal_txt}, exit_signal={sell_exit_txt})
+except:
+    sell_idxs, sell_exit_idxs = [], []
+# if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+#     fitness = -9999999
+#     avg_drawdown = -9999999
+# else:
+try:
+    buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs)
+except:
+    pass
+if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0):
+    fitness = np.nan
+else:
+    buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data['btc_open']))])
+    buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
+    sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
+    sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
+    price_data_open = pd.Series(price_data['btc_open'], index=pd.to_datetime(price_data['datetime']))
+    pf = vbt.Portfolio.from_signals(
+        price_data_open, entries=buy_entries, exits=buy_exits, 
+        init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
+        slippage=SLIPPAGE, size=TRADE_SIZE, 
+        short_entries=sell_entries, short_exits=sell_exits
+    )
+    total_return_p = pf.stats()['Total Return [%]']
+    max_drawdown_p = pf.stats()['Max Drawdown [%]']
+    fitness = total_return_p / max_drawdown_p
+    trades = pf.trades.records
+    pnl_returns = get_returns_vbt(
+        idxs=trades['exit_idx'], 
+        pnl=trades['pnl'],
+        n_data=len(price_data['btc_open'])
+    )
 gc.collect()'''
     
     return text_code
@@ -315,10 +492,10 @@ def test_out_of_fold(df_str, data_path, n_fold, n_bars=50400, n_total_folds=9, c
 
             price_data = {}
             for col in df.columns:
-                if col == 'datetime':
-                    continue
-                else:
-                    price_data[col] = df[col].values
+                # if col == 'datetime':
+                #     continue
+                # else:
+                price_data[col] = df[col].values
             price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
             price_data['month'] = df['datetime'].dt.month.values
             price_data['hour'] = df['datetime'].dt.hour.values
@@ -433,7 +610,7 @@ def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_s
                      lstr_file_name='baseline', is_subset=False, start_subset=0, end_subset=10,
                      entry_testing_threshold=50, exit_testing_threshold=50, core_testing_threshold=60,
                      prob_threshold=0.8, n_bars=50400, n_total_folds=9, is_counter_trend_exit=True, 
-                     is_random_exit=True, entry_exit_on=True):
+                     is_random_exit=True, entry_exit_on=True, create_txt_code=create_txt_code1):
 
     logger.info('Loading survived strategies from %s', str_file_path)
     try:
@@ -449,12 +626,13 @@ def filter_save_lstr(data_path, n_fold, str_file_path, logger, lstr_path='live_s
         if is_subset:
             (final_entry_win_pc_df_fold, final_exit_win_pc_df_fold, final_core_win_pc_df_fold, 
             final_perf_df_fold, final_mc_df_fold, equity_curve_dict_fold) = test_out_of_fold(
-                df_selected_str.iloc[start_subset:end_subset], data_path, n_fold, n_bars, n_total_folds
+                df_selected_str.iloc[start_subset:end_subset], data_path, n_fold, n_bars, n_total_folds,
+                create_txt_code=create_txt_code
             )
         else:
             (final_entry_win_pc_df_fold, final_exit_win_pc_df_fold, final_core_win_pc_df_fold, 
             final_perf_df_fold, final_mc_df_fold, equity_curve_dict_fold) = test_out_of_fold(
-                df_selected_str, data_path, n_fold, n_bars, n_total_folds
+                df_selected_str, data_path, n_fold, n_bars, n_total_folds, create_txt_code=create_txt_code
             )
 
         logger.info('Out of fold testing stats calculation completed!')
@@ -910,10 +1088,10 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
 
         price_data = {}
         for col in df.columns:
-            if col == 'datetime':
-                continue
-            else:
-                price_data[col] = df[col].values
+            # if col == 'datetime':
+            #     continue
+            # else:
+            price_data[col] = df[col].values
         price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
         price_data['month'] = df['datetime'].dt.month.values
         price_data['hour'] = df['datetime'].dt.hour.values
@@ -1023,7 +1201,7 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
 def calculate_port_out_sample_perf(data_path, port_file_path, logger, n_bars=50400, 
                                    initial_amount=350000, start_fold=3, end_fold=9, 
                                    port_perf_path='portfolio_out_sample_performance',
-                                   port_perf_file_name='baseline'):
+                                   port_perf_file_name='baseline', create_txt_code_port=create_txt_code_port1):
     
     logger.info(f"Creating {port_perf_path} directory if it doesn't exist...")
     if not os.path.exists(port_perf_path):
@@ -1048,7 +1226,9 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger, n_bars=504
 
         df_prices = generate_fold_data(data_path, fold=i-1, n_bars=n_bars)
 
-        final_perf_df_port, equity_curve_dict_port = calculate_port_stats(df_port=port_df.copy(), df=df_prices.copy())
+        final_perf_df_port, equity_curve_dict_port = calculate_port_stats(
+            df_port=port_df.copy(), df=df_prices.copy(), create_txt_code_port=create_txt_code_port
+        )
 
         port_roi = 100 * final_perf_df_port['PNL'].sum() / initial_amount
 
@@ -1116,10 +1296,10 @@ def calculate_str_stats(df_str, df, create_txt_code_port=create_txt_code1):
 
         price_data = {}
         for col in df.columns:
-            if col == 'datetime':
-                continue
-            else:
-                price_data[col] = df[col].values
+            # if col == 'datetime':
+            #     continue
+            # else:
+            price_data[col] = df[col].values
         price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
         price_data['month'] = df['datetime'].dt.month.values
         price_data['hour'] = df['datetime'].dt.hour.values
@@ -1231,7 +1411,8 @@ def calculate_str_stats(df_str, df, create_txt_code_port=create_txt_code1):
 def calculate_str_out_sample_perf(data_path, port_file_path, logger, n_bars=50400, 
                                    initial_amount=350000, start_fold=3, end_fold=9, 
                                    str_perf_path='str_out_sample_performance',
-                                   str_perf_file_name='baseline'):
+                                   str_perf_file_name='baseline',
+                                   create_txt_code_port=create_txt_code1):
     
     logger.info(f"Creating {str_perf_path} directory if it doesn't exist...")
     if not os.path.exists(str_perf_path):
@@ -1254,7 +1435,9 @@ def calculate_str_out_sample_perf(data_path, port_file_path, logger, n_bars=5040
 
         df_prices = generate_fold_data(data_path, fold=i-1, n_bars=n_bars)
 
-        temp_perf_df, equity_curve_dict_port = calculate_str_stats(df_str=port_df.copy(), df=df_prices.copy())
+        temp_perf_df, equity_curve_dict_port = calculate_str_stats(
+            df_str=port_df.copy(), df=df_prices.copy(), create_txt_code_port=create_txt_code_port
+        )
 
         temp_perf_df['ROI'] = 100 * temp_perf_df['PNL'] / initial_amount
 
