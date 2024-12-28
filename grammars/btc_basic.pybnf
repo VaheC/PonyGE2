@@ -3,6 +3,7 @@
 <deff> ::= def fun(price_data):{::}
 {:import pandas as pd:}{::}
 {:import numpy as np:}{::}
+{:from scipy.stats import kurtosis, skew:}{::}
 {:from fitness.indicators import signals:}{::}
 {:from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag:}{::}
 {:from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit:}{::}
@@ -135,7 +136,12 @@
 
 <mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>)
 | np.log10(<var> + 1) | np.log2(<var> + 1) | np.log1p(<var> + 1) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
+| np.quantile(<var>, 0.75) | np.quantile(<var>, 0.25) | np.quantile(<var>, 0.5) 
+| np.quantile(<var>, 0.9) | np.quantile(<var>, 0.1) | np.mean(<var>) | np.std(<var>) | kurtosis(<var>) | skew(<var>)
 
 <matf-volume> ::= np.log(<var-volume> + 1) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
 | np.log10(<var-volume> + 1) | np.log2(<var-volume> + 1) 
 | np.log1p(<var-volume> + 1) | np.abs(<var-volume>) | np.max(<var-volume>) | np.min(<var-volume>)
+| np.quantile(<var-volume>, 0.75) | np.quantile(<var-volume>, 0.25) | np.quantile(<var-volume>, 0.5) 
+| np.quantile(<var-volume>, 0.9) | np.quantile(<var-volume>, 0.1)
+| np.mean(<var-volume>) | np.std(<var-volume>) | kurtosis(<var-volume>) | skew(<var-volume>)
