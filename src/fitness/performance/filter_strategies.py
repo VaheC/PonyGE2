@@ -171,6 +171,14 @@ else:
     total_return_p = pf.stats()['Total Return [%]']
     max_drawdown_p = pf.stats()['Max Drawdown [%]']
     fitness = total_return_p / max_drawdown_p
+    trades = pf.trades.records
+    all_arr = trades['pnl'].values
+    equity_curve_arr = np.cumsum(all_arr)
+    drawdowns = get_drawdowns(equity_curve_arr)
+    if len(drawdowns[drawdowns!=0]) != 0:
+        avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0])
+    else:
+        avg_drawdown = np.nan
 gc.collect()'''
     
     return text_code
