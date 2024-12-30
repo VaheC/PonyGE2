@@ -4,7 +4,7 @@
 {:import vectorbt as vbt:}{::}
 {:import pandas as pd:}{::}
 {:import numpy as np:}{::}
-{:from fitness.indicators import signals:}{::}
+{:from fitness.indicators import numba_indicators_nan, signals:}{::}
 {:from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag:}{::}
 {:from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit:}{::}
 {:from numba import njit:}{::}
