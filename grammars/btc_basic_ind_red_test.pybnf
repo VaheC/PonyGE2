@@ -1,0 +1,197 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{::}
+{:import pandas as pd:}{::}
+{:import numpy as np:}{::}
+{:from scipy.stats import kurtosis, skew:}{::}
+{:from fitness.indicators import numba_indicators_nan, signals:}{::}
+{:from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag:}{::}
+{:from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit:}{::}
+{:from numba import njit:}{::}
+{:COMMISSION = 0.015:}{::}
+{:SLIPPAGE = 0.00005:}{::}
+{:AVAILABLE_CAPITAL = 700000:}{::}
+{:TRADE_SIZE = 0.5:}{::}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal=<buy-signal>, exit_signal=<buy-exit-signal>):}:}
+{:except::}
+{:{:buy_idxs, buy_exit_idxs = [], []:}:}{::}
+{:try::}
+{:{:sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal=<sell-signal>, exit_signal=<sell-exit-signal>):}:}
+{:except::}
+{:{:sell_idxs, sell_exit_idxs = [], []:}:}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs):}:}{::}
+{:except::}
+{:{:pass:}:}
+{:if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0)::}{::}
+{:{:return 999:}:}{::}{::}
+{:open_prices = price_data["'"btc_open"'"]:}{::}
+{:buy_prices = open_prices[np.isin(np.arange(len(open_prices)), buy_idxs)]:}{::}
+{:buy_exit_prices = open_prices[np.isin(np.arange(len(open_prices)), buy_exit_idxs)]:}{::}
+{:sell_prices = open_prices[np.isin(np.arange(len(open_prices)), sell_idxs)]:}{::}
+{:sell_exit_prices = open_prices[np.isin(np.arange(len(open_prices)), sell_exit_idxs)]:}{::}
+{:buy_arr = get_pnl(buy_exit_prices, buy_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 1):}{::}
+{:buy_pnl = np.sum(buy_arr):}{::}
+{:sell_arr = get_pnl(sell_exit_prices, sell_prices, COMMISSION, SLIPPAGE, AVAILABLE_CAPITAL, TRADE_SIZE, 0):}{::}
+{:sell_pnl = np.sum(sell_arr):}{::}
+{:all_arr = merge_buy_sell_pnl(buy_idxs, sell_idxs, buy_arr, sell_arr):}{::}
+{:total_pnl = buy_pnl + sell_pnl:}{::}
+{:if total_pnl <= 0::}{::}
+{:{:return 999:}:}{::}
+{:equity_curve_arr = np.cumsum(all_arr):}{::}
+{:drawdowns = get_drawdowns(equity_curve_arr):}{::}
+{:if len(drawdowns[drawdowns!=0]) == 0::}{::}
+{:{:return 999:}:}{::}
+{:avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]):}{::}
+{:fitness = total_pnl / avg_drawdown:}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:return -fitness:}
+
+<callf> ::= fitness = fun(price_data)
+
+<var> ::= <indicator> | price_data["'"<data-prices>"'"]
+| get_lag(price_data["'"<data-prices>"'"], lag=<lag-steps>)
+
+<var-volume> ::= price_data["'"<volume>"'"]
+
+<data-prices> ::= <close-prices> | <open-prices> | <high-prices> | <low-prices>
+
+<inst-tickers> ::= btc | 6e | aapl | aav | amzn | cl | coin | dog | es | fet | gc 
+| googl | inj | lin | meta | msft | ng | nq | nvda | pltr | sui | tia | tsla | xrp | zf | zn
+
+<close-prices> ::= <inst-tickers>_close
+
+<open-prices> ::= <inst-tickers>_open
+
+<high-prices> ::= <inst-tickers>_high
+
+<low-prices> ::= <inst-tickers>_low
+
+<volume> ::= <inst-tickers>_volume
+
+<indicator> ::= numba_indicators_nan.moving_average(prices=price_data["'"<close-prices>"'"], window=<window-const>)
+| numba_indicators_nan.exponential_moving_average(prices=price_data["'"<close-prices>"'"], window=<window-const>)
+| numba_indicators_nan.relative_strength_index(prices=price_data["'"<close-prices>"'"], window=<window-const>)
+| numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<digit>)[0]
+| numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<digit>)[1]
+| numba_indicators_nan.bollinger_bands(prices=price_data["'"<close-prices>"'"], window=<window-const>, num_std_dev=<digit>)[2]
+| numba_indicators_nan.momentum(prices=price_data["'"<close-prices>"'"], window=<window-const>)
+| numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>)
+| numba_indicators_nan.hilbert_dominant_cycle_period(close=price_data["'"<close-prices>"'"], period=<window-const>)
+| numba_indicators_nan.hilbert_dominant_cycle_phase(close=price_data["'"<close-prices>"'"], period=<window-const>)
+| numba_indicators_nan.hilbert_phasor_components(close=price_data["'"<close-prices>"'"])[:, 0]
+| numba_indicators_nan.hilbert_phasor_components(close=price_data["'"<close-prices>"'"])[:, 1]
+| numba_indicators_nan.hilbert_sinewave(close=price_data["'"<close-prices>"'"])
+| numba_indicators_nan.hilbert_instantaneous_trendline(close=price_data["'"<close-prices>"'"])
+| numba_indicators_nan.hilbert_trend_vs_cycle_mode(close=price_data["'"<close-prices>"'"])
+| numba_indicators_nan.williams_r(close=price_data["'"btc_close"'"], low=price_data["'"btc_low"'"], high=price_data["'"btc_high"'"], period=<window-const>)
+| numba_indicators_nan.z_score(<var>)
+| numba_indicators_nan.rolling_drawdown(price_data["'"<data-prices>"'"], window_size=<window-const>)
+| numba_indicators_nan.rolling_volatility(price_data["'"<data-prices>"'"], window_size=<window-const>)
+| signals.moving_max(price_data["'"<data-prices>"'"], window=<window-const>)
+| signals.moving_min(price_data["'"<data-prices>"'"], window=<window-const>)
+| signals.moving_percentile(price_data["'"<data-prices>"'"], window=<window-const>, percentile=<perc-const>)
+| numba_indicators_nan.ultimate_oscillator(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], period1=<digit>, period2=2 * <digit>, period3=3 * <digit>)
+| numba_indicators_nan.bull_bar_tail_rolling(close_prices=price_data["'"btc_close"'"], open_prices=price_data["'"btc_open"'"], high_prices=price_data["'"btc_high"'"], low_prices=price_data["'"btc_low"'"], period=<window-const>)
+| numba_indicators_nan.bear_bar_tail_rolling(close_prices=price_data["'"btc_close"'"], open_prices=price_data["'"btc_open"'"], high_prices=price_data["'"btc_high"'"], low_prices=price_data["'"btc_low"'"], period=<window-const>)
+| numba_indicators_nan.awesome_oscillator(high_prices=price_data["'"btc_high"'"], low_prices=price_data["'"btc_low"'"], short_period=<digit>, long_period=<short-window-const>)
+| numba_indicators_nan.macd(prices=price_data["'"<close-prices>"'"], short_window=<short-window-const>, long_window=<long-window-const>, signal_window=<window-const>)[0]
+| numba_indicators_nan.macd(prices=price_data["'"<close-prices>"'"], short_window=<short-window-const>, long_window=<long-window-const>, signal_window=<window-const>)[1]
+| numba_indicators_nan.macd(prices=price_data["'"<close-prices>"'"], short_window=<short-window-const>, long_window=<long-window-const>, signal_window=<window-const>)[2]
+| numba_indicators_nan.n_day_high(prices=price_data["'"<close-prices>"'"], n=<int-const>)
+| numba_indicators_nan.n_day_low(prices=price_data["'"<close-prices>"'"], n=<int-const>)
+| numba_indicators_nan.aroon(prices=price_data["'"<close-prices>"'"], period=<window-const>)[0]
+| numba_indicators_nan.aroon(prices=price_data["'"<close-prices>"'"], period=<window-const>)[1]
+| numba_indicators_nan.stochastic_oscillator_kd(close_prices=price_data["'"btc_close"'"], high_prices=price_data["'"btc_high"'"], low_prices=price_data["'"btc_low"'"], period=<window-const>, smooth_period=<short-window-const>)[0]
+| numba_indicators_nan.stochastic_oscillator_kd(close_prices=price_data["'"btc_close"'"], high_prices=price_data["'"btc_high"'"], low_prices=price_data["'"btc_low"'"], period=<window-const>, smooth_period=<short-window-const>)[1]
+| numba_indicators_nan.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>)
+| numba_indicators_nan.intraday_intensity(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], volume=price_data["'"btc_volume"'"])
+
+<simple-signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
+| (<var> <c-op> <var>)
+| ((<var> <mat-op> <var>) <c-op> <var>)
+| ((<var> <mat-op> <var>) <c-op> <value>)
+| ((<var> <mat-op> <value>) <c-op> <value>)
+| (<mat-f> <c-op> <mat-f>)
+| (<mat-f> <c-op> <value>)
+| ((<mat-f> <mat-op> <mat-f>) <c-op> <value>)
+| ((<mat-f> <mat-op> <value>) <c-op> <value>)
+| (<var-volume> <c-op> <int-const>)
+| (<var-volume> <c-op> <var-volume>)
+| ((<var-volume> <mat-op> <var-volume>) <c-op> <var-volume>)
+| ((<var-volume> <mat-op> <var-volume>) <c-op> <value>)
+| ((<var-volume> <mat-op> <value>) <c-op> <value>)
+| (<matf-volume> <c-op> <matf-volume>)
+| (<matf-volume> <c-op> <value>)
+| ((<matf-volume> <mat-op> <matf-volume>) <c-op> <value>)
+| ((<matf-volume> <mat-op> <value>) <c-op> <value>)
+| (price_data["'"day_of_week"'"] <c-op> <week-day>)
+| (price_data["'"month"'"] <c-op> <month>)
+| (price_data["'"hour"'"] <c-op> <hour>)
+| (price_data["'"minute"'"] <c-op> <minute>)
+| ((price_data["'"hour"'"] >= 21) & (price_data["'"hour"'"] <= 23))
+| ((price_data["'"hour"'"] >= 22) & (price_data["'"hour"'"] <= 23))
+
+<signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>) 
+| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
+
+<sell-signal> ::= <signal>
+
+<buy-signal> ::= <signal>
+
+<sell-exit-signal> ::= <signal>
+
+<buy-exit-signal> ::= <signal>
+
+<value> ::= <int-const> | <real-const>
+
+<change-value> ::= 0.<int-const> | -0.<int-const> | 0.<int-const><int-const> | -0.<int-const><int-const>
+
+<int-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<window-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<short-window-const> ::= <digit> | <digit><aug-digit> 
+
+<long-window-const> ::= <digit><aug-digit><aug-digit>
+
+<bins-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<lag-steps> ::= <digit> | <digit><aug-digit>
+
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
+<month> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+<hour> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+<minute> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 
+| 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47 
+| 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59
+
+<real-const> ::= 0.<int-const> | <int-const>.<int-const>
+
+<perc-const> ::= 0.<digit> | 0.<digit><aug-digit> 
+
+<c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
+
+<mat-op> ::= + | - | * | /
+
+<log-op> ::= "&" | "|" 
+
+<mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) |
+| np.log10(<var> + 1) | np.log2(<var> + 1) | np.log1p(<var> + 1) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
+| np.quantile(<var>, 0.75) | np.quantile(<var>, 0.25) | np.quantile(<var>, 0.5) 
+| np.quantile(<var>, 0.9) | np.quantile(<var>, 0.1) | np.mean(<var>) | np.std(<var>) | kurtosis(<var>) | skew(<var>)
+
+<matf-volume> ::= np.log(<var-volume> + 1) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
+| np.log10(<var-volume> + 1) | np.log2(<var-volume> + 1) 
+| np.log1p(<var-volume> + 1) | np.abs(<var-volume>) | np.max(<var-volume>) | np.min(<var-volume>)
+| np.quantile(<var-volume>, 0.75) | np.quantile(<var-volume>, 0.25) | np.quantile(<var-volume>, 0.5) 
+| np.quantile(<var-volume>, 0.9) | np.quantile(<var-volume>, 0.1)
+| np.mean(<var-volume>) | np.std(<var-volume>) | kurtosis(<var-volume>) | skew(<var-volume>)
