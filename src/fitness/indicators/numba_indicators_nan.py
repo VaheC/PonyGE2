@@ -115,6 +115,20 @@ def average_true_range(high, low, close, window=14):
     
     return atr
 
+# True Range (TR)
+@njit(cache=True)
+def true_range(high, low, close, window=14):
+
+    true_range = np.zeros(len(close))
+    
+    for i in range(1, len(close)):
+        high_low = high[i] - low[i]
+        high_close = np.abs(high[i] - close[i - 1])
+        low_close = np.abs(low[i] - close[i - 1])
+        true_range[i] = max(high_low, high_close, low_close)
+    
+    return true_range
+
 @njit(cache=True)
 def moving_average_difference(prices, short_window, long_window):
     madi = np.full(len(prices), np.nan)
