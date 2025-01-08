@@ -131,6 +131,8 @@
 | (price_data["'"btc_low"'"] > signals.moving_max(price_data["'"btc_low"'"], window=<window-const>))
 | (price_data["'"btc_high"'"] > signals.moving_min(price_data["'"btc_high"'"], window=<window-const>))
 | (price_data["'"btc_high"'"] < signals.moving_min(price_data["'"btc_high"'"], window=<window-const>))
+| (numba_indicators_nan.true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>) > <aug-digit> * numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>))
+| (numba_indicators_nan.true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>) < <aug-digit> * numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>))
 
 <sell-signal> ::= <signal>
 
