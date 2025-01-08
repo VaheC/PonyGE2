@@ -344,7 +344,7 @@ def get_important_stats(df_str, df_data, bars_per_span = 7 * 60 * 24 * 5, n_bars
     return final_entry_win_pc_df, final_exit_win_pc_df, final_core_win_pc_df, final_perf_df, final_mc_df
 
 def save_stats(
-    data_path, strategy_file_path, n_fold, logger, 
+    data_path, strategy_file_path, n_fold, logger,
     stats_path='testing_results', stats_file_name='baseline', 
     n_bars=50400, create_txt_code=create_txt_code1
 ):
