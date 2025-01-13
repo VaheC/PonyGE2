@@ -807,11 +807,14 @@ def calculate_port_in_sample_perf(data_path, port_file_path, logger,
         os.mkdir(port_perf_path)
     logger.info(f"{port_perf_path} directory created!")
 
-    logger.info(f"Loading portfolio weights from {port_file_path}...")
-    port_df = pd.read_csv(port_file_path)
-    port_df.dropna(inplace=True)
-    port_df.reset_index(drop=True, inplace=True)
-    logger.info('Weights loaded!')
+    try:
+        logger.info(f"Loading portfolio weights from {port_file_path}...")
+        port_df = pd.read_csv(port_file_path)
+        port_df.dropna(inplace=True)
+        port_df.reset_index(drop=True, inplace=True)
+        logger.info('Weights loaded!')
+    except:
+        return
 
     logger.info('Starting out of sample ROI calculation...')
 

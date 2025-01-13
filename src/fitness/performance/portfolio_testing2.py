@@ -1107,8 +1107,12 @@ def creating_port_weights_hrp(lstr_path, data_path, n_fold, fold_size, time_freq
 def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_freq, 
                               create_txt_code=create_txt_code_pnl1,
                               lstr_file_name='baseline',
-                              port_path='portfolio_strategies', port_file_name='portfolio',
-                              is_prob=True, prob_threshold=0.9):
+                              port_path='portfolio_strategies', 
+                              port_file_name='portfolio',
+                              is_prob=True, 
+                              prob_threshold=0.9,
+                              select_method='min-dist'
+):
     
     if not os.path.exists(port_path):
         os.mkdir(port_path)
@@ -1131,6 +1135,9 @@ def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_f
         df_str = df_str[df_str['prob'] > prob_threshold]
 
     df_str.reset_index(inplace=True, drop=True)
+
+    if df_str.shape[0] < 10:
+        return
 
     df = generate_fold_data(
         data_path=data_path, fold=n_fold, fold_size=fold_size, time_freq=time_freq
@@ -1205,17 +1212,34 @@ def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_f
 
     df_returns['clusters'] = kmeans.labels_
 
-    mean_map_dict = df_returns.groupby('clusters')[['mean', 'std']].mean().to_dict()
-    df_returns['mean_m'] = df_returns['clusters'].map(mean_map_dict['mean'])
-    df_returns['std_m'] = df_returns['clusters'].map(mean_map_dict['std'])
-    df_returns['dist'] = np.sqrt((df_returns['mean'] - df_returns['mean_m']) ** 2 + (df_returns['std'] - df_returns['std_m']) ** 2)
-
     selected_ccstr_list = []
 
-    for n_cluster in list(df_returns['clusters'].unique()):
-        selected_ccstr_list.append(
-            df_returns[df_returns['clusters'] == n_cluster].sort_values('dist', ascending=True).iloc[0]['strategy']
-        )
+    if select_method == 'min-dist':
+
+        mean_map_dict = df_returns.groupby('clusters')[['mean', 'std']].mean().to_dict()
+        df_returns['mean_m'] = df_returns['clusters'].map(mean_map_dict['mean'])
+        df_returns['std_m'] = df_returns['clusters'].map(mean_map_dict['std'])
+        df_returns['dist'] = np.sqrt((df_returns['mean'] - df_returns['mean_m']) ** 2 + (df_returns['std'] - df_returns['std_m']) ** 2)
+
+
+        for n_cluster in list(df_returns['clusters'].unique()):
+            selected_ccstr_list.append(
+                df_returns[df_returns['clusters'] == n_cluster].sort_values('dist', ascending=True).iloc[0]['strategy']
+            )
+
+    elif select_method == 'min-var':
+
+        for n_cluster in list(df_returns['clusters'].unique()):
+            selected_ccstr_list.append(
+                df_returns[df_returns['clusters'] == n_cluster].sort_values('std', ascending=True).iloc[0]['strategy']
+            )
+
+    elif select_method == 'max-return':
+
+        for n_cluster in list(df_returns['clusters'].unique()):
+            selected_ccstr_list.append(
+                df_returns[df_returns['clusters'] == n_cluster].sort_values('mean', ascending=False).iloc[0]['strategy']
+            )
 
     df_str = df_str[df_str['strategy'].isin(selected_ccstr_list)]
     df_str['weight'] = list(np.ones(len(selected_ccstr_list)) / len(selected_ccstr_list))
@@ -1391,11 +1415,14 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger,
         os.mkdir(port_perf_path)
     logger.info(f"{port_perf_path} directory created!")
 
-    logger.info(f"Loading portfolio weights from {port_file_path}...")
-    port_df = pd.read_csv(port_file_path)
-    port_df.dropna(inplace=True)
-    port_df.reset_index(drop=True, inplace=True)
-    logger.info('Weights loaded!')
+    try:
+        logger.info(f"Loading portfolio weights from {port_file_path}...")
+        port_df = pd.read_csv(port_file_path)
+        port_df.dropna(inplace=True)
+        port_df.reset_index(drop=True, inplace=True)
+        logger.info('Weights loaded!')
+    except:
+        return
 
     logger.info('Starting out of sample ROI calculation...')
 
@@ -1442,11 +1469,14 @@ def calculate_port_test_sample_perf(data_path, port_file_path, logger,
         os.mkdir(port_perf_path)
     logger.info(f"{port_perf_path} directory created!")
 
-    logger.info(f"Loading portfolio weights from {port_file_path}...")
-    port_df = pd.read_csv(port_file_path)
-    port_df.dropna(inplace=True)
-    port_df.reset_index(drop=True, inplace=True)
-    logger.info('Weights loaded!')
+    try:
+        logger.info(f"Loading portfolio weights from {port_file_path}...")
+        port_df = pd.read_csv(port_file_path)
+        port_df.dropna(inplace=True)
+        port_df.reset_index(drop=True, inplace=True)
+        logger.info('Weights loaded!')
+    except:
+        return
 
     logger.info('Starting out of sample ROI calculation...')
 

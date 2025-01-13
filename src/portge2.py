@@ -53,8 +53,8 @@ filter_strategies2.save_stats(
     n_fold=n_fold, 
     logger=logger, 
     fold_size=fold_size, 
-    time_freq=time_freq
-    # create_txt_code = filter_strategies2.create_txt_code1_vbt # use if you want to run the test using VectorBT
+    time_freq=time_freq,
+    # create_txt_code=filter_strategies2.create_txt_code1_vbt # use if you want to run the test using VectorBT
 )
 
 # filtering the strategies over training period based on the limiting test 
@@ -465,7 +465,8 @@ portfolio_testing2.calculate_port_test_sample_perf(
     # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
 )
 
-# creating portfolio weights using kmeans over training period
+# creating portfolio weights using kmeans over training period by selecting a strategy from each cluster 
+# based on minimum distance from the cluster core
 # the function will save the results inside portfolio_strategies in PonyGE2\src
 portfolio_testing2.creating_port_weights_kmeans(
     lstr_path, 
@@ -475,9 +476,10 @@ portfolio_testing2.creating_port_weights_kmeans(
     time_freq=time_freq,
     port_path=port_path, 
     lstr_file_name=lstr_file_name,
-    port_file_name=f"{file_name}_kmeans",
+    port_file_name=f"{file_name}_kmeans_min_dist",
     is_prob=True, 
     prob_threshold=prob_threshold,
+    select_method='min-dist',
     # create_txt_code=portfolio_testing2.create_txt_code_pnl1_vbt # use if you want to run the test using VectorBT
 )
 
@@ -485,14 +487,14 @@ portfolio_testing2.creating_port_weights_kmeans(
 # the function will save the results inside portfolio_in_sample_performance in PonyGE2\src
 filter_strategies2.calculate_port_in_sample_perf(
     data_path, 
-    port_file_path=f"{port_path}/{file_name}_kmeans.csv", 
+    port_file_path=f"{port_path}/{file_name}_kmeans_min_dist.csv", 
     logger=logger, 
     n_fold=n_fold, 
     fold_size=fold_size, 
     time_freq=time_freq,
     initial_amount=initial_amount,
     port_perf_path=port_perf_path_train,
-    port_perf_file_name='kmeans',
+    port_perf_file_name='kmeans_min_dist',
     # create_txt_code_port=filter_strategies2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
 )
 
@@ -500,14 +502,14 @@ filter_strategies2.calculate_port_in_sample_perf(
 # the function will save the results inside portfolio_out_sample_performance in PonyGE2\src
 portfolio_testing2.calculate_port_out_sample_perf(
     data_path, 
-    port_file_path=f"{port_path}/{file_name}_kmeans.csv", 
+    port_file_path=f"{port_path}/{file_name}_kmeans_min_dist.csv", 
     logger=logger, 
     n_fold=n_fold, 
     fold_size=fold_size, 
     time_freq=time_freq,
     initial_amount=initial_amount,
     port_perf_path=port_perf_path,
-    port_perf_file_name='kmeans',
+    port_perf_file_name='kmeans_min_dist',
     # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
 )
 
@@ -515,14 +517,140 @@ portfolio_testing2.calculate_port_out_sample_perf(
 # the function will save the results inside portfolio_test_sample_performance in PonyGE2\src
 portfolio_testing2.calculate_port_test_sample_perf(
     data_path, 
-    port_file_path=f"{port_path}/{file_name}_kmeans.csv", 
+    port_file_path=f"{port_path}/{file_name}_kmeans_min_dist.csv", 
     logger=logger, 
     n_fold=n_fold, 
     fold_size=fold_size, 
     time_freq=time_freq,
     initial_amount=initial_amount,
     port_perf_path=port_perf_path_test,
-    port_perf_file_name='kmeans',
+    port_perf_file_name='kmeans_min_dist',
+    # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
+)
+
+# creating portfolio weights using kmeans over training period by selecting a strategy from each cluster 
+# which has the minimum variance
+# the function will save the results inside portfolio_strategies in PonyGE2\src
+portfolio_testing2.creating_port_weights_kmeans(
+    lstr_path, 
+    data_path=data_path, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    port_path=port_path, 
+    lstr_file_name=lstr_file_name,
+    port_file_name=f"{file_name}_kmeans_min_var",
+    is_prob=True, 
+    prob_threshold=prob_threshold,
+    select_method='min_var',
+    # create_txt_code=portfolio_testing2.create_txt_code_pnl1_vbt # use if you want to run the test using VectorBT
+)
+
+# calculating performance of the portfolio derived above over training period
+# the function will save the results inside portfolio_in_sample_performance in PonyGE2\src
+filter_strategies2.calculate_port_in_sample_perf(
+    data_path, 
+    port_file_path=f"{port_path}/{file_name}_kmeans_min_var.csv", 
+    logger=logger, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    initial_amount=initial_amount,
+    port_perf_path=port_perf_path_train,
+    port_perf_file_name='kmeans_min_var',
+    # create_txt_code_port=filter_strategies2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
+)
+
+# calculating performance of the portfolio derived above over validation period
+# the function will save the results inside portfolio_out_sample_performance in PonyGE2\src
+portfolio_testing2.calculate_port_out_sample_perf(
+    data_path, 
+    port_file_path=f"{port_path}/{file_name}_kmeans_min_var.csv", 
+    logger=logger, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    initial_amount=initial_amount,
+    port_perf_path=port_perf_path,
+    port_perf_file_name='kmeans_min_var',
+    # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
+)
+
+# calculating performance of the portfolio derived above over test period
+# the function will save the results inside portfolio_test_sample_performance in PonyGE2\src
+portfolio_testing2.calculate_port_test_sample_perf(
+    data_path, 
+    port_file_path=f"{port_path}/{file_name}_kmeans_min_var.csv", 
+    logger=logger, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    initial_amount=initial_amount,
+    port_perf_path=port_perf_path_test,
+    port_perf_file_name='kmeans_min_var',
+    # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
+)
+
+# creating portfolio weights using kmeans over training period by selecting a strategy from each cluster 
+# which has maximum return
+# the function will save the results inside portfolio_strategies in PonyGE2\src
+portfolio_testing2.creating_port_weights_kmeans(
+    lstr_path, 
+    data_path=data_path, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    port_path=port_path, 
+    lstr_file_name=lstr_file_name,
+    port_file_name=f"{file_name}_kmeans_max_return",
+    is_prob=True, 
+    prob_threshold=prob_threshold,
+    select_method='max_return',
+    # create_txt_code=portfolio_testing2.create_txt_code_pnl1_vbt # use if you want to run the test using VectorBT
+)
+
+# calculating performance of the portfolio derived above over training period
+# the function will save the results inside portfolio_in_sample_performance in PonyGE2\src
+filter_strategies2.calculate_port_in_sample_perf(
+    data_path, 
+    port_file_path=f"{port_path}/{file_name}_kmeans_max_return.csv", 
+    logger=logger, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    initial_amount=initial_amount,
+    port_perf_path=port_perf_path_train,
+    port_perf_file_name='kmeans_max_return',
+    # create_txt_code_port=filter_strategies2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
+)
+
+# calculating performance of the portfolio derived above over validation period
+# the function will save the results inside portfolio_out_sample_performance in PonyGE2\src
+portfolio_testing2.calculate_port_out_sample_perf(
+    data_path, 
+    port_file_path=f"{port_path}/{file_name}_kmeans_max_return.csv", 
+    logger=logger, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    initial_amount=initial_amount,
+    port_perf_path=port_perf_path,
+    port_perf_file_name='kmeans_max_return',
+    # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
+)
+
+# calculating performance of the portfolio derived above over test period
+# the function will save the results inside portfolio_test_sample_performance in PonyGE2\src
+portfolio_testing2.calculate_port_test_sample_perf(
+    data_path, 
+    port_file_path=f"{port_path}/{file_name}_kmeans_max_return.csv", 
+    logger=logger, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    initial_amount=initial_amount,
+    port_perf_path=port_perf_path_test,
+    port_perf_file_name='kmeans_max_return',
     # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
 )
 
