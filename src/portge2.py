@@ -10,11 +10,11 @@ data_path = Path(r"C:/\Users/\vchar/\Downloads/\btcusd_1-min_data.csv")
 strategy_file_path = Path(r"C:/\Users/\vchar/\Downloads/\ge_results.csv")
 
 stats_path = 'testing_results' # folder which will contain csv files with testing stats as in testing_strategies.ipynb
-file_name = 'fold5' # suffix which will be added to some csv files created during this run
+file_name = 'fold6' # suffix which will be added to some csv files created during this run
 str_path = 'selected_strategies' # folder which will contain csv files with strategies survived after testing
 selected_str_file_path = f'{str_path}/selected_strategies_{file_name}.csv' # file path which will contain the survived strategies
 lstr_path = 'live_strategies' # folder which will contain csv files with strategies survived over validation period
-lstr_file_name = 'fold5' # suffix which will be added to the csv files containing the strategies survived after testing over validation period
+lstr_file_name = 'fold6' # suffix which will be added to the csv files containing the strategies survived after testing over validation period
 port_path = 'portfolio_strategies' # folder which will contain csv files with the portfolio weights of the survived strategies
 port_file_path = f'{port_path}/portfolio_{file_name}.csv' # path to a file containing the portfolio weigths of the survived strategies
 port_perf_path = 'portfolio_out_sample_performance' # folder which will contain csv files with the performance (ROI (%), PNL) of the portfolio over validation period
@@ -34,7 +34,7 @@ time_freq = 60
 fold_size = 5
 
 # n_fold should be equal to the number of fold which has been used to derive the strategies
-n_fold = 5
+n_fold = 6
 
 # setting winning probability threshold 
 prob_threshold = 0.98
