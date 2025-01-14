@@ -8,11 +8,27 @@ import numpy as np
 # from fitness.custom_logger.load_logger import create_terminal_logger
 # from fitness.performance.helper_func import get_max_drawdown
 
+def change_frequency(data, freq, instrument_name='btc'):
+    temp_df = data.copy()
+    temp_df.set_index('datetime', inplace=True)
+    temp_df = temp_df.resample(freq).agg({
+            f'{instrument_name}_open': 'first',
+            f'{instrument_name}_high': 'max',
+            f'{instrument_name}_low': 'min',
+            f'{instrument_name}_close': 'last',
+            f'{instrument_name}_volume': 'sum'
+        })
+    temp_df.reset_index(inplace=True)
+    return temp_df
+
 def generate_data():
+
+    time_freq = 60
 
     df = pd.read_csv('/kaggle/input/btcusd-test/btcusd_1-min_data.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
     df = df[(df['datetime'].dt.isocalendar().week.isin(list(np.arange(48, 51)))) & (df['datetime'].dt.year==2024)]
+    df = change_frequency(data=df, freq=f'{time_freq}min', instrument_name='btc')
     df.sort_values('datetime', ascending=True, inplace=True)
     df.reset_index(inplace=True, drop=True)
 
