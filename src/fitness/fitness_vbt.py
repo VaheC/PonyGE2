@@ -4,7 +4,7 @@ from pathlib import Path
 
 def generate_data():
 
-    df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\btc_7folds_60min/\data_fold1.csv'))  
+    df = pd.read_csv(Path(r'C:/\Users/\vchar/\OneDrive/\Desktop/\ML Projects/\Upwork/\AlgoT_ML_Dev/\GrammarEvolution/\PonyGE2/\btc_7folds_60min/\data_fold2.csv'))  
     df['datetime'] = pd.to_datetime(df['datetime'])
     df.sort_values('datetime', ascending=True, inplace=True)
     df.reset_index(inplace=True, drop=True)
