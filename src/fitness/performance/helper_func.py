@@ -222,7 +222,7 @@ def change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs):
 @njit(cache=True)
 def get_lag(prices, lag=1):
     n = len(prices)
-    result = np.full(n, -999, dtype=np.float64)  # Initialize with -999
+    result = np.full(n, np.nan, dtype=np.float64)  # Initialize with -999
 
     for i in range(lag, n):
         result[i] = prices[i - lag]
