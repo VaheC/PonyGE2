@@ -33,8 +33,8 @@ def generate_fold_data(data_path, fold_size, time_freq, fold):
 
     df_freq = change_frequency(data=df, freq=f'{time_freq}min', instrument_name='btc')
 
-    fold_start_year = years_list[fold]
-    fold_end_year = years_list[fold] + fold_size - 1
+    fold_start_year = years_list[fold - 1]
+    fold_end_year = years_list[fold - 1] + fold_size - 1
 
     temp_df = df_freq[df_freq['datetime'].dt.year.between(fold_start_year, fold_end_year)]
     temp_df.reset_index(drop=True, inplace=True)

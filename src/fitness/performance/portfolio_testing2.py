@@ -30,7 +30,7 @@ def generate_fold_data_valid(data_path, fold_size, time_freq, fold):
 
     df_freq = change_frequency(data=df, freq=f'{time_freq}min', instrument_name='btc')
 
-    valid_fold_year = years_list[fold-1] + fold_size
+    valid_fold_year = years_list[fold - 1] + fold_size
 
     temp_df_valid = df_freq[df_freq['datetime'].dt.year==valid_fold_year]
     temp_df_valid.reset_index(drop=True, inplace=True)
@@ -48,7 +48,7 @@ def generate_fold_data_test(data_path, fold_size, time_freq, fold):
 
     df_freq = change_frequency(data=df, freq=f'{time_freq}min', instrument_name='btc')
 
-    test_fold_year = years_list[fold-1] + fold_size + 1
+    test_fold_year = years_list[fold - 1] + fold_size + 1
 
     temp_df_test = df_freq[df_freq['datetime'].dt.year==test_fold_year]
     temp_df_test.reset_index(drop=True, inplace=True)
