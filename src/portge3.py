@@ -30,7 +30,7 @@ logger = create_file_logger(filename=f'{file_name}')
 # set the time frequency in minutes
 time_freq = 60
 
-# set the number of years for each fold
+# set the number of weeks for each fold
 fold_size = 5
 
 # n_fold should be equal to the number of fold which has been used to derive the strategies
@@ -502,7 +502,7 @@ portfolio_testing3.creating_port_weights_kmeans(
     port_file_name=f"{file_name}_kmeans_min_dist",
     is_prob=True, 
     prob_threshold=prob_threshold,
-    select_method='min-dist',
+    select_method='min_dist',
     # create_txt_code=portfolio_testing3.create_txt_code_pnl1_vbt # use if you want to run the test using VectorBT
 )
 

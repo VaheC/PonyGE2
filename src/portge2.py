@@ -479,7 +479,7 @@ portfolio_testing2.creating_port_weights_kmeans(
     port_file_name=f"{file_name}_kmeans_min_dist",
     is_prob=True, 
     prob_threshold=prob_threshold,
-    select_method='min-dist',
+    select_method='min_dist',
     # create_txt_code=portfolio_testing2.create_txt_code_pnl1_vbt # use if you want to run the test using VectorBT
 )
 

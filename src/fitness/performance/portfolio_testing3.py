@@ -1114,7 +1114,7 @@ def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_f
                               port_file_name='portfolio',
                               is_prob=True, 
                               prob_threshold=0.9,
-                              select_method='min-dist'
+                              select_method='min_dist'
 ):
     
     if not os.path.exists(port_path):
@@ -1217,7 +1217,7 @@ def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_f
 
     selected_ccstr_list = []
 
-    if select_method == 'min-dist':
+    if select_method == 'min_dist':
 
         mean_map_dict = df_returns.groupby('clusters')[['mean', 'std']].mean().to_dict()
         df_returns['mean_m'] = df_returns['clusters'].map(mean_map_dict['mean'])
@@ -1230,14 +1230,14 @@ def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_f
                 df_returns[df_returns['clusters'] == n_cluster].sort_values('dist', ascending=True).iloc[0]['strategy']
             )
 
-    elif select_method == 'min-var':
+    elif select_method == 'min_var':
 
         for n_cluster in list(df_returns['clusters'].unique()):
             selected_ccstr_list.append(
                 df_returns[df_returns['clusters'] == n_cluster].sort_values('std', ascending=True).iloc[0]['strategy']
             )
 
-    elif select_method == 'max-return':
+    elif select_method == 'max_return':
 
         for n_cluster in list(df_returns['clusters'].unique()):
             selected_ccstr_list.append(
