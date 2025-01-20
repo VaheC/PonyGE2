@@ -12,12 +12,12 @@ def generate_data():
     price_data = {}
     
     for col in df.columns:
-        price_data[col] = df[col].values
+        price_data[col] = df[col].values.reshape(-1, 1)
 
-    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
-    price_data['month'] = df['datetime'].dt.month.values
-    price_data['hour'] = df['datetime'].dt.hour.values
-    price_data['minute'] = df['datetime'].dt.minute.values
+    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values.reshape(-1, 1)
+    price_data['month'] = df['datetime'].dt.month.values.reshape(-1, 1)
+    price_data['hour'] = df['datetime'].dt.hour.values.reshape(-1, 1)
+    price_data['minute'] = df['datetime'].dt.minute.values.reshape(-1, 1)
     
     return price_data
 
