@@ -14,7 +14,7 @@ def generate_data():
     # df = pd.read_csv('/kaggle/input/btcusd-test/data_60min_train.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/data_folds_30min/data_fold4.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/data_folds_120min/data_fold1.csv')
-    df = pd.read_csv('/kaggle/input/btcusd-test/data_46folds_60min/data_fold5.csv')
+    df = pd.read_csv('/kaggle/input/btcusd-test/btc_9folds_60min/data_fold2.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
     df.sort_values('datetime', ascending=True, inplace=True)
     df.reset_index(inplace=True, drop=True)
