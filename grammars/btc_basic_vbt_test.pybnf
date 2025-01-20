@@ -104,9 +104,9 @@
 
 <buy-signal> ::= <signal>
 
-<sell-exit-signal> ::= <signal>
+<sell-exit-signal> ::= <signal> | (signals.get_exit_point(<signal>, n_bars=<short-window-const>))
 
-<buy-exit-signal> ::= <signal>
+<buy-exit-signal> ::= <signal> | (signals.get_exit_point(<signal>, n_bars=<short-window-const>))
 
 <value> ::= <int-const> | <real-const>
 
