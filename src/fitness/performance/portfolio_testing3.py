@@ -1193,6 +1193,13 @@ def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_f
             # print(e)
             continue
 
+    if len(list_mean) == 0:
+        selected_ccstr_list = [strategy]
+        df_str = df_str[df_str['strategy'].isin(selected_ccstr_list)]
+        df_str['weight'] = list(np.zeros(len(selected_ccstr_list)) / len(selected_ccstr_list))
+        df_str.to_csv(f'{port_path}/{port_file_name}.csv', index=False)
+        return
+
     df_returns = pd.DataFrame()
     df_returns['strategy'] = strategy_list
     df_returns['mean'] = list_mean
