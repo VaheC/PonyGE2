@@ -92,10 +92,6 @@
 | (price_data["'"day_of_week"'"] <c-op> <week-day>)
 | (price_data["'"hour"'"] <c-op> <hour>)
 | (price_data["'"minute"'"] <c-op> <minute>)
-| ((price_data["'"hour"'"] >= 21) & (price_data["'"hour"'"] <= 23))
-| ((price_data["'"hour"'"] >= 22) & (price_data["'"hour"'"] <= 23))
-| ((signals.moving_std(arr=price_data["'"btc_close"'"], window=30) > np.quantile(signals.moving_std(arr=price_data["'"btc_close"'"], window=30), 0.75)) & (price_data["'"hour"'"] >= 21) & (price_data["'"hour"'"] <= 23))
-| ((signals.moving_std(arr=price_data["'"btc_close"'"], window=30) > np.quantile(signals.moving_std(arr=price_data["'"btc_close"'"], window=30), 0.75)) & (price_data["'"hour"'"] >= 22) & (price_data["'"hour"'"] <= 23))
 
 <signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>)
 | (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
@@ -104,13 +100,11 @@
 
 <buy-signal> ::= <signal>
 
-<sell-exit-signal> ::= <signal> | (signals.get_exit_point(<signal>, n_bars=<n-exit-bars>))
+<sell-exit-signal> ::= <signal>
 
-<buy-exit-signal> ::= <signal> | (signals.get_exit_point(<signal>, n_bars=<n-exit-bars>))
+<buy-exit-signal> ::= <signal>
 
 <value> ::= <int-const> | <real-const>
-
-<change-value> ::= 0.<int-const> | -0.<int-const> | 0.<int-const><int-const> | -0.<int-const><int-const>
 
 <int-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit>
@@ -118,12 +112,10 @@
 <window-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit>
 
-<lag-steps> ::= <digit> | <digit><aug-digit>
+<lag-steps> ::= <digit> | <digit><aug-digit> | <digit><aug-digit><aug-digit>
 
 <digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 <aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-
-<n-exit-bars> ::= <digit> | <digit><aug-digit> 
 
 <week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
 <month> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
@@ -133,8 +125,6 @@
 | 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59
 
 <real-const> ::= 0.<int-const> | <int-const>.<int-const>
-
-<perc-const> ::= 0.<digit> | 0.<digit><aug-digit> 
 
 <c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
 
