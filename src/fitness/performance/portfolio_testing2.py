@@ -805,7 +805,7 @@ def creating_port_weights(lstr_path, logger, lstr_file_name='baseline', port_pat
     port_df = pd.read_csv(f'{lstr_path}/selected_strategies_{lstr_file_name}.csv')
     port_df.sort_values('fitness', ascending=True, inplace=True)
     port_df.reset_index(inplace=True, drop=True)
-    port_df = port_df.iloc[:15]
+    # port_df = port_df.iloc[:15]
 
     if is_prob:
         port_df = port_df[port_df['prob'] > prob_threshold]
@@ -843,7 +843,7 @@ def creating_port_weights_mvp(lstr_path, data_path, n_fold, fold_size, time_freq
     df_str = pd.read_csv(f'{lstr_path}/selected_strategies_{lstr_file_name}.csv')
     df_str.sort_values('fitness', ascending=True, inplace=True)
     df_str.reset_index(inplace=True, drop=True)
-    df_str = df_str.iloc[:15]
+    # df_str = df_str.iloc[:15]
 
     if is_prob:
         df_str = df_str[df_str['prob'] > prob_threshold]
@@ -1017,7 +1017,7 @@ def creating_port_weights_hrp(lstr_path, data_path, n_fold, fold_size, time_freq
     df_str = pd.read_csv(f'{lstr_path}/selected_strategies_{lstr_file_name}.csv')
     df_str.sort_values('fitness', ascending=True, inplace=True)
     df_str.reset_index(inplace=True, drop=True)
-    df_str = df_str.iloc[:15]
+    # df_str = df_str.iloc[:15]
 
     if is_prob:
         df_str = df_str[df_str['prob'] > prob_threshold]
@@ -1136,7 +1136,7 @@ def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_f
 
     df_str.reset_index(inplace=True, drop=True)
 
-    if df_str.shape[0] < 10:
+    if df_str.shape[0] < 30:
         return
 
     df = generate_fold_data(
