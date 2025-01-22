@@ -205,7 +205,7 @@ else:
     buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
-    price_data_open = pd.Series(price_data['btc_open'], index=pd.to_datetime(price_data['datetime']))
+    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, 1), index=pd.to_datetime(price_data['datetime']))
     pf = vbt.Portfolio.from_signals(
         price_data_open, entries=buy_entries, exits=buy_exits, 
         init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
@@ -335,7 +335,7 @@ else:
     buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
-    price_data_open = pd.Series(price_data['btc_open'], index=pd.to_datetime(price_data['datetime']))
+    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, 1), index=pd.to_datetime(price_data['datetime']))
     pf = vbt.Portfolio.from_signals(
         price_data_open, entries=buy_entries, exits=buy_exits, 
         init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
@@ -478,7 +478,7 @@ else:
     buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
-    price_data_open = pd.Series(price_data['btc_open'], index=pd.to_datetime(price_data['datetime']))
+    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, 1), index=pd.to_datetime(price_data['datetime']))
     pf = vbt.Portfolio.from_signals(
         price_data_open, entries=buy_entries, exits=buy_exits, 
         init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
@@ -527,11 +527,11 @@ def test_out_of_fold(df_str, data_path, n_fold, fold_size, time_freq, create_txt
         # if col == 'datetime':
         #     continue
         # else:
-        price_data[col] = df[col].values
-    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
-    price_data['month'] = df['datetime'].dt.month.values
-    price_data['hour'] = df['datetime'].dt.hour.values
-    price_data['minute'] = df['datetime'].dt.minute.values
+        price_data[col] = df[col].values.reshape(-1, 1)
+    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values.reshape(-1, 1)
+    price_data['month'] = df['datetime'].dt.month.values.reshape(-1, 1)
+    price_data['hour'] = df['datetime'].dt.hour.values.reshape(-1, 1)
+    price_data['minute'] = df['datetime'].dt.minute.values.reshape(-1, 1)
 
     for row in tqdm(df_str.itertuples()):
 
@@ -861,11 +861,11 @@ def creating_port_weights_mvp(lstr_path, data_path, n_fold, fold_size, time_freq
         # if col == 'datetime':
         #     continue
         # else:
-        price_data[col] = df[col].values
-    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
-    price_data['month'] = df['datetime'].dt.month.values
-    price_data['hour'] = df['datetime'].dt.hour.values
-    price_data['minute'] = df['datetime'].dt.minute.values
+        price_data[col] = df[col].values.reshape(-1, 1)
+    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values.reshape(-1, 1)
+    price_data['month'] = df['datetime'].dt.month.values.reshape(-1, 1)
+    price_data['hour'] = df['datetime'].dt.hour.values.reshape(-1, 1)
+    price_data['minute'] = df['datetime'].dt.minute.values.reshape(-1, 1)
 
     exec_dict = {'price_data': price_data}
 
@@ -1035,11 +1035,11 @@ def creating_port_weights_hrp(lstr_path, data_path, n_fold, fold_size, time_freq
         # if col == 'datetime':
         #     continue
         # else:
-        price_data[col] = df[col].values
-    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
-    price_data['month'] = df['datetime'].dt.month.values
-    price_data['hour'] = df['datetime'].dt.hour.values
-    price_data['minute'] = df['datetime'].dt.minute.values
+        price_data[col] = df[col].values.reshape(-1, 1)
+    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values.reshape(-1, 1)
+    price_data['month'] = df['datetime'].dt.month.values.reshape(-1, 1)
+    price_data['hour'] = df['datetime'].dt.hour.values.reshape(-1, 1)
+    price_data['minute'] = df['datetime'].dt.minute.values.reshape(-1, 1)
 
     exec_dict = {'price_data': price_data}
 
@@ -1148,11 +1148,11 @@ def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_f
         # if col == 'datetime':
         #     continue
         # else:
-        price_data[col] = df[col].values
-    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
-    price_data['month'] = df['datetime'].dt.month.values
-    price_data['hour'] = df['datetime'].dt.hour.values
-    price_data['minute'] = df['datetime'].dt.minute.values
+        price_data[col] = df[col].values.reshape(-1, 1)
+    price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values.reshape(-1, 1)
+    price_data['month'] = df['datetime'].dt.month.values.reshape(-1, 1)
+    price_data['hour'] = df['datetime'].dt.hour.values.reshape(-1, 1)
+    price_data['minute'] = df['datetime'].dt.minute.values.reshape(-1, 1)
 
     exec_dict = {'price_data': price_data}
 
@@ -1252,6 +1252,32 @@ def creating_port_weights_kmeans(lstr_path, data_path, n_fold, fold_size, time_f
     df_str['weight'] = list(np.ones(len(selected_ccstr_list)) / len(selected_ccstr_list))
     df_str.to_csv(f'{port_path}/{port_file_name}.csv', index=False)
 
+def creating_port_weights_equal(
+    lstr_path,
+    lstr_file_name='baseline',
+    port_path='portfolio_strategies', 
+    port_file_name='portfolio',
+):
+    
+    if not os.path.exists(port_path):
+        os.mkdir(port_path)
+
+    # live_strategy_files = os.listdir(lstr_path)
+
+    # df_str = pd.DataFrame()
+
+    # for file in live_strategy_files:
+
+    #     temp_df = pd.read_csv(f'{lstr_path}/{file}')
+    #     # temp_df.drop(columns='strategy', inplace=True)
+    #     # temp_df = temp_df['prob'].to_frame()
+        
+    #     df_str = pd.concat([df_str, temp_df], axis=0)
+
+    df_str = pd.read_csv(f'{lstr_path}/selected_strategies_{lstr_file_name}.csv')
+    df_str['weight'] = list(np.ones(df_str.shape[0]) / df_str.shape[0])
+    df_str.to_csv(f'{port_path}/{port_file_name}.csv', index=False)
+
 def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1):
 
     # final_entry_win_pc_df = pd.DataFrame()
@@ -1304,11 +1330,11 @@ def calculate_port_stats(df_port, df, create_txt_code_port=create_txt_code_port1
             # if col == 'datetime':
             #     continue
             # else:
-            price_data[col] = df[col].values
-        price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
-        price_data['month'] = df['datetime'].dt.month.values
-        price_data['hour'] = df['datetime'].dt.hour.values
-        price_data['minute'] = df['datetime'].dt.minute.values
+            price_data[col] = df[col].values.reshape(-1, 1)
+        price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values.reshape(-1, 1)
+        price_data['month'] = df['datetime'].dt.month.values.reshape(-1, 1)
+        price_data['hour'] = df['datetime'].dt.hour.values.reshape(-1, 1)
+        price_data['minute'] = df['datetime'].dt.minute.values.reshape(-1, 1)
 
         exec_dict = {'price_data': price_data}
         # try:
@@ -1570,11 +1596,11 @@ def calculate_str_stats(df_str, df, create_txt_code_port=create_txt_code1):
             # if col == 'datetime':
             #     continue
             # else:
-            price_data[col] = df[col].values
-        price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values
-        price_data['month'] = df['datetime'].dt.month.values
-        price_data['hour'] = df['datetime'].dt.hour.values
-        price_data['minute'] = df['datetime'].dt.minute.values
+            price_data[col] = df[col].values.reshape(-1, 1)
+        price_data['day_of_week'] = (df['datetime'].dt.dayofweek + 1).values.reshape(-1, 1)
+        price_data['month'] = df['datetime'].dt.month.values.reshape(-1, 1)
+        price_data['hour'] = df['datetime'].dt.hour.values.reshape(-1, 1)
+        price_data['minute'] = df['datetime'].dt.minute.values.reshape(-1, 1)
 
         exec_dict = {'price_data': price_data}
         # try:

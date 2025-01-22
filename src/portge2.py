@@ -654,6 +654,60 @@ portfolio_testing2.calculate_port_test_sample_perf(
     # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
 )
 
+# creating equal portfolio weights
+# the function will save the results inside portfolio_strategies in PonyGE2\src
+portfolio_testing2.creating_port_weights_equal(
+    lstr_path,
+    port_path=port_path, 
+    lstr_file_name=lstr_file_name,
+    port_file_name=f"{file_name}_equal"
+)
+
+# calculating performance of the portfolio derived above over training period
+# the function will save the results inside portfolio_in_sample_performance in PonyGE2\src
+filter_strategies2.calculate_port_in_sample_perf(
+    data_path, 
+    port_file_path=f"{port_path}/{file_name}_equal.csv", 
+    logger=logger, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    initial_amount=initial_amount,
+    port_perf_path=port_perf_path_train,
+    port_perf_file_name='equal',
+    # create_txt_code_port=filter_strategies2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
+)
+
+# calculating performance of the portfolio derived above over validation period
+# the function will save the results inside portfolio_out_sample_performance in PonyGE2\src
+portfolio_testing2.calculate_port_out_sample_perf(
+    data_path, 
+    port_file_path=f"{port_path}/{file_name}_equal.csv", 
+    logger=logger, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    initial_amount=initial_amount,
+    port_perf_path=port_perf_path,
+    port_perf_file_name='equal',
+    # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
+)
+
+# calculating performance of the portfolio derived above over test period
+# the function will save the results inside portfolio_test_sample_performance in PonyGE2\src
+portfolio_testing2.calculate_port_test_sample_perf(
+    data_path, 
+    port_file_path=f"{port_path}/{file_name}_equal.csv", 
+    logger=logger, 
+    n_fold=n_fold, 
+    fold_size=fold_size, 
+    time_freq=time_freq,
+    initial_amount=initial_amount,
+    port_perf_path=port_perf_path_test,
+    port_perf_file_name='equal',
+    # create_txt_code_port=portfolio_testing2.create_txt_code_port1_vbt # use if you want to run the test using VectorBT
+)
+
 # calculating perfomance of all survived strategies over training period
 # the function will create str_in_sample_performance folder inside PonyGE2\src to save the results
 filter_strategies2.calculate_str_in_sample_perf(
