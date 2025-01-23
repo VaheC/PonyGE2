@@ -14,8 +14,14 @@ def generate_data():
     # df = pd.read_csv('/kaggle/input/btcusd-test/data_60min_train.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/data_folds_30min/data_fold4.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/data_folds_120min/data_fold1.csv')
-    df = pd.read_csv('/kaggle/input/btcusd-test/btc_9folds_60min/data_fold5.csv')
+    df = pd.read_csv('/kaggle/input/btcusd-test/btc_9folds_60min/data_fold6.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
+
+    df['year'] = df['datetime'].dt.year
+    random_year = list(df['year'].unique())[1]
+    df = df[df['year'] == random_year]
+    df.drop(columns=['year'], inplace=True)
+
     df.sort_values('datetime', ascending=True, inplace=True)
     df.reset_index(inplace=True, drop=True)
 
