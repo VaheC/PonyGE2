@@ -183,7 +183,7 @@ else:
     buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
-    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, 1), index=pd.to_datetime(price_data['datetime']))
+    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, ), index=pd.to_datetime(price_data['datetime']))
     pf = vbt.Portfolio.from_signals(
         price_data_open, entries=buy_entries, exits=buy_exits, 
         init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
@@ -313,7 +313,7 @@ else:
     buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
-    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, 1), index=pd.to_datetime(price_data['datetime']))
+    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, ), index=pd.to_datetime(price_data['datetime']))
     pf = vbt.Portfolio.from_signals(
         price_data_open, entries=buy_entries, exits=buy_exits, 
         init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 

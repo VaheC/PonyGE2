@@ -205,7 +205,7 @@ else:
     buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
-    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, 1), index=pd.to_datetime(price_data['datetime']))
+    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, ), index=pd.to_datetime(price_data['datetime']))
     pf = vbt.Portfolio.from_signals(
         price_data_open, entries=buy_entries, exits=buy_exits, 
         init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
@@ -335,7 +335,7 @@ else:
     buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
-    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, 1), index=pd.to_datetime(price_data['datetime']))
+    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, ), index=pd.to_datetime(price_data['datetime']))
     pf = vbt.Portfolio.from_signals(
         price_data_open, entries=buy_entries, exits=buy_exits, 
         init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
@@ -478,7 +478,7 @@ else:
     buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data['btc_open']))])
     sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data['btc_open']))])
-    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, 1), index=pd.to_datetime(price_data['datetime']))
+    price_data_open = pd.Series(price_data['btc_open'].reshape(-1, ), index=pd.to_datetime(price_data['datetime']))
     pf = vbt.Portfolio.from_signals(
         price_data_open, entries=buy_entries, exits=buy_exits, 
         init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, 
@@ -1462,6 +1462,9 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger,
     roi_list = []
     pnl_list = []
     fold_list = []
+    # nt_list = []
+    # md_list = []
+    # sr_list = []
 
     logger.info(f"Starting portfolio ROI calculation for validation sample...")
 
@@ -1480,6 +1483,9 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger,
     roi_list.append(port_roi)
     fold_list.append('validation')
     pnl_list.append(final_perf_df_port['PNL'].sum())
+    # nt_list.append(final_perf_df_port['N_Trades'])
+    # md_list.append(final_perf_df_port['Drawdown (%)'])
+    # sr_list.append(final_perf_df_port['Sharpe_Ratio'])
 
     logger.info(f"portfolio ROI for validation sample: {str(port_roi)} %")
 
@@ -1488,6 +1494,9 @@ def calculate_port_out_sample_perf(data_path, port_file_path, logger,
     port_perf_df['fold'] = fold_list
     port_perf_df['ROI (%)'] = roi_list
     port_perf_df['PNL'] = pnl_list
+    # port_perf_df['N_Trades'] = nt_list
+    # port_perf_df['Drawdown (%)'] = md_list
+    # port_perf_df['Sharpe_Ratio'] = sr_list
     port_perf_df.to_csv(f'{port_perf_path}/perf_{port_perf_file_name}.csv', index=False)
     logger.info('Portfolio performance saved!')
 
