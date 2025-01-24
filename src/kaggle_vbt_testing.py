@@ -41,11 +41,11 @@ for csv_file in tqdm(result_files_list):
         os.mkdir(folder_name)
     
     stats_path = f'{folder_name}/testing_results' # folder which will contain csv files with testing stats as in testing_strategies.ipynb
-    file_name = 'fold2' # suffix which will be added to some csv files created during this run
+    file_name = f'fold{n_fold}' # suffix which will be added to some csv files created during this run
     str_path = f'{folder_name}/selected_strategies' # folder which will contain csv files with strategies survived after testing
     selected_str_file_path = f'{str_path}/selected_strategies_{file_name}.csv' # file path which will contain the survived strategies
     lstr_path = f'{folder_name}/live_strategies' # folder which will contain csv files with strategies survived over validation period
-    lstr_file_name = 'fold2' # suffix which will be added to the csv files containing the strategies survived after testing over validation period
+    lstr_file_name = f'fold{n_fold}' # suffix which will be added to the csv files containing the strategies survived after testing over validation period
     port_path = f'{folder_name}/portfolio_strategies' # folder which will contain csv files with the portfolio weights of the survived strategies
     port_file_path = f'{port_path}/portfolio_{file_name}.csv' # path to a file containing the portfolio weigths of the survived strategies
     port_perf_path = f'{folder_name}/portfolio_out_sample_performance' # folder which will contain csv files with the performance (ROI (%), PNL) of the portfolio over validation period
