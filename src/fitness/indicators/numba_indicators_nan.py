@@ -64,6 +64,19 @@ def macd(prices, short_window=12, long_window=26, signal_window=9):
     
     return macd_line, signal_line, histogram
 
+# Moving Average Convergence Divergence (MACD)
+@njit(cache=True)
+def macd_line(prices, short_window=12, long_window=26):
+    macd_line = np.full(len(prices), np.nan)
+    
+    ema_short = exponential_moving_average(prices, short_window)
+    ema_long = exponential_moving_average(prices, long_window)
+    
+    for i in range(long_window - 1, len(prices)):
+        macd_line[i] = ema_short[i] - ema_long[i]
+    
+    return macd_line
+
 # Bollinger Bands (BB)
 @njit(cache=True)
 def bollinger_bands(prices, window=20, num_std_dev=2):
