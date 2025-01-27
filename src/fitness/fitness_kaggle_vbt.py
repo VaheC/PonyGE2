@@ -17,10 +17,10 @@ def generate_data():
     df = pd.read_csv('/kaggle/input/btcusd-test/btc_10folds_67min/data_fold5.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
 
-    df['year'] = df['datetime'].dt.year
-    random_year = list(df['year'].unique())[1]
-    df = df[df['year'] == random_year]
-    df.drop(columns=['year'], inplace=True)
+    # df['year'] = df['datetime'].dt.year
+    # random_year = list(df['year'].unique())[1]
+    # df = df[df['year'] == random_year]
+    # df.drop(columns=['year'], inplace=True)
 
     df.sort_values('datetime', ascending=True, inplace=True)
     df.reset_index(inplace=True, drop=True)
