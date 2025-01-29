@@ -1,0 +1,68 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{::}
+{:import vectorbt as vbt:}{::}
+{:import pandas as pd:}{::}
+{:import numpy as np:}{::}
+{:from fitness.indicators import numba_indicators_nan, signals:}{::}
+{:from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag:}{::}
+{:from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit:}{::}
+{:from numba import njit:}{::}
+{:COMMISSION = 0.015:}{::}
+{:SLIPPAGE = 0.00005:}{::}
+{:AVAILABLE_CAPITAL = 700000:}{::}
+{:TRADE_SIZE = 0.5:}{::}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal=<buy-signal>, exit_signal=<buy-exit-signal>):}:}
+{:except::}
+{:{:buy_idxs, buy_exit_idxs = [], []:}:}{::}
+{:try::}
+{:{:sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal=<sell-signal>, exit_signal=<sell-exit-signal>):}:}
+{:except::}
+{:{:sell_idxs, sell_exit_idxs = [], []:}:}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs):}:}{::}
+{:except::}
+{:{:pass:}:}
+{:if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0)::}{::}
+{:{:return 999:}:}{::}{::}
+{:buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:price_data_open = pd.Series(price_data["'"btc_open"'"].reshape(-1, ), index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
+{:pf = vbt.Portfolio.from_signals(price_data_open, entries=buy_entries, exits=buy_exits, init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, slippage=SLIPPAGE, size=TRADE_SIZE, short_entries=sell_entries, short_exits=sell_exits):}{::}
+{:try::}{::}
+{:{:trades = pf.trades.records:}:}{::}
+{:{:all_arr = trades["'"pnl"'"].values:}:}{::}
+{:{:total_pnl = np.sum(all_arr):}:}{::}
+{:{:if total_pnl <= 0::}:}{::}
+{:{:{:return 999:}:}:}{::}
+{:{:equity_curve_arr = np.cumsum(all_arr):}:}{::}
+{:{:drawdowns = get_drawdowns(equity_curve_arr):}:}{::}
+{:{:if len(drawdowns[drawdowns!=0]) == 0::}:}{::}
+{:{:{:return 999:}:}:}{::}
+{:{:avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]):}:}{::}
+{:{:fitness = total_pnl / avg_drawdown:}:}{::}
+{:{:if np.isnan(fitness)::}:}{::}
+{:{:{:return 999:}:}:}{::}
+{:{:return -fitness:}:}
+{:except::}{::}
+{:{:return 998:}:}
+
+<callf> ::= fitness = fun(price_data)
+
+<sell-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>))
+
+<buy-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>))
+
+<sell-exit-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>))
+
+<buy-exit-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>))
+
+<short-window-const> ::= <digit> | <digit><aug-digit> 
+
+<long-window-const> ::= <digit><aug-digit><aug-digit> | <digit><aug-digit><aug-digit><aug-digit>
+
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
