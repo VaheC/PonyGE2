@@ -68,8 +68,8 @@ def generate_strategy_data(strategy_file_path):
     # # df_str = pd.concat([df_str, df_str_small_fitness], axis=0)
 
     # df_str = df_str[df_str['fitness'] < -1].reset_index(drop=True)#.iloc[:10000]
-    df_str = df_str[(df_str['fitness'] < -1) & (df_str['fitness'] >= -5)].reset_index(drop=True)#.iloc[:10000]
-    # df_str = df_str[(df_str['fitness'] < -50) & (df_str['fitness'] >= -100)].reset_index(drop=True)#.iloc[:10000]
+    # df_str = df_str[(df_str['fitness'] < -1) & (df_str['fitness'] >= -5)].reset_index(drop=True)#.iloc[:10000]
+    df_str = df_str[(df_str['fitness'] < -50) & (df_str['fitness'] >= -100)].reset_index(drop=True)#.iloc[:10000]
     # df_str = df_str[(df_str['fitness'] < -100) & (df_str['fitness'] >= -1000)].reset_index(drop=True)#.iloc[:10000]
     # df_str = df_str[(df_str['fitness'] < -1000)].reset_index(drop=True)#.iloc[:10000]
 
