@@ -70,10 +70,11 @@ def generate_strategy_data(strategy_file_path):
     # df_str = df_str[df_str['fitness'] < -1].reset_index(drop=True)#.iloc[:10000]
     # df_str = df_str[(df_str['fitness'] < -1) & (df_str['fitness'] >= -50)].reset_index(drop=True)#.iloc[:10000]
     df_str = df_str[(df_str['fitness'] < -50) & (df_str['fitness'] >= -100)].reset_index(drop=True)#.iloc[:10000]
+    # df_str = df_str[(df_str['fitness'] < -100) & (df_str['fitness'] >= -1000)].reset_index(drop=True)#.iloc[:10000]
 
     df_str.sort_values('fitness', ascending=True, inplace=True)
     df_str.reset_index(drop=True, inplace=True)
-    df_str = df_str.iloc[:3000]
+    # df_str = df_str.iloc[:3000]
     df_str['strategy'] = [f'strategy{i+1}' for i in range(df_str.shape[0])]
 
     return df_str
