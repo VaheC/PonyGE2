@@ -72,7 +72,7 @@ def generate_strategy_data(strategy_file_path):
 
     df_str.sort_values('fitness', ascending=True, inplace=True)
     df_str.reset_index(drop=True, inplace=True)
-    df_str = df_str.iloc[:30000]
+    df_str = df_str.iloc[:100]
     df_str['strategy'] = [f'strategy{i+1}' for i in range(df_str.shape[0])]
 
     return df_str
