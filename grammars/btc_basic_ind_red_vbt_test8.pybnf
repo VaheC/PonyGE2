@@ -52,16 +52,22 @@
 
 <callf> ::= fitness = fun(price_data)
 
-<sell-signal> ::= (price_data["'"btc_close"'"] <= signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))
+<sell-signal> ::= ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>)) & (price_data["'"btc_close"'"] <= signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)))
 
-<buy-signal> ::= (price_data["'"btc_close"'"] >= signals.moving_max(price_data["'"btc_close"'"], window=<window-const>))
+<buy-signal> ::= ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>)) & (price_data["'"btc_close"'"] >= signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)))
 
-<sell-exit-signal> ::= (price_data["'"btc_close"'"] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>))
+<sell-exit-signal> ::= (price_data["'"btc_close"'"] > (signals.moving_min(price_data["'"btc_close"'"], window=<window-const>) + <atr_multiplier> * numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>)))
 
-<buy-exit-signal> ::= (price_data["'"btc_close"'"] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))
+<buy-exit-signal> ::= (price_data["'"btc_close"'"] < (signals.moving_max(price_data["'"btc_close"'"], window=<window-const>) - <atr_multiplier> * numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>)))
 
 <window-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit> | <digit><aug-digit><aug-digit><aug-digit>
 
+<short-window-const> ::= <digit> | <digit><aug-digit> 
+
+<long-window-const> ::= <digit><aug-digit><aug-digit> | <digit><aug-digit><aug-digit><aug-digit>
+
 <digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 <aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<atr_multiplier> ::= 1 | 2 | 3 | 4
