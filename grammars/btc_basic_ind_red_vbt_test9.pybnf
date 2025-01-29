@@ -82,19 +82,11 @@
 | ((<var> <mat-op> <var>) <c-op> <var>)
 | ((<var> <mat-op> <var>) <c-op> <value>)
 | ((<var> <mat-op> <value>) <c-op> <value>)
-| (<mat-f> <c-op> <mat-f>)
-| (<mat-f> <c-op> <value>)
-| ((<mat-f> <mat-op> <mat-f>) <c-op> <value>)
-| ((<mat-f> <mat-op> <value>) <c-op> <value>)
 | (<var-volume> <c-op> <int-const>)
 | (<var-volume> <c-op> <var-volume>)
 | ((<var-volume> <mat-op> <var-volume>) <c-op> <var-volume>)
 | ((<var-volume> <mat-op> <var-volume>) <c-op> <value>)
 | ((<var-volume> <mat-op> <value>) <c-op> <value>)
-| (<matf-volume> <c-op> <matf-volume>)
-| (<matf-volume> <c-op> <value>)
-| ((<matf-volume> <mat-op> <matf-volume>) <c-op> <value>)
-| ((<matf-volume> <mat-op> <value>) <c-op> <value>)
 | (price_data["'"day_of_week"'"] <c-op> <week-day>)
 | (price_data["'"month"'"] <c-op> <month>)
 | (price_data["'"hour"'"] <c-op> <hour>)
@@ -132,20 +124,8 @@
 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47 
 | 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59
 
-<real-const> ::= 0.<int-const> | <int-const>.<int-const>
+<real-const> ::= 0.<int-const> | <int-const>.<int-const> 
 
 <c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
 
 <mat-op> ::= + | - | * | / | %
-
-<mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) |
-| np.log10(<var> + 1) | np.log2(<var> + 1) | np.log1p(<var> + 1) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
-| np.quantile(<var>, 0.75) | np.quantile(<var>, 0.25) | np.quantile(<var>, 0.5) 
-| np.quantile(<var>, 0.9) | np.quantile(<var>, 0.1) | np.mean(<var>) | np.std(<var>) | kurtosis(<var>) | skew(<var>)
-
-<matf-volume> ::= np.log(<var-volume> + 1) | np.sin(<var-volume>) | np.cos(<var-volume>) | np.sqrt(<var-volume>) 
-| np.log10(<var-volume> + 1) | np.log2(<var-volume> + 1) 
-| np.log1p(<var-volume> + 1) | np.abs(<var-volume>) | np.max(<var-volume>) | np.min(<var-volume>)
-| np.quantile(<var-volume>, 0.75) | np.quantile(<var-volume>, 0.25) | np.quantile(<var-volume>, 0.5) 
-| np.quantile(<var-volume>, 0.9) | np.quantile(<var-volume>, 0.1)
-| np.mean(<var-volume>) | np.std(<var-volume>) | kurtosis(<var-volume>) | skew(<var-volume>)
