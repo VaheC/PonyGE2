@@ -54,11 +54,11 @@
 
 <sell-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>))
 | (price_data["'"btc_close"'"] <= signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))
-| ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>)) && (price_data["'"btc_close"'"] <= signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)))
+| ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>)) & (price_data["'"btc_close"'"] <= signals.moving_min(price_data["'"btc_close"'"], window=<window-const>)))
 
 <buy-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>))
 | (price_data["'"btc_close"'"] >= signals.moving_max(price_data["'"btc_close"'"], window=<window-const>))
-| ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>)) && (price_data["'"btc_close"'"] >= signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)))
+| ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>)) & (price_data["'"btc_close"'"] >= signals.moving_max(price_data["'"btc_close"'"], window=<window-const>)))
 
 <sell-exit-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<short-window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<long-window-const>))
 | (price_data["'"btc_close"'"] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>))
