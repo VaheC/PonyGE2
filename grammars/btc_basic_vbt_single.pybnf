@@ -52,19 +52,20 @@
 
 <callf> ::= fitness = fun(price_data)
 
-<sell-signal> ::= (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
+<sell-signal> ::= ((((signals.moving_max(price_data["'"btc_close"'"], window=<window-const>) - price_data["'"btc_close"'"]) / (signals.moving_max(price_data["'"btc_close"'"], window=<window-const>) - signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))) > <threshold>) & (price_data["'"day_of_week"'"] == <week-day>))
 
-<buy-signal> ::= (price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
+<buy-signal> ::= ((((signals.moving_max(price_data["'"btc_close"'"], window=<window-const>) - price_data["'"btc_close"'"]) / (signals.moving_max(price_data["'"btc_close"'"], window=<window-const>) - signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))) < <threshold>) & (price_data["'"day_of_week"'"] == <week-day>))
 
-<sell-exit-signal> ::= (price_data["'"btc_close"'"] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>))
+<sell-exit-signal> ::= (price_data["'"day_of_week"'"] == <week-day>)
 
-<buy-exit-signal> ::= (price_data["'"btc_close"'"] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))
+<buy-exit-signal> ::= (price_data["'"day_of_week"'"] == <week-day>)
 
-<window-const> ::= <digit><aug-digit> 
-| <digit><aug-digit><aug-digit> | <digit> | <digit><aug-digit><aug-digit><aug-digit>
+<window-const> ::= <digit> | <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit><aug-digit><aug-digit><aug-digit>
 
-<lag-steps> ::= <digit><aug-digit> 
-| <digit><aug-digit><aug-digit> | <digit> | <digit><aug-digit><aug-digit><aug-digit>
+<threshold> ::= <digit> | <digit><aug-digit>
 
 <digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 <aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
