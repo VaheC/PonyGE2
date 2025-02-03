@@ -14,7 +14,7 @@ def generate_data():
     # df = pd.read_csv('/kaggle/input/btcusd-test/data_60min_train.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/data_folds_30min/data_fold4.csv')
     # df = pd.read_csv('/kaggle/input/btcusd-test/data_folds_120min/data_fold1.csv')
-    df = pd.read_csv('/kaggle/input/btcusd-test/btc_10folds_120min/data_fold1.csv')
+    df = pd.read_csv('/kaggle/input/btcusd-test/btc_10folds_120min/data_fold2.csv')
     df['datetime'] = pd.to_datetime(df['datetime'])
 
     # df['year'] = df['datetime'].dt.year
