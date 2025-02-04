@@ -56,9 +56,9 @@
 
 <buy-signal> ::= (numba_indicators_nan.macd_line(prices=price_data["'"btc_close"'"], short_window=int(<window-const>/2), long_window=<window-const>) > numba_indicators_nan.exponential_moving_average(prices=price_data["'"btc_close"'"], window=<window-const>))
 
-<sell-exit-signal> ::= (price_data["'"btc_close"'"] > signals.fibbo_prices(price_data["'"btc_close"'"], window=<window-const>, fibbo_pct=<fibbo-pct>))
+<sell-exit-signal> ::= (price_data["'"btc_close"'"] > signals.fibbo_prices(high_arr=price_data["'"btc_high"'"], low_arr=price_data["'"btc_low"'"], window=<window-const>, fibbo_pct=<fibbo-pct>))
 
-<buy-exit-signal> ::= (price_data["'"btc_close"'"] < signals.fibbo_prices(price_data["'"btc_close"'"], window=<window-const>, fibbo_pct=<fibbo-pct>))
+<buy-exit-signal> ::= (price_data["'"btc_close"'"] < signals.fibbo_prices(high_arr=price_data["'"btc_high"'"], low_arr=price_data["'"btc_low"'"], window=<window-const>, fibbo_pct=<fibbo-pct>))
 
 <window-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit><aug-digit><aug-digit><aug-digit>

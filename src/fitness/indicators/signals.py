@@ -28,9 +28,9 @@ def moving_min(arr, window):
     return result
 
 @njit(cache=True)
-def max_min_diff(arr, window):
+def max_min_diff(high_arr, low_arr, window):
 
-    diff = moving_max(arr, window) - moving_min(arr, window)
+    diff = moving_max(high_arr, window) - moving_min(low_arr, window)
 
     for i in range(len(diff)):
         if diff[i] < 0:
@@ -39,11 +39,11 @@ def max_min_diff(arr, window):
     return diff
 
 @njit(cache=True)
-def fibbo_prices(arr, window, fibbo_pct):
+def fibbo_prices(high_arr, low_arr, window, fibbo_pct):
 
-    max_p = moving_max(arr, window)
+    max_p = moving_max(high_arr, window)
 
-    min_p = moving_min(arr, window)
+    min_p = moving_min(low_arr, window)
 
     diff = max_p - min_p
 
