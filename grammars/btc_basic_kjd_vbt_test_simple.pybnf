@@ -1,0 +1,106 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{::}
+{:import vectorbt as vbt:}{::}
+{:import pandas as pd:}{::}
+{:import numpy as np:}{::}
+{:from fitness.indicators import numba_indicators_nan, signals:}{::}
+{:from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag:}{::}
+{:from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit:}{::}
+{:from numba import njit:}{::}
+{:COMMISSION = 0.015:}{::}
+{:SLIPPAGE = 0.00005:}{::}
+{:AVAILABLE_CAPITAL = 700000:}{::}
+{:TRADE_SIZE = 0.5:}{::}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal=<buy-signal>, exit_signal=<buy-exit-signal>):}:}
+{:except::}
+{:{:buy_idxs, buy_exit_idxs = [], []:}:}{::}
+{:try::}
+{:{:sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal=<sell-signal>, exit_signal=<sell-exit-signal>):}:}
+{:except::}
+{:{:sell_idxs, sell_exit_idxs = [], []:}:}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs):}:}{::}
+{:except::}
+{:{:pass:}:}
+{:if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0)::}{::}
+{:{:return 999:}:}{::}{::}
+{:buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:price_data_open = pd.Series(price_data["'"btc_open"'"], index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
+{:pf = vbt.Portfolio.from_signals(price_data_open, entries=buy_entries, exits=buy_exits, init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, slippage=SLIPPAGE, size=TRADE_SIZE, short_entries=sell_entries, short_exits=sell_exits):}{::}
+{:try::}{::}
+{:{:trades = pf.trades.records:}:}{::}
+{:{:all_arr = trades["'"pnl"'"].values:}:}{::}
+{:{:total_pnl = np.sum(all_arr):}:}{::}
+{:{:if total_pnl <= 0::}:}{::}
+{:{:{:return 999:}:}:}{::}
+{:{:equity_curve_arr = np.cumsum(all_arr):}:}{::}
+{:{:drawdowns = get_drawdowns(equity_curve_arr):}:}{::}
+{:{:if len(drawdowns[drawdowns!=0]) == 0::}:}{::}
+{:{:{:return 999:}:}:}{::}
+{:{:avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]):}:}{::}
+{:{:fitness = total_pnl / avg_drawdown:}:}{::}
+{:{:if np.isnan(fitness)::}:}{::}
+{:{:{:return 999:}:}:}{::}
+{:{:return -fitness:}:}
+{:except::}{::}
+{:{:return 998:}:}
+
+<callf> ::= fitness = fun(price_data)
+
+<signal> ::= (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
+
+<exit-signal> ::= (price_data["'"btc_close"'"] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))
+| (price_data["'"btc_close"'"] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>))
+| (numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>) > <short-window-const>)
+| (numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>) < <short-window-const>)
+| (price_data["'"btc_close"'"] > signals.moving_percentile(price_data["'"btc_close"'"], window=<window-const>, percentile=<perc-const>))
+| (price_data["'"btc_close"'"] < signals.moving_percentile(price_data["'"btc_close"'"], window=<window-const>, percentile=<perc-const>))
+| ((price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=1)) & (get_lag(price_data["'"btc_close"'"], lag=1) > get_lag(price_data["'"btc_close"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=2) > get_lag(price_data["'"btc_close"'"], lag=3)))
+| ((price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=1)) & (get_lag(price_data["'"btc_close"'"], lag=1) < get_lag(price_data["'"btc_close"'"], lag=2)) & (get_lag(price_data["'"btc_close"'"], lag=2) < get_lag(price_data["'"btc_close"'"], lag=3)))
+| (price_data["'"btc_high"'"] < signals.moving_max(price_data["'"btc_high"'"], window=<window-const>))
+| (price_data["'"btc_high"'"] > signals.moving_max(price_data["'"btc_high"'"], window=<window-const>))
+| (price_data["'"btc_low"'"] < signals.moving_min(price_data["'"btc_low"'"], window=<window-const>))
+| (price_data["'"btc_low"'"] > signals.moving_min(price_data["'"btc_low"'"], window=<window-const>))
+| (price_data["'"btc_low"'"] < signals.moving_max(price_data["'"btc_low"'"], window=<window-const>))
+| (price_data["'"btc_low"'"] > signals.moving_max(price_data["'"btc_low"'"], window=<window-const>))
+| (price_data["'"btc_high"'"] > signals.moving_min(price_data["'"btc_high"'"], window=<window-const>))
+| (price_data["'"btc_high"'"] < signals.moving_min(price_data["'"btc_high"'"], window=<window-const>))
+| (numba_indicators_nan.true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>) > <aug-digit> * numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>))
+| (numba_indicators_nan.true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>) < <aug-digit> * numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>))
+
+<sell-signal> ::= <signal>
+
+<buy-signal> ::= <signal>
+
+<sell-exit-signal> ::= <exit-signal>
+
+<buy-exit-signal> ::= <exit-signal>
+
+<int-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<window-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit>
+
+<short-window-const> ::= <digit> | <digit><aug-digit> 
+
+<long-window-const> ::= <digit><aug-digit><aug-digit>
+
+<lag-steps> ::= <digit> | <digit><aug-digit>
+
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<perc-const> ::= 0.<digit> | 0.<digit><aug-digit> 
+
+<week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
+<month> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+<hour> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+<minute> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 
+| 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47 
+| 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59
