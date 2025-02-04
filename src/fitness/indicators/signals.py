@@ -28,6 +28,34 @@ def moving_min(arr, window):
     return result
 
 @njit(cache=True)
+def max_min_diff(arr, window):
+
+    diff = moving_max(arr, window) - moving_min(arr, window)
+
+    for i in range(len(diff)):
+        if diff[i] < 0:
+            diff[i] = -1 * diff[i]
+    
+    return diff
+
+@njit(cache=True)
+def fibbo_prices(arr, window, fibbo_pct):
+
+    max_p = moving_max(arr, window)
+
+    min_p = moving_min(arr, window)
+
+    diff = max_p - min_p
+
+    for i in range(len(diff)):
+        if diff[i] < 0:
+            diff[i] = -1 * diff[i]
+
+    fibbo_p = max_p - diff * fibbo_pct
+    
+    return fibbo_p
+
+@njit(cache=True)
 def moving_percentile(arr, window, percentile):
     # Initialize the result array with NaNs (or you can use 999 for insufficient data if needed)
     result = np.full(len(arr), np.nan, dtype=arr.dtype)
