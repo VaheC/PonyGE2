@@ -56,15 +56,15 @@ def fibbo_prices(high_arr, low_arr, window, fibbo_pct):
     return fibbo_p
 
 @njit(cache=True)
-def tenkan_sen(high_arr, low_arr, window):
+def ichimoku_median(high_arr, low_arr, window):
     
     max_p = moving_max(high_arr, window)
 
     min_p = moving_min(low_arr, window)
 
-    tenkan_sen = (max_p + min_p) / 2
+    median_p = (max_p + min_p) / 2
 
-    return tenkan_sen
+    return median_p
 
 @njit(cache=True)
 def moving_percentile(arr, window, percentile):
