@@ -52,8 +52,6 @@
 
 <callf> ::= fitness = fun(price_data)
 
-<signal> ::= (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
-
 <exit-signal> ::= (price_data["'"btc_close"'"] == signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))
 | (price_data["'"btc_close"'"] == signals.moving_max(price_data["'"btc_close"'"], window=<window-const>))
 | (numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>) > <short-window-const>)
@@ -73,9 +71,9 @@
 | (numba_indicators_nan.true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>) > <aug-digit> * numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>))
 | (numba_indicators_nan.true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>) < <aug-digit> * numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>))
 
-<sell-signal> ::= <signal>
+<sell-signal> ::= (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
 
-<buy-signal> ::= <signal>
+<buy-signal> ::= (price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
 
 <sell-exit-signal> ::= <exit-signal>
 
@@ -91,7 +89,7 @@
 
 <long-window-const> ::= <digit><aug-digit><aug-digit>
 
-<lag-steps> ::= <digit> | <digit><aug-digit>
+<lag-steps> ::= <digit> | <digit><aug-digit> | <digit><aug-digit><aug-digit>
 
 <digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 <aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
