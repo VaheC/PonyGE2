@@ -56,6 +56,17 @@ def fibbo_prices(high_arr, low_arr, window, fibbo_pct):
     return fibbo_p
 
 @njit(cache=True)
+def tenkan_sen(high_arr, low_arr, window):
+    
+    max_p = moving_max(high_arr, window)
+
+    min_p = moving_min(low_arr, window)
+
+    tenkan_sen = (max_p + min_p) / 2
+
+    return tenkan_sen
+
+@njit(cache=True)
 def moving_percentile(arr, window, percentile):
     # Initialize the result array with NaNs (or you can use 999 for insufficient data if needed)
     result = np.full(len(arr), np.nan, dtype=arr.dtype)
