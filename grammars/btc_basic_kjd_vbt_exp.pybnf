@@ -30,7 +30,7 @@
 {:sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
 {:buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
 {:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
-{:price_data_open = pd.Series(price_data["'"btc_open"'"], index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
+{:price_data_open = pd.Series(price_data["'"btc_open"'"].reshape(-1, ), index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
 {:pf = vbt.Portfolio.from_signals(price_data_open, entries=buy_entries, exits=buy_exits, init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, slippage=SLIPPAGE, size=TRADE_SIZE, short_entries=sell_entries, short_exits=sell_exits):}{::}
 {:try::}{::}
 {:{:trades = pf.trades.records:}:}{::}
@@ -52,18 +52,13 @@
 
 <callf> ::= fitness = fun(price_data)
 
-<signal> ::= (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
-| (price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
+<sell-signal> ::= (price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
 
-<exit-signal> ::= (signals.get_exit_point(<signal>, n_bars=<short-window-const>))
+<buy-signal> ::= (price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>))
 
-<sell-signal> ::= <signal>
+<sell-exit-signal> ::= (signals.get_exit_point(<sell-signal>, n_bars=<short-window-const>))
 
-<buy-signal> ::= <signal>
-
-<sell-exit-signal> ::= <exit-signal>
-
-<buy-exit-signal> ::= <exit-signal>
+<buy-exit-signal> ::= (signals.get_exit_point(<buy-signal>, n_bars=<short-window-const>))
 
 <int-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit>
@@ -71,7 +66,7 @@
 <window-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit>
 
-<short-window-const> ::= <digit> | <digit><aug-digit> 
+<short-window-const> ::= <digit> | <digit><aug-digit> | <digit><aug-digit><aug-digit>
 
 <long-window-const> ::= <digit><aug-digit><aug-digit>
 
