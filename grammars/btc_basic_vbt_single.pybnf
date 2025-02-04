@@ -52,20 +52,18 @@
 
 <callf> ::= fitness = fun(price_data)
 
-<sell-signal> ::= ((((signals.moving_max(price_data["'"btc_close"'"], window=<window-const>) - price_data["'"btc_close"'"]) / (signals.moving_max(price_data["'"btc_close"'"], window=<window-const>) - signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))) > <threshold>) & (price_data["'"day_of_week"'"] == <week-day>))
+<sell-signal> ::= (numba_indicators_nan.macd_line(prices=price_data["'"btc_close"'"], short_window=int(<window-const>/2), long_window=<window-const>) < numba_indicators_nan.exponential_moving_average(prices=price_data["'"btc_close"'"], window=<window-const>))
 
-<buy-signal> ::= ((((signals.moving_max(price_data["'"btc_close"'"], window=<window-const>) - price_data["'"btc_close"'"]) / (signals.moving_max(price_data["'"btc_close"'"], window=<window-const>) - signals.moving_min(price_data["'"btc_close"'"], window=<window-const>))) < <threshold>) & (price_data["'"day_of_week"'"] == <week-day>))
+<buy-signal> ::= (numba_indicators_nan.macd_line(prices=price_data["'"btc_close"'"], short_window=int(<window-const>/2), long_window=<window-const>) > numba_indicators_nan.exponential_moving_average(prices=price_data["'"btc_close"'"], window=<window-const>))
 
-<sell-exit-signal> ::= (price_data["'"day_of_week"'"] == <week-day>)
+<sell-exit-signal> ::= (price_data["'"btc_close"'"] > signals.fibbo_prices(price_data["'"btc_close"'"], window=<window-const>, fibbo_pct=<fibbo-pct>))
 
-<buy-exit-signal> ::= (price_data["'"day_of_week"'"] == <week-day>)
+<buy-exit-signal> ::= (price_data["'"btc_close"'"] < signals.fibbo_prices(price_data["'"btc_close"'"], window=<window-const>, fibbo_pct=<fibbo-pct>))
 
-<window-const> ::= <digit> | <digit><aug-digit> 
+<window-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit><aug-digit><aug-digit><aug-digit>
-
-<threshold> ::= <digit> | <digit><aug-digit>
 
 <digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 <aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
-<week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
+<fibbo-pct> ::= 0.236 | 0.382 | 0.5 | 0.618
