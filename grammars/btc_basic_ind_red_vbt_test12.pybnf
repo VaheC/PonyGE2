@@ -72,11 +72,6 @@
 <volume> ::= <inst-tickers>_volume
 
 <indicator> ::= numba_indicators_nan.moving_average(prices=price_data["'"<close-prices>"'"], window=<window-const>)
-| numba_indicators_nan.exponential_moving_average(prices=price_data["'"<close-prices>"'"], window=<window-const>)
-| numba_indicators_nan.relative_strength_index(prices=price_data["'"<close-prices>"'"], window=<window-const>)
-| numba_indicators_nan.momentum(prices=price_data["'"<close-prices>"'"], window=<window-const>)
-| numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>)
-| numba_indicators_nan.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>)
 
 <simple-signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
 | (<var> <c-op> <var>)
