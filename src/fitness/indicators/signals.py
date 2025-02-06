@@ -98,6 +98,7 @@ def get_exit_point(signal_condition, n_bars=7):
     temp_condition = signal_condition.copy()
     idx = np.where(temp_condition==True)[0]
     temp_condition[idx] = False
-    idx = idx + n_bars + 1
+    # idx = idx + n_bars + 1
+    idx = idx[idx + n_bars + 1 < len(temp_condition)] + n_bars + 1
     temp_condition[idx] = True
     return temp_condition
