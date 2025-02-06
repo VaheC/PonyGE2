@@ -30,25 +30,12 @@
 {:sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
 {:buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
 {:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
-{:price_data_open = pd.Series(price_data["'"btc_open"'"].reshape(-1, ), index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
+{:price_data_open = pd.Series(price_data["'"btc_open"'"], index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
 {:pf = vbt.Portfolio.from_signals(price_data_open, entries=buy_entries, exits=buy_exits, init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, slippage=SLIPPAGE, size=TRADE_SIZE, short_entries=sell_entries, short_exits=sell_exits):}{::}
-{:try::}{::}
-{:{:trades = pf.trades.records:}:}{::}
-{:{:all_arr = trades["'"pnl"'"].values:}:}{::}
-{:{:total_pnl = np.sum(all_arr):}:}{::}
-{:{:if total_pnl <= 0::}:}{::}
-{:{:{:return 999:}:}:}{::}
-{:{:equity_curve_arr = np.cumsum(all_arr):}:}{::}
-{:{:drawdowns = get_drawdowns(equity_curve_arr):}:}{::}
-{:{:if len(drawdowns[drawdowns!=0]) == 0::}:}{::}
-{:{:{:return 999:}:}:}{::}
-{:{:avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]):}:}{::}
-{:{:fitness = total_pnl / avg_drawdown:}:}{::}
-{:{:if np.isnan(fitness)::}:}{::}
-{:{:{:return 999:}:}:}{::}
-{:{:return -fitness:}:}
-{:except::}{::}
-{:{:return 998:}:}
+{:fitness = pf.stats()["'"Total Return [%]"'"]:}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:return -fitness:}
 
 <callf> ::= fitness = fun(price_data)
 
@@ -136,7 +123,7 @@
 
 <c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
 
-<mat-op> ::= + | - | * | / | %
+<mat-op> ::= + | - | * | /
 
 <mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>) |
 | np.log10(<var> + 1) | np.log2(<var> + 1) | np.log1p(<var> + 1) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
