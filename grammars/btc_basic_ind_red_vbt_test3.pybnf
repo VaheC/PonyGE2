@@ -75,6 +75,11 @@
 | numba_indicators_nan.exponential_moving_average(prices=price_data["'"<close-prices>"'"], window=<window-const>)
 | numba_indicators_nan.relative_strength_index(prices=price_data["'"<close-prices>"'"], window=<window-const>)
 | numba_indicators_nan.momentum(prices=price_data["'"<close-prices>"'"], window=<window-const>)
+| numba_indicators_nan.average_true_range(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>)
+| numba_indicators_nan.rolling_volatility(price_data["'"<data-prices>"'"], window_size=<window-const>)
+| signals.moving_max(price_data["'"<data-prices>"'"], window=<window-const>)
+| signals.moving_min(price_data["'"<data-prices>"'"], window=<window-const>)
+| signals.moving_percentile(price_data["'"<data-prices>"'"], window=<window-const>, percentile=<perc-const>)
 | numba_indicators_nan.adx(high=price_data["'"btc_high"'"], low=price_data["'"btc_low"'"], close=price_data["'"btc_close"'"], window=<window-const>)
 
 <simple-signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
