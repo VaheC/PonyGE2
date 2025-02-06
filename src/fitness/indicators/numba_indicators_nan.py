@@ -29,8 +29,10 @@ def relative_strength_index(prices, window=14):
     
     for i in range(1, len(prices)):
         delta = prices[i] - prices[i - 1]
-        gains[i] = delta if delta > 0 else 0
-        losses[i] = -delta if delta < 0 else 0
+        if delta > 0:
+            gains[i] = delta
+        if delta < 0:
+            losses[i] = -delta
 
     avg_gain = np.mean(gains[1:window+1])
     avg_loss = np.mean(losses[1:window+1])
