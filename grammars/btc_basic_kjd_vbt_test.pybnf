@@ -32,23 +32,10 @@
 {:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
 {:price_data_open = pd.Series(price_data["'"btc_open"'"], index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
 {:pf = vbt.Portfolio.from_signals(price_data_open, entries=buy_entries, exits=buy_exits, init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, slippage=SLIPPAGE, size=TRADE_SIZE, short_entries=sell_entries, short_exits=sell_exits):}{::}
-{:try::}{::}
-{:{:trades = pf.trades.records:}:}{::}
-{:{:all_arr = trades["'"pnl"'"].values:}:}{::}
-{:{:total_pnl = np.sum(all_arr):}:}{::}
-{:{:if total_pnl <= 0::}:}{::}
-{:{:{:return 999:}:}:}{::}
-{:{:equity_curve_arr = np.cumsum(all_arr):}:}{::}
-{:{:drawdowns = get_drawdowns(equity_curve_arr):}:}{::}
-{:{:if len(drawdowns[drawdowns!=0]) == 0::}:}{::}
-{:{:{:return 999:}:}:}{::}
-{:{:avg_drawdown = np.sum(drawdowns[drawdowns!=0]) / len(drawdowns[drawdowns!=0]):}:}{::}
-{:{:fitness = total_pnl / avg_drawdown:}:}{::}
-{:{:if np.isnan(fitness)::}:}{::}
-{:{:{:return 999:}:}:}{::}
-{:{:return -fitness:}:}
-{:except::}{::}
-{:{:return 998:}:}
+{:fitness = pf.stats()["'"Total Return [%]"'"]:}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:return -fitness:}
 
 <callf> ::= fitness = fun(price_data)
 
@@ -174,8 +161,3 @@
 <perc-const> ::= 0.<digit> | 0.<digit><aug-digit> 
 
 <week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
-<month> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
-<hour> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
-<minute> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 
-| 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47 
-| 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59
