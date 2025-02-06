@@ -23,7 +23,7 @@ def exponential_moving_average(prices, window):
 # Relative Strength Index (RSI)
 @njit(cache=True)
 def relative_strength_index(prices, window=14):
-    prices = prices.flatten()
+    # prices = prices.flatten()
     rsi = np.full(len(prices), np.nan)
     gains = np.zeros(len(prices))
     losses = np.zeros(len(prices))

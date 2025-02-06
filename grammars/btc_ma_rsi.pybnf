@@ -33,13 +33,13 @@
 
 <callf> ::= fitness = fun(price_data)
 
-<buy-signal> ::= ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) & (numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) < 0.3))
+<buy-signal> ::= ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>)) & (numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>) < 0.3))
 
-<sell-signal> ::= ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) & (numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) > 0.7))
+<sell-signal> ::= ((numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>)) & (numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>) > 0.7))
 
-<buy-exit-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>))
+<buy-exit-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>))
 
-<sell-exit-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>))
+<sell-exit-signal> ::= (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"].reshape(-1, ), window=<window-const>))
 
 <window-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit> | <digit><aug-digit><aug-digit><aug-digit>
