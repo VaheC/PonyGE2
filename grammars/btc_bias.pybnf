@@ -39,29 +39,13 @@
 
 <callf> ::= fitness = fun(price_data)
 
-<sell-signal> ::= (((price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) +
-(price_data["'"btc_close"'"] < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + 
-(numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) +
-(numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) < 0.7) +
-((price_data["'"btc_close"'"] - price_data["'"btc_low"'"]) / (price_data["'"btc_high"'"] - price_data["'"btc_low"'"] + 0.00001) < 0.<digit>)) < -<bias-threshold>)
+<sell-signal> ::= (((price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) + (price_data["'"btc_close"'"] < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + (numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) < 0.7) + ((price_data["'"btc_close"'"] - price_data["'"btc_low"'"]) / (price_data["'"btc_high"'"] - price_data["'"btc_low"'"] + 0.00001) < 0.<digit>)) < -<bias-threshold>)
 
-<buy-signal> ::= (((price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) +
-(price_data["'"btc_close"'"] > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) +
-(numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) +
-(numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) > 0.3) +
-((price_data["'"btc_close"'"] - price_data["'"btc_low"'"]) / (price_data["'"btc_high"'"] - price_data["'"btc_low"'"] + 0.00001) > 0.<digit>)) > <bias-threshold>)
+<buy-signal> ::= (((price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) + (price_data["'"btc_close"'"] > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + (numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) > 0.3) + ((price_data["'"btc_close"'"] - price_data["'"btc_low"'"]) / (price_data["'"btc_high"'"] - price_data["'"btc_low"'"] + 0.00001) > 0.<digit>)) > <bias-threshold>)
 
-<sell-exit-signal> ::= (((price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) +
-(price_data["'"btc_close"'"] > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) +
-(numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) +
-(numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) > 0.3) +
-((price_data["'"btc_close"'"] - price_data["'"btc_low"'"]) / (price_data["'"btc_high"'"] - price_data["'"btc_low"'"] + 0.00001) > 0.<digit>)) > <bias-threshold>)
+<sell-exit-signal> ::= (((price_data["'"btc_close"'"] > get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) + (price_data["'"btc_close"'"] > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) > numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + (numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) > 0.3) + ((price_data["'"btc_close"'"] - price_data["'"btc_low"'"]) / (price_data["'"btc_high"'"] - price_data["'"btc_low"'"] + 0.00001) > 0.<digit>)) > <bias-threshold>)
 
-<buy-exit-signal> ::= (((price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) +
-(price_data["'"btc_close"'"] < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + 
-(numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) +
-(numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) < 0.7) +
-((price_data["'"btc_close"'"] - price_data["'"btc_low"'"]) / (price_data["'"btc_high"'"] - price_data["'"btc_low"'"] + 0.00001) < 0.<digit>)) < -<bias-threshold>)
+<buy-exit-signal> ::= (((price_data["'"btc_close"'"] < get_lag(price_data["'"btc_close"'"], lag=<lag-steps>)) + (price_data["'"btc_close"'"] < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + (numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>) < numba_indicators_nan.moving_average(prices=price_data["'"btc_close"'"], window=<window-const>)) + (numba_indicators_nan.relative_strength_index(prices=price_data["'"btc_close"'"], window=<window-const>) < 0.7) + ((price_data["'"btc_close"'"] - price_data["'"btc_low"'"]) / (price_data["'"btc_high"'"] - price_data["'"btc_low"'"] + 0.00001) < 0.<digit>)) < -<bias-threshold>)
 
 <window-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit>
