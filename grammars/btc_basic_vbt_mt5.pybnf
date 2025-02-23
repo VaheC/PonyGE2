@@ -1,0 +1,162 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{::}
+{:import vectorbt as vbt:}{::}
+{:import pandas as pd:}{::}
+{:import numpy as np:}{::}
+{:from fitness.indicators import signals:}{::}
+{:from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag:}{::}
+{:from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit:}{::}
+{:from numba import njit:}{::}
+{:COMMISSION = 0.015:}{::}
+{:SLIPPAGE = 0.00005:}{::}
+{:AVAILABLE_CAPITAL = 100000:}{::}
+{:TRADE_SIZE = 0.1:}{::}{::}
+{:buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal=<buy-signal>, exit_signal=<buy-exit-signal>):}{::}
+{:sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal=<sell-signal>, exit_signal=<sell-exit-signal>):}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs):}:}{::}
+{:except::}
+{:{:pass:}:}
+{:if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0)::}{::}
+{:{:return 999:}:}{::}{::}
+{:buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:price_data_open = pd.Series(price_data["'"usdchf_open"'"], index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
+{:pf = vbt.Portfolio.from_signals(price_data_open, entries=buy_entries, exits=buy_exits, init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, slippage=SLIPPAGE, size=TRADE_SIZE, short_entries=sell_entries, short_exits=sell_exits):}{::}
+{:fitness = pf.stats()["'"Total Return [%]"'"]:}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:return -fitness:}
+
+<callf> ::= fitness = fun(price_data)
+
+<var> ::= price_data["'"<data-prices>"'"]
+| get_lag(price_data["'"<data-prices>"'"], lag=<lag-steps>)
+
+<var-tv-volume> ::= price_data["'"<tv-volume>"'"]
+
+<var-rv-volume> ::= price_data["'"<rv-volume>"'"]
+
+<var-spread> ::= price_data["'"<spread>"'"]
+
+<data-prices> ::= <close-prices> | <open-prices> | <high-prices> | <low-prices>
+
+<inst-tickers> ::= audusd | eurusd | gbpusd | nzdusd | usdcad | usdchf | usdcnh 
+| usdczk | usddkk | usdhkd | usdhuf | usdils | usdjpy | usdmxn | usdnok | usdpln 
+| usdrmb | usdrub | usdrur | usdsek | usdsgd | usdthb | usdtry | usdzar | xagusd 
+| xauusd | xpdusd | xptusd
+
+<close-prices> ::= <inst-tickers>_close
+
+<open-prices> ::= <inst-tickers>_open
+
+<high-prices> ::= <inst-tickers>_high
+
+<low-prices> ::= <inst-tickers>_low
+
+<tv-volume> ::= <inst-tickers>_tv
+
+<rv-volume> ::= <inst-tickers>_rv
+
+<spread> ::= <inst-tickers>_spread
+
+<simple-signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
+| (<var> <c-op> <var>)
+| ((<var> <mat-op> <var>) <c-op> <var>)
+| ((<var> <mat-op> <var>) <c-op> <value>)
+| ((<var> <mat-op> <value>) <c-op> <value>)
+| (<mat-f> <c-op> <mat-f>)
+| (<mat-f> <c-op> <value>)
+| ((<mat-f> <mat-op> <mat-f>) <c-op> <value>)
+| ((<mat-f> <mat-op> <value>) <c-op> <value>)
+| (<var-tv-volume> <c-op> <int-const>)
+| (<var-tv-volume> <c-op> <var-tv-volume>)
+| ((<var-tv-volume> <mat-op> <var-tv-volume>) <c-op> <var-tv-volume>)
+| ((<var-tv-volume> <mat-op> <var-tv-volume>) <c-op> <value>)
+| ((<var-tv-volume> <mat-op> <value>) <c-op> <value>)
+| (<matf-tv-volume> <c-op> <matf-tv-volume>)
+| (<matf-tv-volume> <c-op> <value>)
+| ((<matf-tv-volume> <mat-op> <matf-tv-volume>) <c-op> <value>)
+| ((<matf-tv-volume> <mat-op> <value>) <c-op> <value>)
+| (<var-rv-volume> <c-op> <int-const>)
+| (<var-rv-volume> <c-op> <var-rv-volume>)
+| ((<var-rv-volume> <mat-op> <var-rv-volume>) <c-op> <var-rv-volume>)
+| ((<var-rv-volume> <mat-op> <var-rv-volume>) <c-op> <value>)
+| ((<var-rv-volume> <mat-op> <value>) <c-op> <value>)
+| (<matf-rv-volume> <c-op> <matf-rv-volume>)
+| (<matf-rv-volume> <c-op> <value>)
+| ((<matf-rv-volume> <mat-op> <matf-rv-volume>) <c-op> <value>)
+| ((<matf-rv-volume> <mat-op> <value>) <c-op> <value>)
+| (<var-spread> <c-op> <int-const>)
+| (<var-spread> <c-op> <var-spread>)
+| ((<var-spread> <mat-op> <var-spread>) <c-op> <var-spread>)
+| ((<var-spread> <mat-op> <var-spread>) <c-op> <value>)
+| ((<var-spread> <mat-op> <value>) <c-op> <value>)
+| (<matf-spread> <c-op> <matf-spread>)
+| (<matf-spread> <c-op> <value>)
+| ((<matf-spread> <mat-op> <matf-spread>) <c-op> <value>)
+| ((<matf-spread> <mat-op> <value>) <c-op> <value>)
+| (price_data["'"day_of_week"'"] <c-op> <week-day>)
+| (price_data["'"hour"'"] <c-op> <hour>)
+| (price_data["'"minute"'"] <c-op> <minute>)
+
+<signal> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>)
+| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
+
+<sell-signal> ::= <signal>
+
+<buy-signal> ::= <signal>
+
+<sell-exit-signal> ::= <signal>
+
+<buy-exit-signal> ::= <signal>
+
+<value> ::= <int-const> | <real-const>
+
+<change-value> ::= 0.<int-const> | -0.<int-const> | 0.<int-const><int-const> | -0.<int-const><int-const>
+
+<int-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit> | <digit><aug-digit><aug-digit><aug-digit>
+
+<window-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit> | <digit><aug-digit><aug-digit><aug-digit>
+
+<lag-steps> ::= <digit> | <digit><aug-digit> | <digit><aug-digit><aug-digit> | <digit><aug-digit><aug-digit><aug-digit>
+
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<week-day> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
+<month> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+<hour> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+<minute> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 
+| 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45 | 46 | 47 
+| 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59
+
+<real-const> ::= 0.<int-const> | <int-const>.<int-const>
+
+<perc-const> ::= 0.<digit> | 0.<digit><aug-digit> 
+
+<c-op> ::= ">=" | "<=" | ">" | "<" | "==" | "!="
+
+<mat-op> ::= + | - | * | /
+
+<log-op> ::= "&" | "|" 
+
+<mat-f> ::= np.log(<var> + 1) | np.sin(<var>) | np.cos(<var>) | np.sqrt(<var>)
+| np.log10(<var> + 1) | np.log2(<var> + 1) | np.log1p(<var> + 1) | np.abs(<var>) | np.max(<var>) | np.min(<var>)
+
+<matf-tv-volume> ::= np.log(<var-tv-volume> + 1) | np.sin(<var-tv-volume>) | np.cos(<var-tv-volume>) | np.sqrt(<var-tv-volume>) 
+| np.log10(<var-tv-volume> + 1) | np.log2(<var-tv-volume> + 1) 
+| np.log1p(<var-tv-volume> + 1) | np.abs(<var-tv-volume>) | np.max(<var-tv-volume>) | np.min(<var-tv-volume>)
+
+<matf-rv-volume> ::= np.log(<var-rv-volume> + 1) | np.sin(<var-rv-volume>) | np.cos(<var-rv-volume>) | np.sqrt(<var-rv-volume>) 
+| np.log10(<var-rv-volume> + 1) | np.log2(<var-rv-volume> + 1) 
+| np.log1p(<var-rv-volume> + 1) | np.abs(<var-rv-volume>) | np.max(<var-rv-volume>) | np.min(<var-rv-volume>)
+
+<matf-spread> ::= np.log(<var-spread> + 1) | np.sin(<var-spread>) | np.cos(<var-spread>) | np.sqrt(<var-spread>) 
+| np.log10(<var-spread> + 1) | np.log2(<var-spread> + 1) 
+| np.log1p(<var-spread> + 1) | np.abs(<var-spread>) | np.max(<var-spread>) | np.min(<var-spread>)
