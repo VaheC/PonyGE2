@@ -20,10 +20,10 @@
 {:{:pass:}:}
 {:if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0)::}{::}
 {:{:return 999:}:}{::}{::}
-{:buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
-{:sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
-{:buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
-{:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"btc_open"'"]))]):}{::}
+{:buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data["'"usdchf_open"'"]))]):}{::}
+{:sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data["'"usdchf_open"'"]))]):}{::}
+{:buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data["'"usdchf_open"'"]))]):}{::}
+{:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"usdchf_open"'"]))]):}{::}
 {:price_data_open = pd.Series(price_data["'"usdchf_open"'"], index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
 {:pf = vbt.Portfolio.from_signals(price_data_open, entries=buy_entries, exits=buy_exits, init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, slippage=SLIPPAGE, size=TRADE_SIZE, short_entries=sell_entries, short_exits=sell_exits):}{::}
 {:fitness = pf.stats()["'"Total Return [%]"'"]:}{::}
