@@ -1,0 +1,81 @@
+<fc> ::= <deff>{::}<callf>
+
+<deff> ::= def fun(price_data):{::}
+{:import vectorbt as vbt:}{::}
+{:import pandas as pd:}{::}
+{:import numpy as np:}{::}
+{:from fitness.indicators import numba_indicators_nan, signals:}{::}
+{:from fitness.performance.helper_func import merge_buy_sell_pnl, get_drawdowns, get_pnl, get_lag:}{::}
+{:from fitness.performance.helper_func import trading_signals_buy, trading_signals_sell, change_exit:}{::}
+{:from numba import njit:}{::}
+{:COMMISSION = 0.015:}{::}
+{:SLIPPAGE = 0.00005:}{::}
+{:AVAILABLE_CAPITAL = 100000:}{::}
+{:TRADE_SIZE = 0.1:}{::}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs = trading_signals_buy(buy_signal=<buy-signal>, exit_signal=<buy-exit-signal>):}:}
+{:except::}
+{:{:buy_idxs, buy_exit_idxs = [], []:}:}{::}
+{:try::}
+{:{:sell_idxs, sell_exit_idxs = trading_signals_sell(sell_signal=<sell-signal>, exit_signal=<sell-exit-signal>):}:}
+{:except::}
+{:{:sell_idxs, sell_exit_idxs = [], []:}:}{::}
+{:try::}
+{:{:buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs = change_exit(buy_idxs, buy_exit_idxs, sell_idxs, sell_exit_idxs):}:}{::}
+{:except::}
+{:{:pass:}:}
+{:if (len(buy_idxs) == 0 or len(buy_exit_idxs) == 0) and (len(sell_idxs) == 0 or len(sell_exit_idxs) == 0)::}{::}
+{:{:return 999:}:}{::}{::}
+{:buy_entries = np.array([1 if i in buy_idxs else 0 for i in range(len(price_data["'"usdchf_open"'"]))]):}{::}
+{:sell_entries = np.array([1 if i in sell_idxs else 0 for i in range(len(price_data["'"usdchf_open"'"]))]):}{::}
+{:buy_exits = np.array([1 if i in buy_exit_idxs else 0 for i in range(len(price_data["'"usdchf_open"'"]))]):}{::}
+{:sell_exits = np.array([1 if i in sell_exit_idxs else 0 for i in range(len(price_data["'"usdchf_open"'"]))]):}{::}
+{:price_data_open = pd.Series(price_data["'"usdchf_open"'"], index=pd.to_datetime(price_data["'"datetime"'"])):}{::}
+{:pf = vbt.Portfolio.from_signals(price_data_open, entries=buy_entries, exits=buy_exits, init_cash=AVAILABLE_CAPITAL, fees=COMMISSION, slippage=SLIPPAGE, size=TRADE_SIZE, short_entries=sell_entries, short_exits=sell_exits):}{::}
+{:fitness = pf.stats()["'"Total Return [%]"'"]:}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:return -fitness:}
+
+<callf> ::= fitness = fun(price_data)
+
+<exit-signal> ::= (price_data["'"usdchf_close"'"] == signals.moving_min(price_data["'"usdchf_close"'"], window=<window-const>))
+| (price_data["'"usdchf_close"'"] == signals.moving_max(price_data["'"usdchf_close"'"], window=<window-const>))
+| (numba_indicators_nan.average_true_range(high=price_data["'"usdchf_high"'"], low=price_data["'"usdchf_low"'"], close=price_data["'"usdchf_close"'"], window=<window-const>) > <short-window-const>)
+| (numba_indicators_nan.average_true_range(high=price_data["'"usdchf_high"'"], low=price_data["'"usdchf_low"'"], close=price_data["'"usdchf_close"'"], window=<window-const>) < <short-window-const>)
+| (price_data["'"usdchf_close"'"] > signals.moving_percentile(price_data["'"usdchf_close"'"], window=<window-const>, percentile=<perc-const>))
+| (price_data["'"usdchf_close"'"] < signals.moving_percentile(price_data["'"usdchf_close"'"], window=<window-const>, percentile=<perc-const>))
+| ((price_data["'"usdchf_close"'"] > get_lag(price_data["'"usdchf_close"'"], lag=1)) & (get_lag(price_data["'"usdchf_close"'"], lag=1) > get_lag(price_data["'"usdchf_close"'"], lag=2)) & (get_lag(price_data["'"usdchf_close"'"], lag=2) > get_lag(price_data["'"usdchf_close"'"], lag=3)))
+| ((price_data["'"usdchf_close"'"] < get_lag(price_data["'"usdchf_close"'"], lag=1)) & (get_lag(price_data["'"usdchf_close"'"], lag=1) < get_lag(price_data["'"usdchf_close"'"], lag=2)) & (get_lag(price_data["'"usdchf_close"'"], lag=2) < get_lag(price_data["'"usdchf_close"'"], lag=3)))
+| (price_data["'"usdchf_high"'"] < signals.moving_max(price_data["'"usdchf_high"'"], window=<window-const>))
+| (price_data["'"usdchf_high"'"] > signals.moving_max(price_data["'"usdchf_high"'"], window=<window-const>))
+| (price_data["'"usdchf_low"'"] < signals.moving_min(price_data["'"usdchf_low"'"], window=<window-const>))
+| (price_data["'"usdchf_low"'"] > signals.moving_min(price_data["'"usdchf_low"'"], window=<window-const>))
+| (price_data["'"usdchf_low"'"] < signals.moving_max(price_data["'"usdchf_low"'"], window=<window-const>))
+| (price_data["'"usdchf_low"'"] > signals.moving_max(price_data["'"usdchf_low"'"], window=<window-const>))
+| (price_data["'"usdchf_high"'"] > signals.moving_min(price_data["'"usdchf_high"'"], window=<window-const>))
+| (price_data["'"usdchf_high"'"] < signals.moving_min(price_data["'"usdchf_high"'"], window=<window-const>))
+| (numba_indicators_nan.true_range(high=price_data["'"usdchf_high"'"], low=price_data["'"usdchf_low"'"], close=price_data["'"usdchf_close"'"], window=<window-const>) > <aug-digit> * numba_indicators_nan.average_true_range(high=price_data["'"usdchf_high"'"], low=price_data["'"usdchf_low"'"], close=price_data["'"usdchf_close"'"], window=<window-const>))
+| (numba_indicators_nan.true_range(high=price_data["'"usdchf_high"'"], low=price_data["'"usdchf_low"'"], close=price_data["'"usdchf_close"'"], window=<window-const>) < <aug-digit> * numba_indicators_nan.average_true_range(high=price_data["'"usdchf_high"'"], low=price_data["'"usdchf_low"'"], close=price_data["'"usdchf_close"'"], window=<window-const>))
+
+<sell-signal> ::= ((get_lag(price_data["'"usdchf_close"'"], lag=1) > get_lag(price_data["'"usdchf_close"'"], lag=2)) & (get_lag(price_data["'"usdchf_close"'"], lag=2) > get_lag(price_data["'"usdchf_close"'"], lag=5)) & (get_lag(price_data["'"usdchf_close"'"], lag=5) > get_lag(price_data["'"usdchf_close"'"], lag=3)) & (get_lag(price_data["'"usdchf_close"'"], lag=3) > get_lag(price_data["'"usdchf_close"'"], lag=4)))
+
+<buy-signal> ::= ((get_lag(price_data["'"usdchf_close"'"], lag=1) < get_lag(price_data["'"usdchf_close"'"], lag=2)) & (get_lag(price_data["'"usdchf_close"'"], lag=2) < get_lag(price_data["'"usdchf_close"'"], lag=5)) & (get_lag(price_data["'"usdchf_close"'"], lag=5) < get_lag(price_data["'"usdchf_close"'"], lag=3)) & (get_lag(price_data["'"usdchf_close"'"], lag=3) < get_lag(price_data["'"usdchf_close"'"], lag=4)))
+
+<sell-exit-signal> ::= <exit-signal>
+
+<buy-exit-signal> ::= <exit-signal>
+
+<window-const> ::= <digit><aug-digit> 
+| <digit><aug-digit><aug-digit> | <digit> | <digit><aug-digit><aug-digit><aug-digit>
+
+<short-window-const> ::= <digit> | <digit><aug-digit> 
+
+<long-window-const> ::= <digit><aug-digit><aug-digit> | <digit><aug-digit><aug-digit><aug-digit>
+
+<lag-steps> ::= <digit> | <digit><aug-digit> | <digit><aug-digit><aug-digit> | <digit><aug-digit><aug-digit><aug-digit>
+
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<perc-const> ::= 0.<digit> | 0.<digit><aug-digit> 
