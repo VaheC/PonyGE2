@@ -190,6 +190,7 @@ def save_all_ind_to_file(inds, end=False, name="ge_results"):
     # savefile.write(f"buy;exit_buy;sell;exit_sell;fitness\n")
     savefile.write(f"alpha;fitness\n")
 
+    i = 0
     for k, v in inds.items():
 
         # buy_signal = re.findall(r"trading_signals\(buy_signal\=(.*)\, sell_signal", k)[0]
@@ -203,8 +204,10 @@ def save_all_ind_to_file(inds, end=False, name="ge_results"):
         # sell_exit_signal = re.findall(r"\, exit_signal\=(.*)\)", k)[0]
 
         # savefile.write(f"{buy_signal};{buy_exit_signal};{sell_signal};{sell_exit_signal};{v}\n")
-
-        alpha = re.findall(r"alpha_arr = (.*)#alpha", k)[0]
+        if i == 0:
+            print(k)
+        i += 1
+        alpha = re.findall(r"alpha_arr \= (.*)#alpha", k)[0]
         savefile.write(f"{alpha};{v}\n")
 
     savefile.close()
