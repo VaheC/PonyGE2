@@ -150,7 +150,7 @@
 | numba_group_ind_nan.negative_volume_indicator_group(volume=price_data["'"volume"'"])
 | numba_group_ind_nan.volume_entropy_group(volume=price_data["'"volume"'"], window=<window-const>, bins=<bins-const>)
 
-<simple-signal> ::= (<var> <c-op> <value>) | ((<signal>) <log-op> (<signal>))
+<simple-signal> ::= (<var> <c-op> <value>) | ((<alpha>) <log-op> (<alpha>))
 | (<var> <c-op> <var>)
 | ((<var> <mat-op> <var>) <c-op> <var>)
 | ((<var> <mat-op> <var>) <c-op> <value>)
