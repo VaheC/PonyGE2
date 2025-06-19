@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit
 import math
 from  .numba_indicators_nan import *
-from performance.helper_func import get_lag
+from .performance.helper_func import get_lag
 
 @njit(cache=True)
 def moving_average_group(series, window):
