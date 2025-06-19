@@ -7,7 +7,7 @@
 {:from numba import njit:}{::}
 {:book_size = 2000000:}{::}
 {:try::}
-{:{:alpha_arr = <alpha>#alpha:}:}{::}
+{:{:alpha_arr = <alpha>:}:}{::}
 {:{:alpha_arr = alpha_arr[~np.isnan(alpha_arr).any(axis=1)]:}:}{::}
 {:{:alpha_mean_vec = np.mean(alpha_arr, axis=0):}:}{::}
 {:{:alpha_arr = alpha_arr - alpha_mean_vec:}:}{::}
