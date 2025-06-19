@@ -207,7 +207,7 @@ def save_all_ind_to_file(inds, end=False, name="ge_results"):
         if i == 0:
             print(k)
         i += 1
-        alpha = re.findall(r"alpha_arr \= (.*)#alpha", k)[0]
+        alpha = re.findall(r"alpha_arr \= (.*)", k)[0]
         savefile.write(f"{alpha};{v}\n")
 
     savefile.close()
