@@ -204,7 +204,7 @@ def save_all_ind_to_file(inds, end=False, name="ge_results"):
 
         # savefile.write(f"{buy_signal};{buy_exit_signal};{sell_signal};{sell_exit_signal};{v}\n")
 
-        alpha = re.findall(r"try\:\nalpha_arr = (.*)\nalpha_arr =", k, re.DOTALL)[0]
+        alpha = re.findall(r"alpha_arr = (.*)#alpha", k)[0]
         savefile.write(f"{alpha};{v}\n")
 
     savefile.close()
