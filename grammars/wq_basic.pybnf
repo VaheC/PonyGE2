@@ -120,9 +120,9 @@
 | numba_group_ind_nan.rolling_drawdown_group(price_data["'"<data-prices>"'"], window_size=<window-const>)
 | numba_group_ind_nan.rolling_volatility_group(price_data["'"<data-prices>"'"], window_size=<window-const>)
 | numba_group_ind_nan.rolling_parkinson_estimator_group(high=price_data["'"high"'"], low=price_data["'"low"'"], window_size=<window-const>)
-| numba_group_ind_nan.rolling_rogers_satchell_estimator_group(open=price_data["'"<open-prices>"'"], high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window_size=<window-const>)
-| numba_group_ind_nan.rolling_yang_zhang_estimator_group(open=price_data["'"<open-prices>"'"], high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window_size=<window-const>)
-| numba_group_ind_nan.rolling_garman_klass_estimator_group(open=price_data["'"<open-prices>"'"], high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window_size=<window-const>)
+| numba_group_ind_nan.rolling_rogers_satchell_estimator_group(open=price_data["'"open"'"], high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window_size=<window-const>)
+| numba_group_ind_nan.rolling_yang_zhang_estimator_group(open=price_data["'"open"'"], high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window_size=<window-const>)
+| numba_group_ind_nan.rolling_garman_klass_estimator_group(open=price_data["'"open"'"], high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], window_size=<window-const>)
 | signals.moving_max_group(price_data["'"<data-prices>"'"], window=<window-const>)
 | signals.moving_min_group(price_data["'"<data-prices>"'"], window=<window-const>)
 | signals.moving_percentile_group(price_data["'"<data-prices>"'"], window=<window-const>, percentile=<perc-const>)
@@ -140,8 +140,8 @@
 | numba_group_ind_nan.calculate_keltner_channels_group(high_prices=price_data["'"high"'"], low_prices=price_data["'"low"'"], close_prices=price_data["'"close"'"], period=<window-const>, multiplier=<digit>)[1]
 | numba_group_ind_nan.calculate_keltner_channels_group(high_prices=price_data["'"high"'"], low_prices=price_data["'"low"'"], close_prices=price_data["'"close"'"], period=<window-const>, multiplier=<digit>)[2]
 | numba_group_ind_nan.commodity_channel_index_group(high_prices=price_data["'"high"'"], low_prices=price_data["'"low"'"], close_prices=price_data["'"close"'"], period=<window-const>)
-| numba_group_ind_nan.bull_bar_tail_rolling_group(close_prices=price_data["'"close"'"], open_prices=price_data["'"<open-prices>"'"], high_prices=price_data["'"high"'"], low_prices=price_data["'"low"'"], period=<window-const>)
-| numba_group_ind_nan.bear_bar_tail_rolling_group(close_prices=price_data["'"close"'"], open_prices=price_data["'"<open-prices>"'"], high_prices=price_data["'"high"'"], low_prices=price_data["'"low"'"], period=<window-const>)
+| numba_group_ind_nan.bull_bar_tail_rolling_group(close_prices=price_data["'"close"'"], open_prices=price_data["'"open"'"], high_prices=price_data["'"high"'"], low_prices=price_data["'"low"'"], period=<window-const>)
+| numba_group_ind_nan.bear_bar_tail_rolling_group(close_prices=price_data["'"close"'"], open_prices=price_data["'"open"'"], high_prices=price_data["'"high"'"], low_prices=price_data["'"low"'"], period=<window-const>)
 | numba_group_ind_nan.awesome_oscillator_group(high_prices=price_data["'"high"'"], low_prices=price_data["'"low"'"], short_period=<digit>, long_period=<short-window-const>)
 
 <indicator-volume> ::= numba_group_ind_nan.volume_momentum_group(volume=price_data["'"volume"'"], window=<window-const>)
