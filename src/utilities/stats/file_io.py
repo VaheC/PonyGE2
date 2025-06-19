@@ -187,7 +187,8 @@ def save_all_ind_to_file(inds, end=False, name="ge_results"):
     savefile = open(filename, 'w')
 
     # savefile.write(f"buy;sell;fitness\n\n")
-    savefile.write(f"buy;exit_buy;sell;exit_sell;fitness\n")
+    # savefile.write(f"buy;exit_buy;sell;exit_sell;fitness\n")
+    savefile.write(f"alpha;fitness\n")
 
     for k, v in inds.items():
 
@@ -196,12 +197,14 @@ def save_all_ind_to_file(inds, end=False, name="ge_results"):
 
         # savefile.write(f"{buy_signal};{sell_signal};{v}\n\n")
 
-        buy_signal = re.findall(r"trading_signals_buy\(buy_signal\=(.*)\, exit_signal", k)[0]
-        buy_exit_signal = re.findall(r"\, exit_signal\=(.*)\)", k)[0]
-        sell_signal = re.findall(r"trading_signals_sell\(sell_signal\=(.*)\, exit_signal", k)[0]
-        sell_exit_signal = re.findall(r"\, exit_signal\=(.*)\)", k)[0]
+        # buy_signal = re.findall(r"trading_signals_buy\(buy_signal\=(.*)\, exit_signal", k)[0]
+        # buy_exit_signal = re.findall(r"\, exit_signal\=(.*)\)", k)[0]
+        # sell_signal = re.findall(r"trading_signals_sell\(sell_signal\=(.*)\, exit_signal", k)[0]
+        # sell_exit_signal = re.findall(r"\, exit_signal\=(.*)\)", k)[0]
 
-        savefile.write(f"{buy_signal};{buy_exit_signal};{sell_signal};{sell_exit_signal};{v}\n")
+        # savefile.write(f"{buy_signal};{buy_exit_signal};{sell_signal};{sell_exit_signal};{v}\n")
 
+        alpha = re.findall(r"try\:\nalpha_arr = (.*)\nalpha_arr =", k, re.DOTALL)[0]
+        savefile.write(f"{alpha};{v}\n")
 
     savefile.close()
