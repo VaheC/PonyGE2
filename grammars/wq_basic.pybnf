@@ -6,7 +6,7 @@
 {:from fitness.indicators import numba_group_ind_nan:}{::}
 {:from numba import njit:}{::}
 {:book_size = 2000000:}{::}
-{:try::}
+{:try::}{::}
 {:{:alpha_arr = <alpha>:}:}{::}
 {:{:alpha_arr = alpha_arr[~np.isnan(alpha_arr).any(axis=1)]:}:}{::}
 {:{:alpha_mean_vec = np.mean(alpha_arr, axis=0):}:}{::}
@@ -25,7 +25,7 @@
 {:{:if np.isnan(fitness)::}:}{::}
 {:{:{:return 999:}:}:}{::}
 {:{:if fitness > 3::}:}{::}
-{:{:{:return 999։}:}:}{::}
+{:{:{:return 333:}:}:}{::}
 {:{:return -fitness:}:}{::}
 {:except::}
 {:{:return 444:}:}{::}
