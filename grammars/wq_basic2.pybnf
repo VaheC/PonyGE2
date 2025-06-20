@@ -159,6 +159,9 @@
 | (<var-volume> <mat-op> <value>)
 | (<matf-volume> <mat-op> <matf-volume>)
 | (<matf-volume> <mat-op> <value>)
+| np.log(<alpha> + 1) | np.sin(<alpha>) | np.cos(<alpha>) | np.sqrt(<alpha>) | np.exp(<alpha>) | np.expm1(<alpha>)
+| np.log10(<alpha> + 1) | np.log2(<alpha> + 1) | np.log1p(<alpha> + 1) | np.abs(<alpha>) | np.max(<alpha>) | np.min(<alpha>)
+
 
 <alpha> ::= <simple-signal> | (<simple-signal> <mat-op> <simple-signal>) 
 
