@@ -23,7 +23,7 @@
 {:fitness = np.sqrt(252) * np.mean(pnl_arr) / np.std(pnl_arr):}{::}
 {:if np.isnan(fitness)::}{::}
 {:{:return 999:}:}{::}
-{:if fitness > 3::}{::}
+{:if fitness > 5::}{::}
 {:{:return 333:}:}{::}
 {:return -fitness:}{::}
 
