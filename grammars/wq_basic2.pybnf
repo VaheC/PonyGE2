@@ -6,29 +6,26 @@
 {:from fitness.indicators import numba_group_ind_nan:}{::}
 {:from numba import njit:}{::}
 {:book_size = 2000000:}{::}
-{:try::}{::}
-{:{:alpha_arr = <alpha>:}:}{::}
-{:{:alpha_arr = alpha_arr[~np.isnan(alpha_arr).any(axis=1)]:}:}{::}
-{:{:alpha_mean_vec = np.mean(alpha_arr, axis=0):}:}{::}
-{:{:alpha_arr = alpha_arr - alpha_mean_vec:}:}{::}
-{:{:alpha_abs_sum = np.sum(np.abs(alpha_arr), axis=0):}:}{::}
-{:{:alpha_arr = alpha_arr / alpha_abs_sum:}:}{::}
-{:{:alpha_arr = get_lag_group(alpha_arr, lag=1):}:}{::}
-{:{:alpha_arr = alpha_arr[~np.isnan(alpha_arr).any(axis=1)]:}:}{::}
-{:{:close_arr = price_data["'"close"'"]:}:}{::}
-{:{:close_lag_arr = np.full_like(close_arr, np.nan):}:}{::}
-{:{:close_lag_arr[1:, :] = close_arr[0:close_arr.shape[0] - 1, :]:}:}{::}
-{:{:returns_arr = (close_arr - close_lag_arr) / close_lag_arr:}:}{::}
-{:{:returns_arr = returns_arr[returns_arr.shape[0] - alpha_arr.shape[0]:, :].T:}:}{::}
-{:{:pnl_arr = (alpha_arr @ returns_arr)[:, 0] * book_size:}:}{::}
-{:{:fitness = np.sqrt(252) * np.mean(pnl_arr) / np.std(pnl_arr):}:}{::}
-{:{:if np.isnan(fitness)::}:}{::}
-{:{:{:return 999:}:}:}{::}
-{:{:if fitness > 3::}:}{::}
-{:{:{:return 333:}:}:}{::}
-{:{:return -fitness:}:}{::}
-{:except::}
-{:{:return 444:}:}{::}
+{:alpha_arr = <alpha>:}{::}
+{:alpha_arr = alpha_arr[~np.isnan(alpha_arr).any(axis=1)]:}{::}
+{:alpha_mean_vec = np.mean(alpha_arr, axis=0):}{::}
+{:alpha_arr = alpha_arr - alpha_mean_vec:}{::}
+{:alpha_abs_sum = np.sum(np.abs(alpha_arr), axis=0):}{::}
+{:alpha_arr = alpha_arr / alpha_abs_sum:}{::}
+{:alpha_arr = get_lag_group(alpha_arr, lag=1):}{::}
+{:alpha_arr = alpha_arr[~np.isnan(alpha_arr).any(axis=1)]:}{::}
+{:close_arr = price_data["'"close"'"]:}{::}
+{:close_lag_arr = np.full_like(close_arr, np.nan):}{::}
+{:close_lag_arr[1:, :] = close_arr[0:close_arr.shape[0] - 1, :]:}{::}
+{:returns_arr = (close_arr - close_lag_arr) / close_lag_arr:}{::}
+{:returns_arr = returns_arr[returns_arr.shape[0] - alpha_arr.shape[0]:, :].T:}{::}
+{:pnl_arr = (alpha_arr @ returns_arr)[:, 0] * book_size:}{::}
+{:fitness = np.sqrt(252) * np.mean(pnl_arr) / np.std(pnl_arr):}{::}
+{:if np.isnan(fitness)::}{::}
+{:{:return 999:}:}{::}
+{:if fitness > 3::}{::}
+{:{:return 333:}:}{::}
+{:return -fitness:}{::}
 
 <callf> ::= fitness = fun(price_data)
 
