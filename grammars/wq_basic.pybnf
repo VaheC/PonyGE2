@@ -13,7 +13,7 @@
 {:{:alpha_arr = alpha_arr - alpha_mean_vec:}:}{::}
 {:{:alpha_abs_sum = np.sum(np.abs(alpha_arr), axis=0):}:}{::}
 {:{:alpha_arr = alpha_arr / alpha_abs_sum:}:}{::}
-{:{:alpha_arr = get_lag_group(alpha_arr, lag=1):}:}{::}
+{:{:alpha_arr = numba_group_ind_nan.get_lag_group(alpha_arr, lag=1):}:}{::}
 {:{:alpha_arr = alpha_arr[~np.isnan(alpha_arr).any(axis=1)]:}:}{::}
 {:{:close_arr = price_data["'"close"'"]:}:}{::}
 {:{:close_lag_arr = np.full_like(close_arr, np.nan):}:}{::}
