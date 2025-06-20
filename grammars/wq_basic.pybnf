@@ -15,7 +15,7 @@
 {:{:alpha_arr = alpha_arr / alpha_abs_sum:}:}{::}
 {:{:alpha_arr = get_lag_group(alpha_arr, lag=1):}:}{::}
 {:{:alpha_arr = alpha_arr[~np.isnan(alpha_arr).any(axis=1)]:}:}{::}
-{:{:close_arr = price_data['close']:}:}{::}
+{:{:close_arr = price_data["'"close"'"]:}:}{::}
 {:{:close_lag_arr = np.full_like(close_arr, np.nan):}:}{::}
 {:{:close_lag_arr[1:, :] = close_arr[0:close_arr.shape[0] - 1, :]:}:}{::}
 {:{:returns_arr = (close_arr - close_lag_arr) / close_lag_arr:}:}{::}
