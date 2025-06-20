@@ -150,28 +150,17 @@
 | numba_group_ind_nan.negative_volume_indicator_group(volume=price_data["'"volume"'"])
 | numba_group_ind_nan.volume_entropy_group(volume=price_data["'"volume"'"], window=<window-const>, bins=<bins-const>)
 
-<simple-signal> ::= (<var> <c-op> <value>) | ((<alpha>) <log-op> (<alpha>))
-| (<var> <c-op> <var>)
-| ((<var> <mat-op> <var>) <c-op> <var>)
-| ((<var> <mat-op> <var>) <c-op> <value>)
-| ((<var> <mat-op> <value>) <c-op> <value>)
-| (<mat-f> <c-op> <mat-f>)
-| (<mat-f> <c-op> <value>)
-| ((<mat-f> <mat-op> <mat-f>) <c-op> <value>)
-| ((<mat-f> <mat-op> <value>) <c-op> <value>)
-| (<var-volume> <c-op> <int-const>)
-| (<var-volume> <c-op> <var-volume>)
-| ((<var-volume> <mat-op> <var-volume>) <c-op> <var-volume>)
-| ((<var-volume> <mat-op> <var-volume>) <c-op> <value>)
-| ((<var-volume> <mat-op> <value>) <c-op> <value>)
-| (<matf-volume> <c-op> <matf-volume>)
-| (<matf-volume> <c-op> <value>)
-| ((<matf-volume> <mat-op> <matf-volume>) <c-op> <value>)
-| ((<matf-volume> <mat-op> <value>) <c-op> <value>)
+<simple-signal> ::= <var> | <var-volume> | <mat-f> | <matf-volume>
+| (<var> <mat-op> <var>)
+| (<var> <mat-op> <value>)
+| (<mat-f> <mat-op> <mat-f>)
+| (<mat-f> <mat-op> <value>)
+| (<var-volume> <mat-op> <var-volume>)
+| (<var-volume> <mat-op> <value>)
+| (<matf-volume> <mat-op> <matf-volume>)
+| (<matf-volume> <mat-op> <value>)
 
-<alpha> ::= <simple-signal> | (<simple-signal> <log-op> <simple-signal>) 
-| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
-| (<simple-signal> <log-op> <simple-signal> <log-op> <simple-signal> <log-op> <simple-signal>)
+<alpha> ::= <simple-signal> | (<simple-signal> <mat-op> <simple-signal>) 
 
 <value> ::= <int-const> | <real-const>
 
@@ -190,7 +179,7 @@
 <bins-const> ::= <digit><aug-digit> 
 | <digit><aug-digit><aug-digit> | <digit>
 
-<lag-steps> ::= <digit> | <digit><aug-digit>
+<lag-steps> ::= <digit> | <digit><aug-digit> | 120 | 252
 
 <digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
 <aug-digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
