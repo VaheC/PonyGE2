@@ -611,39 +611,39 @@ def hilbert_phasor_components_group(close):
     return phasor_group
 
 @njit(cache=True)
-def ultimate_oscillator_group(high_mat, low_mat, close_mat, period1, period2, period3):
-    n, m = close_mat.shape
+def ultimate_oscillator_group(low, close, period1, period2, period3):
+    n, m = close.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = ultimate_oscillator(close_mat[:, j], low_mat[:, j], close_mat[:, j], period1, period2, period3)
+        out[:, j] = ultimate_oscillator(close[:, j], low[:, j], close[:, j], period1, period2, period3)
     return out
 
 @njit(cache=True)
-def medprice_group(high_mat, low_mat):
-    return (high_mat + low_mat) / 2
+def medprice_group(high, low):
+    return (high + low) / 2
 
 @njit(cache=True)
-def ldecay_group(price_mat, period):
-    n, m = price_mat.shape
+def ldecay_group(price, period):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = ldecay(price_mat[:, j], period)
+        out[:, j] = ldecay(price[:, j], period)
     return out
 
 @njit(cache=True)
-def logret_group(price_mat):
-    n, m = price_mat.shape
+def logret_group(price):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = logret(price_mat[:, j])
+        out[:, j] = logret(price[:, j])
     return out
 
 @njit(cache=True)
-def pvi_group(price_mat, volume_mat):
-    n, m = price_mat.shape
+def pvi_group(price, volume):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = pvi(price_mat[:, j], volume_mat[:, j])
+        out[:, j] = pvi(price[:, j], volume[:, j])
     return out
 
 @njit(cache=True)
@@ -779,151 +779,151 @@ def rolling_garman_klass_estimator_group(open, high, low, close, window_size):
     return out
 
 @njit(cache=True)
-def ultimate_oscillator_group(high_mat, low_mat, close_mat, period1, period2, period3):
-    n, m = close_mat.shape
+def ultimate_oscillator_group(low, close, period1, period2, period3):
+    n, m = close.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = ultimate_oscillator(close_mat[:, j], low_mat[:, j], close_mat[:, j], period1, period2, period3)
+        out[:, j] = ultimate_oscillator(close[:, j], low[:, j], close[:, j], period1, period2, period3)
     return out
 
 @njit(cache=True)
-def medprice_group(high_mat, low_mat):
-    return (high_mat + low_mat) / 2
+def medprice_group(high, low):
+    return (high + low) / 2
 
 @njit(cache=True)
-def ldecay_group(price_mat, period):
-    n, m = price_mat.shape
+def ldecay_group(price, period):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = ldecay(price_mat[:, j], period)
+        out[:, j] = ldecay(price[:, j], period)
     return out
 
 @njit(cache=True)
-def logret_group(price_mat):
-    n, m = price_mat.shape
+def logret_group(price):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = logret(price_mat[:, j])
+        out[:, j] = logret(price[:, j])
     return out
 
 @njit(cache=True)
-def pvi_group(price_mat, volume_mat):
-    n, m = price_mat.shape
+def pvi_group(price, volume):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = pvi(price_mat[:, j], volume_mat[:, j])
+        out[:, j] = pvi(price[:, j], volume[:, j])
     return out
 
 @njit(cache=True)
-def pctret_group(price_mat):
-    n, m = price_mat.shape
+def pctret_group(price):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = pctret(price_mat[:, j])
+        out[:, j] = pctret(price[:, j])
     return out
 
 @njit(cache=True)
-def cti_group(price_mat, period):
-    n, m = price_mat.shape
+def cti_group(price, period):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = cti(price_mat[:, j], period)
+        out[:, j] = cti(price[:, j], period)
     return out
 
 @njit(cache=True)
-def dema_group(price_mat, period):
-    n, m = price_mat.shape
+def dema_group(price, period):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = dema(price_mat[:, j], period)
+        out[:, j] = dema(price[:, j], period)
     return out
 
 @njit(cache=True)
-def hma_group(price_mat, period):
-    n, m = price_mat.shape
+def hma_group(price, period):
+    n, m = price.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = hma(price_mat[:, j], period)
+        out[:, j] = hma(price[:, j], period)
     return out
 
 @njit(cache=True)
-def stochastic_oscillator_kd_group(close_mat, high_mat, low_mat, period=14, smooth_period=3):
-    n, m = close_mat.shape
+def stochastic_oscillator_kd_group(close, high, low, period=14, smooth_period=3):
+    n, m = close.shape
     stoch_k_mat = np.full((n, m), np.nan)
     stoch_d_mat = np.full((n, m), np.nan)
     for j in range(m):
-        k, d = stochastic_oscillator_kd(close_mat[:, j], high_mat[:, j], low_mat[:, j], period, smooth_period)
+        k, d = stochastic_oscillator_kd(close[:, j], high[:, j], low[:, j], period, smooth_period)
         stoch_k_mat[:, j] = k
         stoch_d_mat[:, j] = d
     return stoch_k_mat, stoch_d_mat
 
 @njit(cache=True)
-def money_flow_index_group(high_mat, low_mat, close_mat, volume_mat, period=14):
-    n, m = close_mat.shape
+def money_flow_index_group(high, low, close, volume, period=14):
+    n, m = close.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = money_flow_index(high_mat[:, j], low_mat[:, j], close_mat[:, j], volume_mat[:, j], period)
+        out[:, j] = money_flow_index(high[:, j], low[:, j], close[:, j], volume[:, j], period)
     return out
 
 @njit(cache=True)
-def calculate_keltner_channels_group(high_mat, low_mat, close_mat, period=20, multiplier=2):
-    n, m = close_mat.shape
+def calculate_keltner_channels_group(high, low, close, period=20, multiplier=2):
+    n, m = close.shape
     middle = np.full((n, m), np.nan)
     upper = np.full((n, m), np.nan)
     lower = np.full((n, m), np.nan)
     for j in range(m):
-        mid, up, low = calculate_keltner_channels(high_mat[:, j], low_mat[:, j], close_mat[:, j], period, multiplier)
+        mid, up, low = calculate_keltner_channels(high[:, j], low[:, j], close[:, j], period, multiplier)
         middle[:, j] = mid
         upper[:, j] = up
         lower[:, j] = low
     return middle, upper, lower
 
 @njit(cache=True)
-def commodity_channel_index_group(high_mat, low_mat, close_mat, period=20):
-    n, m = close_mat.shape
+def commodity_channel_index_group(high, low, close, period=20):
+    n, m = close.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = commodity_channel_index(high_mat[:, j], low_mat[:, j], close_mat[:, j], period)
+        out[:, j] = commodity_channel_index(high[:, j], low[:, j], close[:, j], period)
     return out
 
 @njit(cache=True)
-def bull_bar_tail_rolling_group(close_mat, open_mat, high_mat, low_mat, period=20):
-    n, m = close_mat.shape
+def bull_bar_tail_rolling_group(close, open, high, low, period=20):
+    n, m = close.shape
     out = np.full((n, m), np.nan, dtype=np.float64)
     for j in range(m):
-        out[:, j] = bull_bar_tail_rolling(close_mat[:, j], open_mat[:, j], high_mat[:, j], low_mat[:, j], period)
+        out[:, j] = bull_bar_tail_rolling(close[:, j], open[:, j], high[:, j], low[:, j], period)
     return out
 
 @njit(cache=True)
-def bear_bar_tail_rolling_group(close_mat, open_mat, high_mat, low_mat, period=20):
-    n, m = close_mat.shape
+def bear_bar_tail_rolling_group(close, open, high, low, period=20):
+    n, m = close.shape
     out = np.full((n, m), np.nan, dtype=np.float64)
     for j in range(m):
-        out[:, j] = bear_bar_tail_rolling(close_mat[:, j], open_mat[:, j], high_mat[:, j], low_mat[:, j], period)
+        out[:, j] = bear_bar_tail_rolling(close[:, j], open[:, j], high[:, j], low[:, j], period)
     return out
 
 @njit(cache=True)
-def awesome_oscillator_group(high_mat, low_mat, short_period=5, long_period=34):
-    n, m = high_mat.shape
+def awesome_oscillator_group(high, low, short_period=5, long_period=34):
+    n, m = high.shape
     out = np.full((n, m), np.nan)
     for j in range(m):
-        out[:, j] = awesome_oscillator(high_mat[:, j], low_mat[:, j], short_period, long_period)
+        out[:, j] = awesome_oscillator(high[:, j], low[:, j], short_period, long_period)
     return out
 
 @njit(cache=True)
-def rolling_max_index_group(arr_mat, window):
-    n, m = arr_mat.shape
+def rolling_max_index_group(arr, window):
+    n, m = arr.shape
     out = np.full((n, m), np.nan, dtype=np.float64)
     for j in range(m):
-        out[:, j] = rolling_max_index(arr_mat[:, j], window)
+        out[:, j] = rolling_max_index(arr[:, j], window)
     return out
 
 @njit(cache=True)
-def rolling_min_index_group(arr_mat, window):
-    n, m = arr_mat.shape
+def rolling_min_index_group(arr, window):
+    n, m = arr.shape
     out = np.full((n, m), np.nan, dtype=np.float64)
     for j in range(m):
-        out[:, j] = rolling_min_index(arr_mat[:, j], window)
+        out[:, j] = rolling_min_index(arr[:, j], window)
     return out
 
 @njit(cache=True)

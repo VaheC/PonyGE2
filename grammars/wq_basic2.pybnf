@@ -123,7 +123,7 @@
 | signals.moving_max_group(price_data["'"<data-prices>"'"], window=<window-const>)
 | signals.moving_min_group(price_data["'"<data-prices>"'"], window=<window-const>)
 | signals.moving_percentile_group(price_data["'"<data-prices>"'"], window=<window-const>, percentile=<perc-const>)
-| numba_group_ind_nan.ultimate_oscillator_group(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], period1=<digit>, period2=2 * <digit>, period3=3 * <digit>)
+| numba_group_ind_nan.ultimate_oscillator_group(low=price_data["'"low"'"], close=price_data["'"close"'"], period1=<digit>, period2=2 * <digit>, period3=3 * <digit>)
 | numba_group_ind_nan.medprice_group(high=price_data["'"high"'"], low=price_data["'"low"'"])
 | numba_group_ind_nan.ldecay_group(price=price_data["'"<data-prices>"'"], period=<window-const>)
 | numba_group_ind_nan.logret_group(price=price_data["'"<data-prices>"'"])
