@@ -104,8 +104,8 @@
 | numba_group_ind_nan.directional_movement_index_group(high=price_data["'"high"'"], low=price_data["'"low"'"], close=price_data["'"close"'"], period=<window-const>)[2]
 | numba_group_ind_nan.hilbert_dominant_cycle_period_group(close=price_data["'"close"'"], period=<window-const>)
 | numba_group_ind_nan.hilbert_dominant_cycle_phase_group(close=price_data["'"close"'"], period=<window-const>)
-| numba_group_ind_nan.hilbert_phasor_components_group(close=price_data["'"close"'"])[MAX_LAG:, 0]
-| numba_group_ind_nan.hilbert_phasor_components_group(close=price_data["'"close"'"])[MAX_LAG:, 1]
+| numba_group_ind_nan.hilbert_phasor_components_group(close=price_data["'"close"'"])[<lag-steps>:, 0]
+| numba_group_ind_nan.hilbert_phasor_components_group(close=price_data["'"close"'"])[<lag-steps>:, 1]
 | numba_group_ind_nan.hilbert_sinewave_group(close=price_data["'"close"'"])
 | numba_group_ind_nan.hilbert_instantaneous_trendline_group(close=price_data["'"close"'"])
 | numba_group_ind_nan.hilbert_trend_vs_cycle_mode_group(close=price_data["'"close"'"])
