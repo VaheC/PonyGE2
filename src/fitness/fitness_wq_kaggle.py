@@ -39,23 +39,23 @@ class fitness_wq_kaggle(base_ff):
 
         # logger = create_terminal_logger()
 
-        # try:
-        # t0 = time.time()
-        exec(p, d)
-        # t1 = time.time()
-        fitness = d['fitness']
+        try:
+            # t0 = time.time()
+            exec(p, d)
+            # t1 = time.time()
+            fitness = d['fitness']
 
-        # try:
-        #     roi = d['pf'].stats()['Total Return [%]']
-        #     mdd = d['pf'].stats()['Max Drawdown [%]']
-        # except:
-        #     roi = 100 * d['equity_curve_arr'][-1] / (d['AVAILABLE_CAPITAL'] * d['TRADE_SIZE'])
-        #     mdd = get_max_drawdown(d['equity_curve_arr'])
+            # try:
+            #     roi = d['pf'].stats()['Total Return [%]']
+            #     mdd = d['pf'].stats()['Max Drawdown [%]']
+            # except:
+            #     roi = 100 * d['equity_curve_arr'][-1] / (d['AVAILABLE_CAPITAL'] * d['TRADE_SIZE'])
+            #     mdd = get_max_drawdown(d['equity_curve_arr'])
 
-        # temp_txt_logger = f"ROI: {roi:.4f}, MDD: {mdd:.4f}, Fitness: {fitness:.4f}"
+            # temp_txt_logger = f"ROI: {roi:.4f}, MDD: {mdd:.4f}, Fitness: {fitness:.4f}"
 
-        # logger.info(temp_txt_logger)
-        # except:
-        #     fitness = 404
+            # logger.info(temp_txt_logger)
+        except:
+            fitness = 404
             
         return fitness
